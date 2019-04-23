@@ -1,0 +1,1 @@
+All structures, materials and manufactoring related code goes into this folder

@@ -1,0 +1,1 @@
+All operations and communications related code goes into this folder
