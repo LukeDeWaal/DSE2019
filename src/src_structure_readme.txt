@@ -1,6 +1,6 @@
 Rules for writing and uploading code:
 
-1. Use Python 3.5+
+1. Use Python 3.5+ (or Matlab for control)
 2. Use clear, standard indentation according to PEP conventions
 3. When defining a function or class:
 	- Write in comments about the functionalities
@@ -13,7 +13,7 @@ Rules for writing and uploading code:
     	    param x: Value to be raised to the power 2
     	    return: x raised to the power 2
     	    """
-    	    return x**2
+    	    return x**2 	# Write additional explanation next to code
 
 4. Separate functions and code chunks into different files
 5. NO HARDCODING! Make everything into variables and save values in other files,
