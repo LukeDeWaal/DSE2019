@@ -7,6 +7,17 @@ import unittest as ut
 
 
 # Main
+def myfunction(A: float, B:str, C:int) -> list:
+    """
+    This function is useless
+    :param A: a float
+    :param B: a string
+    :param C: an integer
+    :return: list
+    """
+    return [A, B, C]
+
+
 class Example(object):
 
     def __init__(self):
@@ -47,5 +58,6 @@ if __name__ == "__main__":              # Code will only be executed if this is 
     def run_TestCases():
         suite = ut.TestLoader().loadTestsFromTestCase(ExampleTestCases)
         ut.TextTestRunner(verbosity=2).run(suite)
+
 
     run_TestCases()
