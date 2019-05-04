@@ -1,0 +1,354 @@
+{
+  "homebuilt":{
+    "cruise:": {
+      "L/D": {
+        "max": 10,
+        "min": 8
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.8,
+        "min": 0.6
+      },
+      "np": 0.7
+    },
+    "loiter": {
+      "L/D": {
+        "max": 12,
+        "min": 10
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.6
+    }
+  },
+  "single_engine":{
+    "cruise:": {
+      "L/D": {
+        "max": 10,
+        "min": 8
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.8,
+        "min": 0.6
+      },
+      "np": 0.8
+    },
+    "loiter": {
+      "L/D": {
+        "max": 12,
+        "min": 10
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.7
+    }
+  },
+  "twin_engine":{
+    "cruise:": {
+      "L/D": {
+        "max": 10,
+        "min": 8
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.82
+    },
+    "loiter": {
+      "L/D": {
+        "max": 11,
+        "min": 9
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.72
+    }
+  },
+  "agricultural":{
+    "cruise:": {
+      "L/D": {
+        "max": 7,
+        "min": 5
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.82
+    },
+    "loiter": {
+      "L/D": {
+        "max": 10,
+        "min": 8
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.72
+    }
+  },
+  "business_jet":{
+    "cruise:": {
+      "L/D": {
+        "max": 12,
+        "min": 10
+      },
+      "cj": {
+        "max": 0.9,
+        "min": 0.5
+      },
+      "cp": {
+        "max": null,
+        "min": null
+      },
+      "np": null
+    },
+    "loiter": {
+      "L/D": {
+        "max": 14,
+        "min": 12
+      },
+      "cj": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "cp": {
+        "max": null,
+        "min": null
+      },
+      "np": null
+    }
+  },
+  "regional_tbp":{
+    "cruise:": {
+      "L/D": {
+        "max": 13,
+        "min": 11
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "np": 0.85
+    },
+    "loiter": {
+      "L/D": {
+        "max": 16,
+        "min": 14
+      },
+      "cj": {
+        "max": null,
+        "min": null
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.77
+    }
+  },
+  "transport_jet":{
+    "cruise:": {
+      "L/D": {
+        "max": 15,
+        "min": 13
+      },
+      "cj": {
+        "max": 0.9,
+        "min": 0.5
+      },
+      "cp": {
+        "max": null,
+        "min": null
+      },
+      "np": null
+    },
+    "loiter": {
+      "L/D": {
+        "max": 18,
+        "min": 14
+      },
+      "cj": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "cp": {
+        "max": null,
+        "min": null
+      },
+      "np": null
+    }
+  },
+  "military_trainer":{
+    "cruise:": {
+      "L/D": {
+        "max": 10,
+        "min": 8
+      },
+      "cj": {
+        "max": 1.0,
+        "min": 0.5
+      },
+      "cp": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "np": 0.82
+    },
+    "loiter": {
+      "L/D": {
+        "max": 14,
+        "min": 10
+      },
+      "cj": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.77
+    }
+  },
+  "fighters":{
+    "cruise:": {
+      "L/D": {
+        "max": 7,
+        "min": 4
+      },
+      "cj": {
+        "max": 1.4,
+        "min": 0.6
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.4
+      },
+      "np": 0.82
+    },
+    "loiter": {
+      "L/D": {
+        "max": 9,
+        "min": 6
+      },
+      "cj": {
+        "max": 0.8,
+        "min": 0.6
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.77
+    }
+  },
+  "mil_patrol":{
+    "cruise:": {
+      "L/D": {
+        "max": 15,
+        "min": 13
+      },
+      "cj": {
+        "max": 0.9,
+        "min": 0.5
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.4
+      },
+      "np": 0.82
+    },
+    "loiter": {
+      "L/D": {
+        "max": 18,
+        "min": 14
+      },
+      "cj": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.77
+    }
+  },
+  "amphibious":{
+    "cruise:": {
+      "L/D": {
+        "max": 12,
+        "min": 10
+      },
+      "cj": {
+        "max": 0.9,
+        "min": 0.5
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.82
+    },
+    "loiter": {
+      "L/D": {
+        "max": 15,
+        "min": 13
+      },
+      "cj": {
+        "max": 0.6,
+        "min": 0.4
+      },
+      "cp": {
+        "max": 0.7,
+        "min": 0.5
+      },
+      "np": 0.77
+    }
+  }
+}

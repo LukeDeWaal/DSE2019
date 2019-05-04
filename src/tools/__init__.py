@@ -1,0 +1,1 @@
+from .NumericalTools import newtons_method, linear_least_squares, line, quadratic_least_squares, derive, deg_2_rad
