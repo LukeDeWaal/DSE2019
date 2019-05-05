@@ -4,7 +4,7 @@ import os
 import unittest as ut
 
 NameList = ['homebuilt', 'single_engine', 'twin_engine', 'agricultural', 'business_jet', 'regional_tbp',
-         'transport_jet', 'military_trainer', 'fighters', 'mil_patrol', 'amphibious']
+            'transport_jet', 'military_trainer', 'fighters', 'mil_patrol', 'amphibious']
 
 
 class ReferenceAircraft(object):

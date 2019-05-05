@@ -104,7 +104,7 @@ class JetCalculations(Calculations):
 
         super().__init__(data_dict=data_dict)
 
-    def loiter_fraction_calculation(self, endurance: float, v: float):
+    def loiter_fraction_calculation(self, endurance: float):
 
         lift_drag_ratio = self.__extract_value(self.__loiter_data['L/D']['lower'],
                                                self.__loiter_data['L/D']['upper'],
