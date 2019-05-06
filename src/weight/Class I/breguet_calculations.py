@@ -18,8 +18,14 @@ class Calculations(object):
         self.decision_options['lower'] = 0
         self.decision_options['upper'] = 1
 
+    def get_cruise_data(self):
+        return self.__cruise_data
+
+    def get_loiter_data(self):
+        return self.__loiter_data
+
     @staticmethod
-    def __extract_value(lower: float, upper: float, settings: dict):
+    def extract_value(lower: float, upper: float, settings: dict):
         """
         Method to extract a value for a coefficient given the decision options
         :param lower: Min of range
@@ -34,7 +40,6 @@ class Calculations(object):
         elif settings['method'] == 'random':
             new_lower = lower + settings['lower'] * (upper - lower)
             new_upper = lower + settings['upper'] * (upper - lower)
-
             return np.random.uniform(new_lower, new_upper)
 
     def set_seed(self, seed: int):
@@ -73,29 +78,27 @@ class PropellerCalculations(Calculations):
 
         super().__init__(data_dict=data_dict)
 
+        self.lift_drag_ratio = None
+        self.cp = None
+        self.calculate_parameters()
+
+    def calculate_parameters(self):
+
+        self.lift_drag_ratio = self.extract_value(self.get_loiter_data()['L/D']['min'],
+                                                  self.get_loiter_data()['L/D']['max'],
+                                                  self.decision_options)
+
+        self.cp = self.extract_value(self.get_loiter_data()['cp']['min'],
+                                     self.get_loiter_data()['cp']['max'],
+                                     self.decision_options)
+
     def loiter_fraction_calculation(self, endurance: float, v: float):
 
-        lift_drag_ratio = self.__extract_value(self.__loiter_data['L/D']['lower'],
-                                               self.__loiter_data['L/D']['upper'],
-                                               self.decision_options)
+        return np.exp(-(endurance/375.0)*(v/self.lift_drag_ratio)*(self.cp/self.get_loiter_data()['np']))
 
-        cp = self.__extract_value(self.__loiter_data['cp']['lower'],
-                                  self.__loiter_data['cp']['upper'],
-                                  self.decision_options)
+    def cruise_fraction_calculation(self, cruise_range: float):
 
-        return np.exp(-(endurance/375.0)*(v/lift_drag_ratio)*(cp/self.__loiter_data['np']))
-
-    def cruise_fraction_calculation(self, range: float):
-
-        lift_drag_ratio = self.__extract_value(self.__cruise_data['L/D']['lower'],
-                                               self.__cruise_data['L/D']['upper'],
-                                               self.decision_options)
-
-        cp = self.__extract_value(self.__cruise_data['cp']['lower'],
-                                  self.__cruise_data['cp']['upper'],
-                                  self.decision_options)
-
-        return np.exp(-(range / (375.0 *lift_drag_ratio)) * (cp / self.__cruise_data['np']))
+        return np.exp(-(cruise_range / (375.0 * self.lift_drag_ratio)) * (self.cp / self.get_cruise_data()['np']))
 
 
 class JetCalculations(Calculations):
@@ -104,29 +107,27 @@ class JetCalculations(Calculations):
 
         super().__init__(data_dict=data_dict)
 
+        self.lift_drag_ratio = None
+        self.cj = None
+        self.calculate_parameters()
+
+    def calculate_parameters(self):
+
+        self.lift_drag_ratio = self.extract_value(self.get_loiter_data()['L/D']['min'],
+                                                  self.get_loiter_data()['L/D']['max'],
+                                                  self.decision_options)
+
+        self.cj = self.extract_value(self.get_loiter_data()['cj']['min'],
+                                     self.get_loiter_data()['cj']['max'],
+                                     self.decision_options)
+
     def loiter_fraction_calculation(self, endurance: float):
 
-        lift_drag_ratio = self.__extract_value(self.__loiter_data['L/D']['lower'],
-                                               self.__loiter_data['L/D']['upper'],
-                                               self.decision_options)
+        return np.exp(-(endurance*(self.cj/self.lift_drag_ratio)))
 
-        cj = self.__extract_value(self.__loiter_data['cj']['lower'],
-                                  self.__loiter_data['cj']['upper'],
-                                  self.decision_options)
+    def cruise_fraction_calculation(self, cruise_range: float, v: float):
 
-        return np.exp(-(endurance*(cj/lift_drag_ratio)))
-
-    def cruise_fraction_calculation(self, range: float, v: float):
-
-        lift_drag_ratio = self.__extract_value(self.__cruise_data['L/D']['lower'],
-                                               self.__cruise_data['L/D']['upper'],
-                                               self.decision_options)
-
-        cj = self.__extract_value(self.__cruise_data['cj']['lower'],
-                                  self.__cruise_data['cj']['upper'],
-                                  self.decision_options)
-
-        return np.exp(-(range / lift_drag_ratio) * (cj / v))
+        return np.exp(-(cruise_range / self.lift_drag_ratio) * (self.cj / v))
 
 
 if __name__ == "__main__":

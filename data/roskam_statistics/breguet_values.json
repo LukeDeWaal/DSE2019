@@ -1,6 +1,6 @@
 {
   "homebuilt":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 10,
         "min": 8
@@ -32,7 +32,7 @@
     }
   },
   "single_engine":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 10,
         "min": 8
@@ -64,7 +64,7 @@
     }
   },
   "twin_engine":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 10,
         "min": 8
@@ -96,7 +96,7 @@
     }
   },
   "agricultural":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 7,
         "min": 5
@@ -128,7 +128,7 @@
     }
   },
   "business_jet":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 12,
         "min": 10
@@ -160,7 +160,7 @@
     }
   },
   "regional_tbp":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 13,
         "min": 11
@@ -192,7 +192,7 @@
     }
   },
   "transport_jet":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 15,
         "min": 13
@@ -224,7 +224,7 @@
     }
   },
   "military_trainer":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 10,
         "min": 8
@@ -256,7 +256,7 @@
     }
   },
   "fighters":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 7,
         "min": 4
@@ -288,7 +288,7 @@
     }
   },
   "mil_patrol":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 15,
         "min": 13
@@ -320,7 +320,7 @@
     }
   },
   "amphibious":{
-    "cruise:": {
+    "cruise": {
       "L/D": {
         "max": 12,
         "min": 10

@@ -15,12 +15,16 @@ class ReferenceAircraft(object):
 
         self.__fuel_fractions = self.__import_fuel_fractions(self.name)
         self.__breguet_data = self.__import_breguet_data(self.name)
+        self.__statistical_coeffs = self.__import_statistical_coefficients(self.name)
 
     def get_fuel_frac(self):
         return self.__fuel_fractions
 
     def get_breguet_data(self):
         return self.__breguet_data
+
+    def get_coefficients(self):
+        return self.__statistical_coeffs
 
     @staticmethod
     def __import_data(data_type: str, name: str):
@@ -44,6 +48,9 @@ class ReferenceAircraft(object):
 
     def __import_breguet_data(self, name: str) -> list:
         return self.__import_data('breguet_values', name)
+
+    def __import_statistical_coefficients(self, name: str) -> list:
+        return self.__import_data('coefficients', name)
 
 
 if __name__ == "__main__":
