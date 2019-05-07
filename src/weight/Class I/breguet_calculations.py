@@ -1,16 +1,21 @@
 import numpy as np
-
+from json_import import ReferenceAircraft, NameList
 import unittest as ut
 
 
 class Calculations(object):
 
     def __init__(self, data_dict: dict):
+        """
+        Base Class for calculations being performed for Class I estimations.
+        This class contains all the basic methods for the calculations.
+        :param data_dict: Dictionary for the specific reference aircraft group
+        """
 
         self.__data_dict = data_dict
 
-        self.__cruise_data = self.__data_dict['cruise']
-        self.__loiter_data = self.__data_dict['loiter']
+        self.__cruise_data = self.__data_dict['cruise'] # Contains all data for cruise
+        self.__loiter_data = self.__data_dict['loiter'] # Contains all data for loiter
 
         self.decision_options = dict()
         self.decision_options['method'] = 'random'
@@ -77,6 +82,10 @@ class Calculations(object):
 class PropellerCalculations(Calculations):
 
     def __init__(self, data_dict: dict):
+        """
+        Class for calculations on propeller aircraft.
+        :param data_dict: Dictionary for the specific reference aircraft group
+        """
 
         super().__init__(data_dict=data_dict)
 
@@ -95,17 +104,25 @@ class PropellerCalculations(Calculations):
                                      self.decision_options)
 
     def loiter_fraction_calculation(self, endurance: float, v: float):
-
-        return np.exp(-(endurance/375.0)*(v/self.lift_drag_ratio)*(self.cp/self.get_loiter_data()['np']))
+        if self.cp is not None:
+            return np.exp(-(endurance/375.0)*(v/self.lift_drag_ratio)*(self.cp/self.get_loiter_data()['np']))
+        else:
+            return None
 
     def cruise_fraction_calculation(self, cruise_range: float):
-
-        return np.exp(-(cruise_range / (375.0 * self.lift_drag_ratio)) * (self.cp / self.get_cruise_data()['np']))
+        if self.cp is not None:
+            return np.exp(-(cruise_range / (375.0 * self.lift_drag_ratio)) * (self.cp / self.get_cruise_data()['np']))
+        else:
+            return None
 
 
 class JetCalculations(Calculations):
 
     def __init__(self, data_dict: dict):
+        """
+        Class for calculations on jet aircraft.
+        :param data_dict: Dictionary for the specific reference aircraft group
+        """
 
         super().__init__(data_dict=data_dict)
 
@@ -124,43 +141,108 @@ class JetCalculations(Calculations):
                                      self.decision_options)
 
     def loiter_fraction_calculation(self, endurance: float):
-
-        return np.exp(-(endurance*(self.cj/self.lift_drag_ratio)))
+        if self.cj is not None:
+            return np.exp(-(endurance*(self.cj/self.lift_drag_ratio)))
+        else:
+            return None
 
     def cruise_fraction_calculation(self, cruise_range: float, v: float):
+        if self.cj is not None:
+            return np.exp(-(cruise_range / self.lift_drag_ratio) * (self.cj / v))
+        else:
+            return None
 
-        return np.exp(-(cruise_range / self.lift_drag_ratio) * (self.cj / v))
+"""
+TESTS COME AFTER THIS
+"""
+
+
+class CalculationTestCases(ut.TestCase):
+
+    def setUp(self):
+
+        self.RefAC = {}
+
+        for name in NameList:
+            self.RefAC[name] = [ReferenceAircraft(name)]
+            self.RefAC[name].append(PropellerCalculations(self.RefAC[name][0].get_breguet_data()))
+            self.RefAC[name].append(JetCalculations(self.RefAC[name][0].get_breguet_data()))
+
+    def tearDown(self):
+        pass
+
+    def test_extract_value(self):
+
+        for name in NameList:
+            value = self.RefAC[name][1].extract_value(0, 1, self.RefAC[name][1].decision_options)
+            self.assertGreaterEqual(value, 0)
+            self.assertLessEqual(value, 1)
+
+            value = self.RefAC[name][2].extract_value(0, 1, self.RefAC[name][1].decision_options)
+            self.assertGreaterEqual(value, 0)
+            self.assertLessEqual(value, 1)
+
+    def test_decision_options(self):
+
+        for name in NameList:
+            self.RefAC[name][1].set_decision_options(0.5)
+            self.RefAC[name][2].set_decision_options(0.5)
+
+            self.assertEqual(self.RefAC[name][1].decision_options['method'], 'single')
+            self.assertEqual(self.RefAC[name][2].decision_options['method'], 'single')
+            self.assertEqual(self.RefAC[name][1].decision_options['lower'], None)
+            self.assertEqual(self.RefAC[name][2].decision_options['lower'], None)
+            self.assertEqual(self.RefAC[name][1].decision_options['upper'], None)
+            self.assertEqual(self.RefAC[name][2].decision_options['upper'], None)
+
+            self.RefAC[name][1].set_decision_options(0.1, 0.9)
+            self.RefAC[name][2].set_decision_options(0.1, 0.9)
+            self.assertEqual(self.RefAC[name][1].decision_options['method'], 'random')
+            self.assertEqual(self.RefAC[name][2].decision_options['method'], 'random')
+            self.assertEqual(self.RefAC[name][1].decision_options['value'], None)
+            self.assertEqual(self.RefAC[name][2].decision_options['value'], None)
+
+    def test_loiter(self):
+
+        for name in NameList:
+
+            frac1 = self.RefAC[name][1].loiter_fraction_calculation(5.0, 100)
+            frac2 = self.RefAC[name][2].loiter_fraction_calculation(5.0)
+
+            if frac1 is not None:
+                self.assertLess(frac1, 1.0)
+                self.assertGreater(frac1, 0.0)
+
+            else:
+                self.assertIsNotNone(frac2)
+
+            if frac2 is not None:
+                self.assertLess(frac2, 1.0)
+                self.assertGreater(frac2, 0.0)
+
+            else:
+                self.assertIsNotNone(frac1)
+
+    def test_cruise(self):
+
+        for name in NameList:
+            frac1 = self.RefAC[name][1].cruise_fraction_calculation(1000)
+            frac2 = self.RefAC[name][2].cruise_fraction_calculation(1000, 200)
+
+            if frac1 is not None:
+                self.assertLess(frac1, 1.0)
+                self.assertGreater(frac1, 0.0)
+
+            else:
+                self.assertIsNotNone(frac2)
+
+            if frac2 is not None:
+                self.assertLess(frac2, 1.0)
+                self.assertGreater(frac2, 0.0)
+
+            else:
+                self.assertIsNotNone(frac1)
 
 
 if __name__ == "__main__":
-
-    class CalculationTestCases(ut.TestCase):
-        # TODO: Finish Testcases for breguet calculations
-        def setUp(self):
-            pass
-
-        def tearDown(self):
-            pass
-
-        def test_extract_value(self):
-            pass
-
-        def test_set_seed(self):
-            pass
-
-        def test_decision_options(self):
-            pass
-
-        def test_loiter(self):
-            pass
-
-        def test_cruise(self):
-            pass
-
-
-    def run_TestCases():
-        suite = ut.TestLoader().loadTestsFromTestCase(CalculationTestCases)
-        ut.TextTestRunner(verbosity=2).run(suite)
-
-
-    run_TestCases()
+    ut.main()

@@ -16,6 +16,7 @@ class ReferenceAircraft(object):
         self.__fuel_fractions = self.__import_fuel_fractions(self.name)
         self.__breguet_data = self.__import_breguet_data(self.name)
         self.__statistical_coeffs = self.__import_statistical_coefficients(self.name)
+        self.__lift_coeffs = self.__import_lift_coefficients(self.name)
 
     def get_fuel_frac(self):
         return self.__fuel_fractions
@@ -23,8 +24,11 @@ class ReferenceAircraft(object):
     def get_breguet_data(self):
         return self.__breguet_data
 
-    def get_coefficients(self):
+    def get_stat_coefficients(self):
         return self.__statistical_coeffs
+
+    def get_lift_coefficients(self):
+        return self.__lift_coeffs
 
     @staticmethod
     def __import_data(data_type: str, name: str):
@@ -52,37 +56,40 @@ class ReferenceAircraft(object):
     def __import_statistical_coefficients(self, name: str) -> list:
         return self.__import_data('statistical_coefficients', name)
 
+    def __import_lift_coefficients(self, name: str) -> list:
+        return self.__import_data('lift_coefficients', name)
+
+"""
+TESTS COME AFTER THIS
+"""
+
+
+class DataImportTestCases(ut.TestCase):
+
+    def setUp(self):
+
+        self.RefAC = {}
+
+        for name in NameList:
+            self.RefAC[name] = ReferenceAircraft(name)
+
+    def test_fuel_frac_count(self):
+        """
+        Test if all entries have the correct amount of fuel fractions in their data (6)
+        """
+
+        for AC in self.RefAC.values():
+            self.assertEqual(6, len(AC.get_fuel_frac()))
+
+    def test_fuel_frac_indices(self):
+        """
+        Test if all inndices have been implemented correctly
+        """
+        for AC in self.RefAC.values():
+            for index in AC.get_fuel_frac().keys():
+                self.assertTrue(index in ['1', '2', '3', '4', '7', '8'])
+
 
 if __name__ == "__main__":
 
-    class DataImportTestCases(ut.TestCase):
-
-        def setUp(self):
-
-            self.RefAC = {}
-
-            for name in NameList:
-                self.RefAC[name] = ReferenceAircraft(name)
-
-        def test_fuel_frac_count(self):
-            """
-            Test if all entries have the correct amount of fuel fractions in their data (6)
-            """
-
-            for AC in self.RefAC.values():
-                self.assertEqual(6, len(AC.get_fuel_frac()))
-
-        def test_fuel_frac_indices(self):
-            """
-            Test if all inndices have been implemented correctly
-            """
-            for AC in self.RefAC.values():
-                for index in AC.get_fuel_frac().keys():
-                    self.assertTrue(index in ['1', '2', '3', '4', '7', '8'])
-
-
-    def run_TestCases():
-        suite = ut.TestLoader().loadTestsFromTestCase(DataImportTestCases)
-        ut.TextTestRunner(verbosity=2).run(suite)
-
-    run_TestCases()
+    ut.main()

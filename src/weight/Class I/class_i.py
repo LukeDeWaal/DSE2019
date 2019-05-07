@@ -5,7 +5,7 @@ from breguet_calculations import PropellerCalculations, JetCalculations
 import unittest as ut
 
 
-def get_statistical_we(wto: float, coefficients: dict):
+def get_statistical_we(wto: float, coefficients: dict) -> float:
     """
     Get the empty weight from reference aircraft at wto
     :param wto: take off weight
@@ -15,8 +15,7 @@ def get_statistical_we(wto: float, coefficients: dict):
     return 10**((np.log10(wto) - coefficients['A'])/coefficients['B'])
 
 
-
-def mff_calculation(weight_fraction_dict: dict):
+def mff_calculation(weight_fraction_dict: dict) -> float:
     """
     :param weight_fraction_dict: Statistical values for mass fuel fraction
     :return: mass fuel fraction
@@ -29,7 +28,8 @@ def mff_calculation(weight_fraction_dict: dict):
 
     return mff
 
-def wf_used_calculation(mff: float, wto: float):
+
+def wf_used_calculation(mff: float, wto: float) -> float:
     """
     :param mff: mass fuel fraction
     :param wto: take off weight
@@ -38,7 +38,7 @@ def wf_used_calculation(mff: float, wto: float):
     return (1 - mff)*wto
 
 
-def wf_calculation(mff: float, wto: float, wf_res: float):
+def wf_calculation(mff: float, wto: float, wf_res: float) -> float:
     """
     :param mff: mass fuel fraction
     :param wto: take off weight
@@ -48,7 +48,17 @@ def wf_calculation(mff: float, wto: float, wf_res: float):
     return wf_used_calculation(mff, wto) + wf_res*wto
 
 
-def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data_dict: dict, **kwargs):
+def split(tup: tuple, N: int) -> np.array:
+    """
+    Split a range of values up in N items
+    :param tup: tuple containing min and max value of the range
+    :param N: number of items
+    :return: array of items
+    """
+    return np.arange(tup[0], tup[1], (tup[1] - tup[0])/N)
+
+
+def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data_dict: dict, **kwargs) -> dict or None:
 
     """
     Main function for performing Class I weight estimation using Roskam Statistical Data
@@ -69,7 +79,7 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
         'type': 'regional_tbp',
         'propulsion': 'propeller'
     }
-    :param kwargs:  N - number of itrations
+    :param kwargs:  N - number of iterations
                     method - random, 1 value or 2 values
                     margin - how close the values need to converge and step size per iteration
     :return:
@@ -158,10 +168,10 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
 
         else:
             if len(method) == 1:
-                jetcalc.set_decision_method(method)
+                jetcalc.set_decision_options(method)
 
             elif len(method) == 2:
-                jetcalc.set_decision_method(method[0], method[1])
+                jetcalc.set_decision_options(method[0], method[1])
 
     else:
         raise TypeError("Unknown Propulsion System Input")
@@ -187,7 +197,7 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
         we_t = wto - wpl - wf
 
         # Get WE from statistics
-        we_s = get_statistical_we(wto, RefAC.get_coefficients())
+        we_s = get_statistical_we(wto, RefAC.get_stat_coefficients())
 
         # Compare both empty weights, adjust WTO and repeat
         diff = (we_s - we_t)/wto
@@ -224,12 +234,8 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
     }
 
 
-def split(tup: tuple, N: int):
-    return np.arange(tup[0], tup[1], (tup[1] - tup[0])/N)
-
-
 def class_i_comparison(wto: tuple, cr_range: tuple, endurance: tuple, prop: str = 'propeller',
-                       v_ltr: float = 100.0, v_cr: float = 200.0):
+                       v_ltr: float = 100.0, v_cr: float = 200.0) -> dict:
 
     steps = 10
     counter = 0
@@ -239,12 +245,12 @@ def class_i_comparison(wto: tuple, cr_range: tuple, endurance: tuple, prop: str 
     wpl = 0.3
 
     for aircraft in NameList:
-        print(f"Calculating {aircraft}")
+        # print(f"Calculating {aircraft}")
         result[aircraft] = []
         for wto_i in split(wto, steps):
             for range_i in split(cr_range, steps):
                 for end_i in split(endurance, steps):
-                    print(f"Iteration {counter}")
+                    # print(f"Iteration {counter}")
                     weights = {
                         'wto': wto_i,
                         'wpl': wto_i*wpl,
@@ -266,34 +272,95 @@ def class_i_comparison(wto: tuple, cr_range: tuple, endurance: tuple, prop: str 
                     values = class_i_main(weights, performance, velocities, ac_data, N=100)
 
                     if values is not None:
-                        result[aircraft].append(values )
+                        result[aircraft].append(values)
                         counter += 1
     return result
 
 
+"""
+TESTS COME AFTER THIS
+"""
+
+
+class ClassITestCases(ut.TestCase):
+    # TODO: Write tests
+    def setUp(self):
+
+        self.weight = {
+            'wto': 10000.0,
+            'wpl': 2000.0,
+            'wfres': 0.05
+        }
+        self.performance = {
+            'endurance': 5.0,
+            'range': 1500.0
+        }
+        self.velocity = {
+            'loiter': 80.0,
+            'cruise': 240.0
+        }
+        self.ac_data_1 = {
+            'type': 'regional_tbp',
+            'propulsion': 'propeller'
+        }
+        self.ac_data_2 = {
+            'type': 'business_jet',
+            'propulsion': 'jet'
+        }
+        self.ac_data_3 = {
+            'type': 'single_engine',
+            'propulsion': 'jet'
+        }
+
+        self.RefAC = [ReferenceAircraft(name) for name in NameList]
+
+    def tearDown(self):
+        pass
+
+    def test_split(self):
+        minval = np.random.uniform(0, 1)
+        maxval = np.random.uniform(minval, 2)
+
+        N = np.random.randint(2, 10)
+
+        result = split((minval, maxval), N)
+
+        self.assertLessEqual(max(result), maxval)
+        self.assertGreaterEqual(min(result), minval)
+        self.assertEqual(len(result), N)
+
+    def test_class_i(self):
+
+        class_i_1 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_1, margin=0.033)
+        class_i_2 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_2, N=100, method=(0.5,))
+        class_i_3 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_3, method=(0.33, 0.66))
+
+        self.assertLessEqual(class_i_1['metadata']['iterations'], 50)
+        self.assertLessEqual(class_i_2['metadata']['iterations'], 100)
+        self.assertIsNone(class_i_3)
+
+        self.assertLessEqual(class_i_1['metadata']['diff'], 0.033)
+        self.assertLessEqual(class_i_2['metadata']['diff'], 0.025)
+
+    def test_fuel_functions(self):
+
+        for AC in self.RefAC:
+            ff = AC.get_fuel_frac()
+            mff = mff_calculation(ff)
+
+            self.assertLessEqual(len(ff), 8)
+            self.assertLessEqual(mff, 1.0)
+
+    def test_statistical_weight(self):
+
+        for AC in self.RefAC:
+            coeffs = AC.get_stat_coefficients()
+            we = get_statistical_we(10000.0, coeffs)
+
+            self.assertGreaterEqual(we, 0.0)
+            self.assertLessEqual(we, 10000.0)
+
+
 if __name__ == "__main__":
 
-    # TODO: Write tests
-
-    class ClassITestCases(ut.TestCase):
-
-        def setUp(self):
-            pass
-
-        def tearDown(self):
-            pass
-
-        def test_split(self):
-            pass
-
-        def test_class_i(self):
-            pass
-
-        def test_fuel_functions(self):
-            pass
-
-    def run_TestCases():
-        suite = ut.TestLoader().loadTestsFromTestCase(ClassITestCases)
-        ut.TextTestRunner(verbosity=2).run(suite)
-
-    run_TestCases()
+    ut.main()
