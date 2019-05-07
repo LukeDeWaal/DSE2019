@@ -50,7 +50,7 @@ class ReferenceAircraft(object):
         return self.__import_data('breguet_values', name)
 
     def __import_statistical_coefficients(self, name: str) -> list:
-        return self.__import_data('coefficients', name)
+        return self.__import_data('statistical_coefficients', name)
 
 
 if __name__ == "__main__":
