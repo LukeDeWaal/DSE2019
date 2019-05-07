@@ -33,6 +33,8 @@ class Calculations(object):
         :param settings: decison_options dictionary
         :return: value for coefficient
         """
+        if lower is None or upper is None:
+            return
 
         if settings['method'] == 'single':
             return lower + settings['value'] * (upper - lower)

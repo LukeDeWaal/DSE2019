@@ -48,7 +48,7 @@ def wf_calculation(mff: float, wto: float, wf_res: float):
     return wf_used_calculation(mff, wto) + wf_res*wto
 
 
-def main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data_dict: dict, **kwargs):
+def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data_dict: dict, **kwargs):
 
     """
     Main function for performing Class I weight estimation using Roskam Statistical Data
@@ -122,7 +122,15 @@ def main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data
 
     # Setup Calculations
     if prop_type == 'propeller':
-        propcalc = PropellerCalculations(breguet_data)
+
+        if breguet_data['cruise']['cp']['min'] is None:
+            return None
+
+        try:
+            propcalc = PropellerCalculations(breguet_data)
+
+        except TypeError:
+            return None
 
         if method == 'random':
             pass
@@ -135,7 +143,15 @@ def main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data
                 propcalc.set_decision_options(method[0], method[1])
 
     elif prop_type == 'jet':
-        jetcalc = JetCalculations(breguet_data)
+
+        if breguet_data['cruise']['cj']['min'] is None:
+            return None
+
+        try:
+            jetcalc = JetCalculations(breguet_data)
+
+        except TypeError:
+            return None
 
         if method == 'random':
             pass
@@ -150,11 +166,9 @@ def main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data
     else:
         raise TypeError("Unknown Propulsion System Input")
 
-
-
     # Start Iteration Process
-    for _ in range(max_iter):
-        print(f"Iteration {_+1}")
+    for ii in range(max_iter):
+        # print(f"Iteration {ii+1}")
         # Determine Fuel Weight
         if prop_type == 'propeller':
             fuel_frac['5'] = propcalc.cruise_fraction_calculation(cruise_range=cruise_range)
@@ -180,7 +194,7 @@ def main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data
 
         if abs(diff) < margin:
             we = (we_t + we_s)/2.0
-            print(f"Difference = {round(diff*100, 3)}% of WTO")
+            # print(f"Difference = {round(diff*100, 3)}% of WTO")
             break
 
         elif diff > 0.0:
@@ -199,35 +213,87 @@ def main(weight_dict: dict, performance_dict: dict, velocity_dict: dict, ac_data
             'we': we
         },
         'fractions':{
-            'wto': wto,
-            'wpl':wpl/wto,
+            'wpl': wpl/wto,
             'wf': wf/wto,
-            'we': we/wto
+            'we': we/wto if we is not None else -1
+        },
+        'metadata':{
+            'iterations': ii,
+            'diff': diff
         }
     }
 
 
+def split(tup: tuple, N: int):
+    return np.arange(tup[0], tup[1], (tup[1] - tup[0])/N)
+
+
+def class_i_comparison(wto: tuple, cr_range: tuple, endurance: tuple, prop: str = 'propeller',
+                       v_ltr: float = 100.0, v_cr: float = 200.0):
+
+    steps = 10
+    counter = 0
+
+    result = {}
+
+    wpl = 0.3
+
+    for aircraft in NameList:
+        print(f"Calculating {aircraft}")
+        result[aircraft] = []
+        for wto_i in split(wto, steps):
+            for range_i in split(cr_range, steps):
+                for end_i in split(endurance, steps):
+                    print(f"Iteration {counter}")
+                    weights = {
+                        'wto': wto_i,
+                        'wpl': wto_i*wpl,
+                        'wfres': 0.05
+                    }
+                    performance = {
+                        'endurance': end_i,
+                        'range': range_i
+                    }
+                    velocities = {
+                        'loiter': v_ltr,
+                        'cruise': v_cr
+                    }
+                    ac_data = {
+                        'type': aircraft,
+                        'propulsion': prop
+                    }
+
+                    values = class_i_main(weights, performance, velocities, ac_data, N=100)
+
+                    if values is not None:
+                        result[aircraft].append(values )
+                        counter += 1
+    return result
+
+
 if __name__ == "__main__":
 
-    weights = {
-        'wto': 14000,
-        'wpl': 10000,
-        'wfres': 0.05
-    }
-    performance = {
-        'endurance': 3.0,
-        'range': 750
-    }
-    velocities = {
-        'loiter': 80,
-        'cruise': 180
-    }
-    ac_data = {
-        'type': 'military_trainer',
-        'propulsion': 'propeller'
-    }
+    # TODO: Write tests
 
-    estimation = main(weight_dict=weights,
-                      performance_dict=performance,
-                      velocity_dict=velocities,
-                      ac_data_dict=ac_data)
+    class ClassITestCases(ut.TestCase):
+
+        def setUp(self):
+            pass
+
+        def tearDown(self):
+            pass
+
+        def test_split(self):
+            pass
+
+        def test_class_i(self):
+            pass
+
+        def test_fuel_functions(self):
+            pass
+
+    def run_TestCases():
+        suite = ut.TestLoader().loadTestsFromTestCase(ClassITestCases)
+        ut.TextTestRunner(verbosity=2).run(suite)
+
+    run_TestCases()
