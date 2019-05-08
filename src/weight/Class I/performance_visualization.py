@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 
-from class_i import class_i_comparison
+from class_i import class_i_range_n_endurance
 from json_import import NameList
 
 import unittest as ut
@@ -37,7 +37,7 @@ def plot_fractions(propulsion_type: str = 'propeller', *names):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 
-    result = class_i_comparison((10000, 40000), (500, 1500), (2.0, 4.0), prop=propulsion_type)
+    result = class_i_range_n_endurance((10000, 40000), (500, 1500), (2.0, 4.0), prop=propulsion_type)
 
     if len(names) == 0:
         names = NameList
@@ -61,7 +61,7 @@ def plot_weights(propulsion_type: str = 'propeller', *names):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 
-    result = class_i_comparison((10000, 40000), (500, 1500), (2.0, 4.0), prop=propulsion_type)
+    result = class_i_range_n_endurance((10000, 40000), (500, 1500), (2.0, 4.0), prop=propulsion_type)
 
     if len(names) == 0:
         names = NameList
@@ -98,8 +98,8 @@ class PlottingTestCases(ut.TestCase):
         low_endurance = np.random.uniform(1.0, 2.0)
         high_endurance = np.random.uniform(low_endurance, 5.0)
 
-        self.propeller_results_dict = class_i_comparison((low_weight, high_weight), (low_range, high_range), (low_endurance, high_endurance), prop='propeller')
-        self.jet_results_dict = class_i_comparison((low_weight, high_weight), (low_range, high_range), (low_endurance, high_endurance), prop='jet')
+        self.propeller_results_dict = class_i_range_n_endurance((low_weight, high_weight), (low_range, high_range), (low_endurance, high_endurance), prop='propeller')
+        self.jet_results_dict = class_i_range_n_endurance((low_weight, high_weight), (low_range, high_range), (low_endurance, high_endurance), prop='jet')
 
     def tearDown(self):
         pass

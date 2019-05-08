@@ -234,8 +234,8 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
     }
 
 
-def class_i_comparison(wto: tuple, cr_range: tuple, endurance: tuple, prop: str = 'propeller',
-                       v_ltr: float = 100.0, v_cr: float = 200.0) -> dict:
+def class_i_range_n_endurance(wto: tuple, cr_range: tuple, endurance: tuple, prop: str = 'propeller',
+                              v_ltr: float = 100.0, v_cr: float = 200.0) -> dict:
 
     steps = 10
     counter = 0
@@ -274,8 +274,54 @@ def class_i_comparison(wto: tuple, cr_range: tuple, endurance: tuple, prop: str 
                     if values is not None:
                         result[aircraft].append(values)
                         counter += 1
+
     return result
 
+
+def class_i_payload_n_speed(wto: float, wpl: tuple, v_ltr: tuple, v_cr: tuple, cr_range: float, endurance: float, prop: str = 'propeller'):
+
+    steps = 10
+    counter = 0
+
+    result = {}
+
+    for aircraft in NameList:
+        print(aircraft)
+        result[aircraft] = []
+        for wpl_i in split(wpl, steps):
+            for vcr_i in split(v_cr, steps):
+                for vltr_i in split(v_ltr, steps):
+                    weights = {
+                        'wto': wto,
+                        'wpl': wto * wpl_i,
+                        'wfres': 0.05
+                    }
+                    performance = {
+                        'endurance': endurance,
+                        'range': cr_range
+                    }
+                    velocities = {
+                        'loiter': vltr_i,
+                        'cruise': vcr_i
+                    }
+                    ac_data = {
+                        'type': aircraft,
+                        'propulsion': prop
+                    }
+
+                    values = class_i_main(weights, performance, velocities, ac_data, N=100)
+
+                    if values is not None:
+
+                        values['velocities'] = {
+                            'vltr': vltr_i,
+                            'vcr': vcr_i
+                        }
+
+                        result[aircraft].append(values)
+                        counter += 1
+
+    return result
 
 """
 TESTS COME AFTER THIS
@@ -363,4 +409,6 @@ class ClassITestCases(ut.TestCase):
 
 if __name__ == "__main__":
 
-    ut.main()
+    # ut.main()
+
+    res = class_i_payload_n_speed(wto=20000.0, wpl=(0.1, 0.6), v_cr=(100, 250), v_ltr=(50, 150), cr_range=1000.0, endurance=4.0)

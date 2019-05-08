@@ -1,0 +1,29 @@
+{
+  "CL415": {
+    "full": {
+      "velocities": {
+        "cruise": 50.0
+      },
+      "angles": {
+        "bank": 20.0
+      },
+      "turntime": 35.5
+    },
+    "empty": {
+      "velocities": {
+        "cruise": 100.0
+      },
+      "angles": {
+        "bank": 35.0
+      },
+      "turntime": 19.3
+    },
+    "filling": {
+      "scoop": 12.0,
+      "landing": 35.0,
+      "takeoff": 55.0,
+      "capacity": 6000.0
+    },
+    "dropping": 1.5
+  }
+}
