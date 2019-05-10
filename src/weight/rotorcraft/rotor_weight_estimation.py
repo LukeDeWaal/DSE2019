@@ -1,3 +1,5 @@
+import numpy as np
+
 class SingleRotorSizingEstimation:
     
     def __init__(self, MTOW, range, n_blades):
@@ -6,6 +8,7 @@ class SingleRotorSizingEstimation:
         self.n_blades = n_blades
         self.D_L = self.disk_loading()
         self.d = self.rotor_diameter()
+        self.c = self.chord_length()
         self.Wf = self.fuel_weight()
         self.Wu = self.useful_weight()
         self.We = self.empty_weight()
@@ -26,13 +29,6 @@ class SingleRotorSizingEstimation:
         d = 0.977 * self.MTOW**0.308
         return d
     
-    def maximum_speed(self):
-        """
-        Calculates the maximum speed at sea level in m/s
-        """
-        Vmax = (9.133 * self.MTOW**(0.380) / self.d)**1/0.515
-        return Vmax
-    
     def chord_length(self):
         """
         Calculates the chord length of the main rotor blade in m
@@ -40,13 +36,32 @@ class SingleRotorSizingEstimation:
         c = 0.0108 * self.MTOW**0.539 / self.n_blades**0.714
         return c
     
+    def blade_area(self):
+        """
+        Calculates the total blade area in m^2
+        """
+        blade_area = self.d/2 * self.c * self.n_blades
+        return blade_area 
+
+    def disk_area(self):
+        """
+        Calculates the disk area in m^2
+        """
+        disk_area = np.pi*(self.d/2)**2
+        return disk_area
+    
     def fuel_weight(self):
         """
         Calculates the fuel weight in kg
         """
         Wf = 0.0038 * self.MTOW**0.976 * self.range**0.650
         return Wf
-        
+    
+    def solidity(self):
+        """
+        Calculates the blade area over disk area ratio
+        """
+        return self.blade_area()/self.disk_area()        
     
     def payload_weight(self):
         """
@@ -76,11 +91,15 @@ class SingleRotorSizingEstimation:
         """
         W0 = self.We + self.Wu
         return W0
+    
+    def maximum_speed(self):
+        """
+        Calculates the maximum speed at sea level in m/s
+        """
+        Vmax = (9.133 * self.MTOW**(0.380) / self.d)**1/0.515
+        return Vmax
         
    
     
 if __name__ == '__main__':
-    s = SingleRotorSizingEstimation(4000, 350, 4)
-    for i in range(0,100):
-        s = SingleRotorSizingEstimation(s.maximum_takeoff_weight(), 350, 4)
-        print(s.maximum_takeoff_weight())
+    s = SingleRotorSizingEstimation(4000, 350, 2)
