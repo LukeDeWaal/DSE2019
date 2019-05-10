@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 class SingleRotorSizingEstimation:
     
     def __init__(self, MTOW, range, n_blades):
@@ -52,7 +55,7 @@ class SingleRotorSizingEstimation:
         """
         Calculates the payload weight in kg
         """
-        Wp = self.Wf - self.Wu
+        Wp = self.Wu - self.Wf
         return Wp
     
     def useful_weight(self):
@@ -70,17 +73,26 @@ class SingleRotorSizingEstimation:
         OEW =  0.4854 * self.MTOW**1.015
         return OEW
     
-    def maximum_takeoff_weight(self):
-        """
-        Calculates the maximum takeoff weight in kg
-        """
-        W0 = self.We + self.Wu
-        return W0
+    # def maximum_takeoff_weight(self):
+    #     """
+    #     Calculates the maximum takeoff weight in kg
+    #     """
+    #     W0 = self.We + self.Wu
+    #     return W0
         
    
     
 if __name__ == '__main__':
-    s = SingleRotorSizingEstimation(4000, 350, 4)
-    for i in range(0,100):
-        s = SingleRotorSizingEstimation(s.maximum_takeoff_weight(), 350, 4)
-        print(s.maximum_takeoff_weight())
+    """ 
+    Rotorszing(MTOW,range,no_rotors)
+    """
+    MTOW = 4000 #kg
+    range_list = np.arange(0,2000,20)
+    no_rotors = 4
+    payload_list = []
+    for range in range_list:
+        s = SingleRotorSizingEstimation(MTOW, range, no_rotors)
+        payload_list.append(s.payload_weight())
+    plt.plot(range_list,payload_list)
+    plt.show()
+
