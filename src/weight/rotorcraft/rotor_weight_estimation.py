@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 class SingleRotorSizingEstimation:
     
@@ -67,7 +68,7 @@ class SingleRotorSizingEstimation:
         """
         Calculates the payload weight in kg
         """
-        Wp = self.Wf - self.Wu
+        Wp = self.Wu - self.Wf
         return Wp
     
     def useful_weight(self):
@@ -103,3 +104,13 @@ class SingleRotorSizingEstimation:
     
 if __name__ == '__main__':
     s = SingleRotorSizingEstimation(4000, 350, 2)
+    
+    MTOW = 4000 #kg
+    range_list = np.arange(0,2000,20)
+    no_rotors = 4
+    payload_list = []
+    for range in range_list:
+        s = SingleRotorSizingEstimation(MTOW, range, no_rotors)
+        payload_list.append(s.payload_weight())
+    plt.plot(range_list,payload_list)
+    plt.show()
