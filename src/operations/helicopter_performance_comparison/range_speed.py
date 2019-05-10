@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from performance_data_import import ReferenceHelicopters, CL415StatData, CL415EstData
 
 
+refuel_rate = 31.5 # Liter per second
+
+
 def knots_to_mps(knots: float):
     return knots * 0.514444
 
@@ -13,27 +16,41 @@ def miles_to_km(distance: float):
 
 def helicopter_performance_calculation(data: dict):
 
-    def performance(helicopter: dict, initial_distance: float, source_distance: float, n_drops: int, drop_time: float = 5.0, swarm_size: int = 1):
+    def performance(helicopter: dict, initial_distance: float, source_distance: float, drop_time: float = 5.0, swarm_size: int = 1):
 
         base_cruise = initial_distance / knots_to_mps(helicopter['v_without'])
 
-        empty_turntime = 5.0
-        full_turntime = 10.0
+        empty_turntime = 5.0  # s
+        full_turntime = 10.0  # s
+        endurance = helicopter['endurance']*3600  # s
 
-        empty_cruise = source_distance / knots_to_mps(helicopter['v_without'])
-        refill_time  = helicopter['system_capacity']/helicopter['refill_speed']
-        full_cruise = source_distance / knots_to_mps(helicopter['v_with'])
+        empty_cruise = source_distance / knots_to_mps(helicopter['v_without'])  # s
+        refill_time  = helicopter['system_capacity']/helicopter['refill_speed']  # s
+        full_cruise = source_distance / knots_to_mps(helicopter['v_with'])  # s
 
-        operation_time = empty_cruise + refill_time + full_turntime + full_cruise + drop_time + empty_turntime
+        air_operation_time = empty_cruise + refill_time + full_turntime + full_cruise + drop_time + empty_turntime  # s
+        ground_operation_time = helicopter['fuel']/refuel_rate  # s
 
-        total_time = float(base_cruise)
+        total_time = 0.0
+        n_ops = 0
 
-        for drop in range(n_drops):
-            total_time += operation_time
+        day = True
+        operational = True
 
-        total_time += base_cruise
+        while day:
+            operation_time = float(base_cruise)
+            while operational:
+                operation_time += air_operation_time
+                n_ops += 1
+                if operation_time >= endurance - base_cruise:
+                    break
 
-        return swarm_size*n_drops*helicopter['system_capacity']/(total_time/3600), total_time/3600
+            total_time += operation_time + (base_cruise + ground_operation_time)
+
+            if total_time > 24.00*3600:
+                break
+        print(n_ops)
+        return swarm_size*n_ops*helicopter['system_capacity']/(total_time/3600), total_time/3600
 
     performance_result = {}
     time_result = {}
@@ -45,7 +62,7 @@ def helicopter_performance_calculation(data: dict):
             p = performance(helicopter=data[helicopter],
                             initial_distance=20.0e3,
                             source_distance=dist*(10**3),
-                            n_drops=5)
+                            swarm_size=1)
 
             performance_result[helicopter].append(p[0])
             time_result[helicopter].append(p[1])
@@ -55,7 +72,7 @@ def helicopter_performance_calculation(data: dict):
 
 def fixedwing_performance_calculation(data: dict):
 
-    def performance(aircraft: dict,initial_distance: float, source_distance: float, n_drops: int, swarm_size: int = 1):
+    def performance(aircraft: dict,initial_distance: float, source_distance: float, swarm_size: int = 1):
 
         base_cruise = initial_distance / aircraft['empty']['velocities']['cruise']
 
@@ -65,17 +82,47 @@ def fixedwing_performance_calculation(data: dict):
         empty_cruise = source_distance / aircraft['empty']['velocities']['cruise']
         refill_time = aircraft['filling']['landing'] + aircraft['filling']['scoop'] + aircraft['filling']['takeoff']
         full_cruise = source_distance / aircraft['full']['velocities']['cruise']
+    #
+    #     operation_time = empty_cruise + refill_time + full_turnaroundtime + full_cruise + aircraft['dropping'] + empty_turnaroundtime
+    #
+    #     total_time = float(base_cruise)
+    #
+    #     for drop in range(n_drops):
+    #         total_time += operation_time
+    #
+    #     total_time += base_cruise
+    #
+    #     return swarm_size*n_drops*aircraft['filling']['capacity']/(total_time/3600), total_time/3600
+    #
 
-        operation_time = empty_cruise + refill_time + full_turnaroundtime + full_cruise + aircraft['dropping'] + empty_turnaroundtime
+    #
 
-        total_time = float(base_cruise)
 
-        for drop in range(n_drops):
-            total_time += operation_time
+        endurance = 3.0 * 3600  # s
 
-        total_time += base_cruise
+        air_operation_time = empty_cruise + refill_time + full_turnaroundtime + full_cruise + aircraft['dropping'] + empty_turnaroundtime  # s
+        ground_operation_time = 5670.0 / refuel_rate  # s
 
-        return swarm_size*n_drops*aircraft['filling']['capacity']/(total_time/3600), total_time/3600
+        total_time = 0.0
+        n_ops = 0
+
+        day = True
+        operational = True
+
+        while day:
+            operation_time = float(base_cruise)
+            while operational:
+                operation_time += air_operation_time
+                n_ops += 1
+                if operation_time >= endurance - base_cruise:
+                    break
+
+            total_time += operation_time + (base_cruise + ground_operation_time)
+
+            if total_time > 24.00 * 3600:
+                break
+        print(n_ops)
+        return swarm_size * n_ops * aircraft['filling']['capacity'] / (total_time / 3600), total_time / 3600
 
     performance_result = []
     time_result = []
@@ -84,7 +131,7 @@ def fixedwing_performance_calculation(data: dict):
         p = performance(aircraft=data,
                         initial_distance=20.0e3,
                         source_distance=dist * (10 ** 3),
-                        n_drops=5)
+                        swarm_size=1)
 
         performance_result.append(p[0])
         time_result.append(p[1])
@@ -131,9 +178,8 @@ def plot_results():
     top.grid()
     top.legend()
     bot.grid()
-
-
-
+    plt.interactive(False)
+    plt.show()
 
 
 if __name__ == "__main__":

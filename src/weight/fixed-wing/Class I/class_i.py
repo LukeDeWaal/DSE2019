@@ -242,7 +242,7 @@ def class_i_range_n_endurance(wto: tuple, cr_range: tuple, endurance: tuple, pro
 
     result = {}
 
-    wpl = 0.3
+    wpl = 0.5
 
     for aircraft in NameList:
         # print(f"Calculating {aircraft}")

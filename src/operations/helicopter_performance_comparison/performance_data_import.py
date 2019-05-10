@@ -56,5 +56,14 @@ class CL415EstData(HelicopterDataImport):
         self.data = self.import_data('CL415_estimated_performance')
 
 
+class CL415CompData(HelicopterDataImport):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self.data = self.import_data('Aircraft_performance')
+
+
 
 

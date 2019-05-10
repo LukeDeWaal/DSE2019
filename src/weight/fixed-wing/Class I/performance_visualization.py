@@ -133,4 +133,5 @@ class PlottingTestCases(ut.TestCase):
 
 if __name__ == "__main__":
 
-    ut.main()
+    # ut.main()
+    plot_fractions('propeller')
