@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 from performance_data_import import ReferenceHelicopters, CL415CompData
 
 
+def knots_to_mps(knots: float):
+    return knots*0.514444
+
+
 def __operation_time(d_source: float, empty_velocity: float, full_velocity: float, drop_time: float,
                      volume: float, refill_speed: float, full_turn: float, empty_turn: float):
     """
@@ -25,7 +29,9 @@ def __operation_time(d_source: float, empty_velocity: float, full_velocity: floa
     t_turn_e = empty_turn
     t_turn_f = full_turn
 
-    return cr_e + t_refill + t_turn_f + cr_f + t_drop + t_turn_e
+    total = cr_e + t_refill + t_turn_f + cr_f + t_drop + t_turn_e
+
+    return total
 
 
 def __time_per_tank(endurance: float, operation_time: float, d_base: float, v_empty: float, refuel_time: float):
@@ -50,14 +56,17 @@ def __time_per_tank(endurance: float, operation_time: float, d_base: float, v_em
         future_time = time + operation_time + cr_base
 
         if future_time >= endurance:
+
             break
 
-    time += cr_base + refuel_time
+    time += cr_base
+
+    time += refuel_time
 
     return time, n
 
 
-def __n_ops_per_day(time_per_tank: float, daytime: float, n_per_tank: int):
+def __n_ops_per_day(time_per_tank: float, daytime: float, n_per_tank: int, endurance: float):
     """
     Total refueling missions per day
     :param time_per_tank: seconds
@@ -69,8 +78,13 @@ def __n_ops_per_day(time_per_tank: float, daytime: float, n_per_tank: int):
     while True:
         total += time_per_tank
         n += 1
-        if total > daytime:
+
+        future = float(total + time_per_tank)
+
+        if future >= daytime:
             break
+
+    # print(n, n_per_tank, round((time_per_tank-1200)/endurance, 4))
 
     return total, n*n_per_tank
 
@@ -79,28 +93,23 @@ def performance(vehicle: dict, distances: dict, actions: dict):
     # actions: dict, velocities: dict, capacities: dict, distances: dict, endurance: float):
     """
     Main Function
-    :param actions:
-    :param velocities:
-    :param capacities:
-    :param distances:
-    :param endurance:
+    :param actions: dict
+    :param velocities: dict
+    :param capacities: dict
+    :param distances: dict
     :return:
     """
 
-    operation_time = __operation_time(distances['source'], vehicle['v_empty'], vehicle['v_full'],
+    operation_time = __operation_time(distances['source'], knots_to_mps(vehicle['v_empty']), knots_to_mps(vehicle['v_full']),
                                       actions['drop'], vehicle['water_capacity'], vehicle['refill_speed']/60,
                                       actions['turn_full'], actions['turn_empty'])
 
+
+
     tank_time, n_ops = __time_per_tank(vehicle['endurance']*3600.0, operation_time,
-                                       distances['base'], vehicle['v_empty'], actions['refuel'])
+                                       distances['base'], knots_to_mps(vehicle['v_empty']), actions['refuel'])
 
-    total_time, total_n_ops = __n_ops_per_day(tank_time, 16.00*3600, n_ops)
-
-    # print("Operation Time: ", operation_time)
-    # print("Time Per Tank: ", tank_time)
-    # print("Drops Per Tank: ", n_ops)
-    # print("Total Time: ", total_time)
-    # print("Total Drops: ", total_n_ops)
+    total_time, total_n_ops = __n_ops_per_day(tank_time, 16.00*3600, n_ops, vehicle['endurance']*3600.0)
 
     return total_time, total_n_ops
 
@@ -110,18 +119,16 @@ if __name__ == "__main__":
     H = ReferenceHelicopters().get_data()
     A = CL415CompData().get_data()
 
-    # a = performance()
-
-    distances = [i for i in range(10000, 100000, 100)]
+    distances = [i for i in range(0, 750000, 100)]
     ac_perf = [performance(A['cl_415'],
                            distances={
                                'base': distance,
                                'source': 10000.0},
                            actions={
-                               'turn_empty': 19.0,
+                               'turn_empty': 20.0,
                                'turn_full': 35.0,
                                'drop': 1.0,
-                               'refuel': 1000.0})[1]*A['cl_415']['water_capacity'] for distance in distances]
+                               'refuel': 1600.0})[1]*A['cl_415']['water_capacity']/1000000 for distance in distances]
 
     plt.plot(distances, ac_perf, 'r-', label='CL415')
 
@@ -132,19 +139,18 @@ if __name__ == "__main__":
                                      'base': distance,
                                      'source': 3500.0},
                                  actions={
-                                     'turn_empty': 14.0,
+                                     'turn_empty': 15.0,
                                      'turn_full': 25.0,
-                                     'drop': 2.0,
-                                     'refuel': 1000.0})[1]*H[heli]['water_capacity'] for distance in distances]
-        # A['cl_415']['water_capacity']
-        plt.plot(distances, heli_perf, label=heli)
+                                     'drop': 3.0,
+                                     'refuel': 1300.0})[1]*H[heli]['water_capacity']/1000000 for distance in distances]
+
+        plt.plot(distances, heli_perf, label=" ".join(heli.capitalize().split('_')))
+
+
 
     plt.legend()
     plt.grid()
     plt.xlabel('Distance From Base [m]')
-    plt.ylabel('Total Amount Dropped Per Day [L]')
+    plt.ylabel('Total Amount Dropped Per Day [$10^6$ L] ')
 
-    # a = performance(A['cl_415'],
-    #                  distances={'base': 50000.0, 'source': 10000.0},
-    #                  actions={'turn_empty': 19.0, 'turn_full': 35.0, 'drop': 1.0, 'refuel': 1000.0})
 
