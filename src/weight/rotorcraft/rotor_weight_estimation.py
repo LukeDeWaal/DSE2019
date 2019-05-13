@@ -3,16 +3,23 @@ import matplotlib.pyplot as plt
 
 class SingleRotorSizingEstimation:
     
-    def __init__(self, MTOW, range, n_blades):
+    def __init__(self, MTOW, Range, number_of_rotor_blades):
+        """
+        params: 
+            MTOW in kg
+            range in m
+            n_blades as an integer
+        """
         self.MTOW = MTOW
-        self.range = range
-        self.n_blades = n_blades
+        self.R = Range
+        self.n_blades = number_of_rotor_blades
         self.D_L = self.disk_loading()
         self.d = self.rotor_diameter()
         self.c = self.chord_length()
         self.Wf = self.fuel_weight()
         self.Wu = self.useful_weight()
         self.We = self.empty_weight()
+        self.Vm = self.maximum_speed()
 
     def disk_loading(self):
         """
@@ -55,7 +62,7 @@ class SingleRotorSizingEstimation:
         """
         Calculates the fuel weight in kg
         """
-        Wf = 0.0038 * self.MTOW**0.976 * self.range**0.650
+        Wf = 0.0038 * self.MTOW**0.976 * self.R**0.650
         return Wf
     
     def solidity(self):
@@ -99,6 +106,29 @@ class SingleRotorSizingEstimation:
         """
         Vmax = (9.133 * self.MTOW**(0.380) / self.d)**1/0.515
         return Vmax
+    
+    def take_off_total_power(self):
+        """
+        Calculates the take-off total power in kW
+        """
+        P_TO = 0.0764 * self.MTOW**1.1455
+        return P_TO
+    
+    def maximum_continuous_total_power(self):
+        """
+        Calculates the maximum continuous total power in kW
+        """
+        P_MC = 0.00126 * self.MTOW**0.9876 * self.Vm**0.9760
+        return P_MC
+    
+
+
+class DualRotorSizingEstimation:
+    
+    def __init__(self, MTOW, Range, number_of_rotor_blades):
+        self.single_rotor = SingleRotorSizingEstimation(MTOW, Range, number_of_rotor_blades)
+        self.OEW = self.single_rotor.MTOW/(2.5/1.9)
+    
         
    
     
@@ -113,4 +143,7 @@ if __name__ == '__main__':
         s = SingleRotorSizingEstimation(MTOW, range, no_rotors)
         payload_list.append(s.payload_weight())
     plt.plot(range_list,payload_list)
+    plt.xlabel('Range (km)')
+    plt.hlines(y=0, xmin=0, xmax=2000)
+    plt.vlines(x=0, ymin=0, ymax=2000)
     plt.show()
