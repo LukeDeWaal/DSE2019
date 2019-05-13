@@ -123,27 +123,47 @@ class SingleRotorSizingEstimation:
     
 
 
-class DualRotorSizingEstimation:
+class IntermeshingRotorSizingEstimation:
     
     def __init__(self, MTOW, Range, number_of_rotor_blades):
         self.single_rotor = SingleRotorSizingEstimation(MTOW, Range, number_of_rotor_blades)
-        self.OEW = self.single_rotor.MTOW/(2.5/1.9)
+        self.MTOW = MTOW
+        self.Range = Range
+        self.number_of_rotor_blades = number_of_rotor_blades
+        self.We = self.single_rotor.MTOW/2.5
+        self.Wu = self.MTOW - self.We
+        
+        
+class CoaxialRotorSizingEstimation:
+    
+    def __init__(self, MTOW, Range, number_of_rotor_blades):
+        self.single_rotor = SingleRotorSizingEstimation(MTOW, Range, number_of_rotor_blades)
+        self.MTOW = MTOW
+        self.Range = Range
+        self.number_of_rotor_blades = number_of_rotor_blades
+        self.We = self.single_rotor.MTOW/1.8
+        self.Wu = self.MTOW - self.We
+        
     
         
    
     
 if __name__ == '__main__':
-    s = SingleRotorSizingEstimation(4000, 350, 2)
+    single = SingleRotorSizingEstimation(4000, 350, 4)
+    inter = IntermeshingRotorSizingEstimation(4000, 350, 4)
+    coaxial = CoaxialRotorSizingEstimation(4000, 350, 4)
     
-    MTOW = 4000 #kg
-    range_list = np.arange(0,2000,20)
-    no_rotors = 4
-    payload_list = []
-    for range in range_list:
-        s = SingleRotorSizingEstimation(MTOW, range, no_rotors)
-        payload_list.append(s.payload_weight())
-    plt.plot(range_list,payload_list)
-    plt.xlabel('Range (km)')
-    plt.hlines(y=0, xmin=0, xmax=2000)
-    plt.vlines(x=0, ymin=0, ymax=2000)
-    plt.show()
+# =============================================================================
+#     MTOW = 4000 #kg
+#     range_list = np.arange(0,2000,20)
+#     no_rotors = 4
+#     payload_list = []
+#     for range in range_list:
+#         s = SingleRotorSizingEstimation(MTOW, range, no_rotors)
+#         payload_list.append(s.payload_weight())
+#     plt.plot(range_list,payload_list)
+#     plt.xlabel('Range (km)')
+#     plt.hlines(y=0, xmin=0, xmax=2000)
+#     plt.vlines(x=0, ymin=0, ymax=2000)
+#     plt.show()
+# =============================================================================
