@@ -116,10 +116,12 @@ def performance(vehicle: dict, distances: dict, actions: dict):
 
 if __name__ == "__main__":
 
+    # TODO: Write Tests
+
     H = ReferenceHelicopters().get_data()
     A = CL415CompData().get_data()
 
-    distances = [i for i in range(0, 750000, 100)]
+    distances = [i for i in range(0, 100000, 100)]
     ac_perf = [performance(A['cl_415'],
                            distances={
                                'base': distance,

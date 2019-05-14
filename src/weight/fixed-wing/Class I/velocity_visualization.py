@@ -9,6 +9,11 @@ import unittest as ut
 
 
 def make_into_velocity_arrays(result: dict):
+    """
+    Function to put the data from the Class I resultant velocities and fractions file into a numpy array
+    :param result: Dictionary obtained from the class_i_payload_n_speed function
+    :return: numpy array with loiter and cruise speed, and payload fraction
+    """
 
     data = np.zeros((len(result), 3))
 
@@ -21,6 +26,12 @@ def make_into_velocity_arrays(result: dict):
 
 
 def plot_fractions(propulsion_type: str = 'propeller', *names):
+    """
+    Plot the Payload fraction against Loiter and Cruise speed for certain aircraft types and propulsion types
+    :param propulsion_type: propeller or jet
+    :param names: roskam category names
+    :return: None
+    """
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
@@ -51,50 +62,55 @@ TESTS COME AFTER THIS
 """
 
 
-class PlottingTestCases(ut.TestCase):
-
-    def setUp(self):
-
-        low_weight = np.random.randint(5000, 15000)
-        high_weight = np.random.randint(low_weight, 40000)
-
-        low_range = np.random.randint(250, 750)
-        high_range = np.random.randint(low_range, 2000)
-
-        low_endurance = np.random.uniform(1.0, 2.0)
-        high_endurance = np.random.uniform(low_endurance, 5.0)
-
-        self.propeller_results_dict = class_i_range_n_endurance((low_weight, high_weight), (low_range, high_range), (low_endurance, high_endurance), prop='propeller')
-        self.jet_results_dict = class_i_range_n_endurance((low_weight, high_weight), (low_range, high_range), (low_endurance, high_endurance), prop='jet')
-
-    def tearDown(self):
-        pass
-
-    def test_make_weight_array(self):
-
-        for name in NameList:
-            prop = make_into_velocity_arrays(self.propeller_results_dict[name])
-            jet = make_into_velocity_arrays(self.jet_results_dict[name])
-
-            self.assertEqual(len(self.propeller_results_dict[name]), prop.shape[0])
-            self.assertEqual(len(self.jet_results_dict[name]), jet.shape[0])
-
-    def test_make_fraction_array(self):
-
-        for name in NameList:
-            prop = make_into_velocity_arrays(self.propeller_results_dict[name])
-            jet = make_into_velocity_arrays(self.jet_results_dict[name])
-
-            self.assertEqual(len(self.propeller_results_dict[name]), prop.shape[0])
-            self.assertEqual(len(self.jet_results_dict[name]), jet.shape[0])
-
-    def test_plots(self):
-
-        plot_fractions('propeller')
-        plot_fractions('jet')
-
-
 if __name__ == "__main__":
 
-    #ut.main()
-    plot_fractions('propeller')
+    class PlottingTestCases(ut.TestCase):
+
+        def setUp(self):
+
+            low_weight = np.random.randint(5000, 15000)
+            high_weight = np.random.randint(low_weight, 40000)
+
+            low_range = np.random.randint(250, 750)
+            high_range = np.random.randint(low_range, 2000)
+
+            low_endurance = np.random.uniform(1.0, 2.0)
+            high_endurance = np.random.uniform(low_endurance, 5.0)
+
+            self.propeller_results_dict = class_i_range_n_endurance((low_weight, high_weight), (low_range, high_range),
+                                                                    (low_endurance, high_endurance), prop='propeller')
+            self.jet_results_dict = class_i_range_n_endurance((low_weight, high_weight), (low_range, high_range),
+                                                              (low_endurance, high_endurance), prop='jet')
+
+        def tearDown(self):
+            pass
+
+        def test_make_weight_array(self):
+
+            for name in NameList:
+                prop = make_into_velocity_arrays(self.propeller_results_dict[name])
+                jet = make_into_velocity_arrays(self.jet_results_dict[name])
+
+                self.assertEqual(len(self.propeller_results_dict[name]), prop.shape[0])
+                self.assertEqual(len(self.jet_results_dict[name]), jet.shape[0])
+
+        def test_make_fraction_array(self):
+
+            for name in NameList:
+                prop = make_into_velocity_arrays(self.propeller_results_dict[name])
+                jet = make_into_velocity_arrays(self.jet_results_dict[name])
+
+                self.assertEqual(len(self.propeller_results_dict[name]), prop.shape[0])
+                self.assertEqual(len(self.jet_results_dict[name]), jet.shape[0])
+
+        def test_plots(self):
+
+            plot_fractions('propeller')
+            plot_fractions('jet')
+
+
+    def run_TestCases():
+        suite = ut.TestLoader().loadTestsFromTestCase(PlottingTestCases)
+        ut.TextTestRunner(verbosity=2).run(suite)
+
+    run_TestCases()

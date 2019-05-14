@@ -82,21 +82,6 @@ def fixedwing_performance_calculation(data: dict):
         empty_cruise = source_distance / aircraft['empty']['velocities']['cruise']
         refill_time = aircraft['filling']['landing'] + aircraft['filling']['scoop'] + aircraft['filling']['takeoff']
         full_cruise = source_distance / aircraft['full']['velocities']['cruise']
-    #
-    #     operation_time = empty_cruise + refill_time + full_turnaroundtime + full_cruise + aircraft['dropping'] + empty_turnaroundtime
-    #
-    #     total_time = float(base_cruise)
-    #
-    #     for drop in range(n_drops):
-    #         total_time += operation_time
-    #
-    #     total_time += base_cruise
-    #
-    #     return swarm_size*n_drops*aircraft['filling']['capacity']/(total_time/3600), total_time/3600
-    #
-
-    #
-
 
         endurance = 3.0 * 3600  # s
 
@@ -183,5 +168,7 @@ def plot_results():
 
 
 if __name__ == "__main__":
+
+    # TODO: Write Tests
 
     plot_results()
