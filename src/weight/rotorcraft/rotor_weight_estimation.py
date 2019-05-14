@@ -11,14 +11,14 @@ class SingleRotorSizingEstimation:
             n_blades as an integer
         """
         self.MTOW = MTOW
-        self.R = Range
+        self.Range = Range
         self.n_blades = number_of_rotor_blades
         self.D_L = self.disk_loading()
         self.d = self.rotor_diameter()
         self.c = self.chord_length()
         self.Wf = self.fuel_weight()
-        self.Wp = self.payload_weight()
         self.Wu = self.useful_weight()
+        self.Wp = self.payload_weight()
         self.We = self.empty_weight()
         self.Vm = self.maximum_speed()
 
@@ -69,15 +69,8 @@ class SingleRotorSizingEstimation:
         """
         Calculates the fuel weight in kg
         """
-        Wf = 0.0038 * self.MTOW**0.976 * self.R**0.650
+        Wf = 0.0038 * self.MTOW**0.976 * self.Range**0.650
         return Wf      
-    
-    def payload_weight(self):
-        """
-        Calculates the payload weight in kg
-        """
-        Wp = self.Wu - self.Wf
-        return Wp
     
     def useful_weight(self):
         """
@@ -86,6 +79,13 @@ class SingleRotorSizingEstimation:
         """
         Wu = 0.4709 * self.MTOW**0.99
         return Wu
+    
+    def payload_weight(self):
+        """
+        Calculates the payload weight in kg
+        """
+        Wp = self.Wu - self.Wf
+        return Wp
     
     def empty_weight(self):
         """
@@ -171,8 +171,8 @@ if __name__ == '__main__':
 #     range_list = np.arange(0,2000,20)
 #     no_rotors = 4
 #     payload_list = []
-#     for range in range_list:
-#         s = SingleRotorSizingEstimation(MTOW, range, no_rotors)
+#     for Range in range_list:
+#         s = SingleRotorSizingEstimation(MTOW, Range, no_rotors)
 #         payload_list.append(s.payload_weight())
 #     plt.plot(range_list,payload_list)
 #     plt.xlabel('Range (km)')
