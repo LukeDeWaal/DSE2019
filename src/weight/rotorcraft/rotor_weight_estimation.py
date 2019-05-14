@@ -157,17 +157,14 @@ class CoaxialRotorSizingEstimation:
         self.We = self.single_rotor.MTOW/1.8
         self.Wu = self.MTOW - self.We
         
-    
-        
-   
-    
+
 if __name__ == '__main__':
 
     import unittest as ut
 
-    single = SingleRotorSizingEstimation(4000, 350, 4)
-    inter = IntermeshingRotorSizingEstimation(4000, 350, 4)
-    coaxial = CoaxialRotorSizingEstimation(4000, 350, 4)
+    # single = SingleRotorSizingEstimation(4000, 350, 4)
+    # inter = IntermeshingRotorSizingEstimation(4000, 350, 4)
+    # coaxial = CoaxialRotorSizingEstimation(4000, 350, 4)
 
 
     class SizingEstimationTestCases(ut.TestCase):
@@ -183,55 +180,152 @@ if __name__ == '__main__':
             self.coaxial = CoaxialRotorSizingEstimation(self.MTOW, self.Range, self.n_blades)
 
         def tearDown(self) -> None:
-            pass
+
+            # Make sure the standard values were not changed
+            self.assertEqual(self.MTOW, 4000)
+            self.assertEqual(self.Range, 350)
+            self.assertEqual(self.n_blades, 4)
+
+            # Check the class attribute values were not changed for single
+            self.assertEqual(self.single.MTOW, 4000)
+            self.assertEqual(self.single.Range, 350)
+            self.assertEqual(self.single.n_blades, 4)
+
+            # Check the class attribute values were not changed for intermeshing
+
+            # Check the class attribute values were not changed for coaxial
 
         def test_diskloading(self):
 
+            # Single Rotor
             self.assertNotEqual(self.single.disk_loading(), 0.0)
-            # self.assertNotEqual(self.inter.disk_loading(), 0.0)   # Uncomment when implemented
-            # self.assertNotEqual(self.coaxial.disk_loading(), 0.0) # Uncomment when implemented
-
             self.assertEqual(self.single.disk_loading(), 2.28*(self.MTOW**(1/3)-2.34))
-            # self.assertEqual(self.single.disk_loading(), 2.28 * (self.MTOW ** (1 / 3) - 2.34)) # Uncomment when implemented
-            # self.assertEqual(self.single.disk_loading(), 2.28 * (self.MTOW ** (1 / 3) - 2.34)) # Uncomment when implemented
+
+            # Intermeshing
+
+            # Coaxial
 
         def test_rotor_diameter(self):
-            pass
+
+            # Single Rotor
+            self.assertGreater(self.single.rotor_diameter(), 0.0)
+            self.assertEqual(self.single.d, self.single.rotor_diameter())
+            self.assertAlmostEqual(self.single.rotor_diameter(), 0.977 * self.MTOW**0.308)
+
+            # Intermeshing
+
+            # Coaxial
 
         def test_chordlength(self):
+
+            # Single Rotor
+            self.assertGreater(self.single.chord_length(), 0.0)
+            self.assertEqual(self.single.c, self.single.chord_length())
+            self.assertAlmostEqual(self.single.chord_length(), 0.0108 * self.MTOW**0.539 / self.n_blades**0.714)
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_blade_area(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_disk_area(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_solidity(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_fuel_weight(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_payload_weight(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_useful_weight(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_empty_weight(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_mtow(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_max_speed(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_takeoff_power(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
         def test_max_continuous_power(self):
+            # Single Rotor
+
+            # Intermeshing
+
+            # Coaxial
+
             pass
 
 # =============================================================================
