@@ -106,7 +106,7 @@ class SingleRotorSizingEstimation:
         """
         Calculates the maximum speed at sea level in m/s
         """
-        Vmax = (9.133 * self.MTOW**(0.380) / self.d)**1/0.515
+        Vmax = (9.133 * self.MTOW**(0.380) / self.d)**(1/0.515)
         return Vmax
     
     def take_off_total_power(self):
@@ -230,7 +230,11 @@ if __name__ == '__main__':
             pass
 
         def test_blade_area(self):
+
             # Single Rotor
+            self.assertGreater(self.single.blade_area(), 0.0)
+            self.assertAlmostEqual(self.single.blade_area(), self.single.solidity()*self.single.disk_area())
+            self.assertAlmostEqual(self.single.blade_area(), self.single.d/2*self.single.c*self.single.n_blades)
 
             # Intermeshing
 
@@ -239,7 +243,10 @@ if __name__ == '__main__':
             pass
 
         def test_disk_area(self):
+
             # Single Rotor
+            self.assertGreater(self.single.disk_area(), 0.0)
+            self.assertAlmostEqual(np.pi*(self.single.d/2)**2, self.single.disk_area())
 
             # Intermeshing
 
@@ -248,7 +255,10 @@ if __name__ == '__main__':
             pass
 
         def test_solidity(self):
+
             # Single Rotor
+            self.assertGreater(self.single.solidity(), 0.0)
+            self.assertLess(self.single.solidity(), 1.0)
 
             # Intermeshing
 
@@ -257,7 +267,11 @@ if __name__ == '__main__':
             pass
 
         def test_fuel_weight(self):
+
             # Single Rotor
+            self.assertGreater(self.single.Wf, 0.0)
+            self.assertEqual(self.single.Wf, self.single.fuel_weight())
+            self.assertAlmostEqual(self.single.Wf, 0.0038 * self.MTOW**0.976 * self.Range**0.650)
 
             # Intermeshing
 
@@ -266,7 +280,11 @@ if __name__ == '__main__':
             pass
 
         def test_payload_weight(self):
+
             # Single Rotor
+            self.assertGreater(self.single.Wp, 0.0)
+            self.assertAlmostEqual(self.single.Wp, self.single.payload_weight())
+            self.assertAlmostEqual(self.single.Wp, self.single.Wu - self.single.Wf)
 
             # Intermeshing
 
@@ -275,7 +293,12 @@ if __name__ == '__main__':
             pass
 
         def test_useful_weight(self):
+
             # Single Rotor
+            self.assertGreater(self.single.useful_weight(), 0.0)
+            self.assertEqual(self.single.Wu, self.single.useful_weight())
+            self.assertAlmostEqual(self.single.Wu, self.single.Wp + self.single.Wf)
+            self.assertAlmostEqual(self.single.Wu, 0.4709 * self.MTOW**0.99)
 
             # Intermeshing
 
@@ -284,7 +307,15 @@ if __name__ == '__main__':
             pass
 
         def test_empty_weight(self):
+
             # Single Rotor
+            self.assertGreater(self.single.We, 0.0)
+            self.assertEqual(self.single.empty_weight(), self.single.We)
+
+            diff = self.single.We - (self.single.MTOW - self.single.Wu)
+
+            self.assertAlmostEqual(0.0, diff/self.MTOW, places=1)
+            self.assertAlmostEqual(self.single.We, 0.4854 * self.MTOW**1.015)
 
             # Intermeshing
 
@@ -293,7 +324,13 @@ if __name__ == '__main__':
             pass
 
         def test_mtow(self):
+
             # Single Rotor
+            self.assertGreater(self.single.MTOW, 0.0)
+
+            diff = self.single.MTOW - (self.single.Wp + self.single.We + self.single.Wf)
+
+            self.assertAlmostEqual(0.0, diff/self.MTOW, places=1)
 
             # Intermeshing
 
@@ -302,7 +339,11 @@ if __name__ == '__main__':
             pass
 
         def test_max_speed(self):
+
             # Single Rotor
+            self.assertGreater(self.single.maximum_speed(), 0.0)
+            self.assertAlmostEqual(self.single.Vm, self.single.maximum_speed())
+            self.assertAlmostEqual(self.single.Vm, (9.133 * self.MTOW**(0.380) / self.single.d)**(1/0.515))
 
             # Intermeshing
 
@@ -311,7 +352,10 @@ if __name__ == '__main__':
             pass
 
         def test_takeoff_power(self):
+
             # Single Rotor
+            self.assertGreater(self.single.take_off_total_power(), 0.0)
+            self.assertAlmostEqual(self.single.take_off_total_power(), 0.0764 * self.MTOW**1.1455)
 
             # Intermeshing
 
@@ -320,13 +364,24 @@ if __name__ == '__main__':
             pass
 
         def test_max_continuous_power(self):
+
             # Single Rotor
+            self.assertGreater(self.single.maximum_continuous_total_power(), 0.0)
+            self.assertAlmostEqual(self.single.maximum_continuous_total_power(), 0.00126 * self.MTOW**0.9876 * self.single.Vm**0.9760)
 
             # Intermeshing
 
             # Coaxial
 
             pass
+
+
+    def run_TestCases():
+        suite = ut.TestLoader().loadTestsFromTestCase(SizingEstimationTestCases)
+        ut.TextTestRunner(verbosity=2).run(suite)
+
+
+    run_TestCases()
 
 # =============================================================================
 #     MTOW = 4000 #kg
