@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class SingleRotorSizingEstimation:
     
     def __init__(self, MTOW, Range, number_of_rotor_blades):
@@ -121,7 +122,6 @@ class SingleRotorSizingEstimation:
         """
         P_MC = 0.00126 * self.MTOW**0.9876 * self.Vm**0.9760
         return P_MC
-    
 
 
 class IntermeshingRotorSizingEstimation:
@@ -162,10 +162,78 @@ class CoaxialRotorSizingEstimation:
    
     
 if __name__ == '__main__':
+
+    import unittest as ut
+
     single = SingleRotorSizingEstimation(4000, 350, 4)
     inter = IntermeshingRotorSizingEstimation(4000, 350, 4)
     coaxial = CoaxialRotorSizingEstimation(4000, 350, 4)
-    
+
+
+    class SizingEstimationTestCases(ut.TestCase):
+
+        def setUp(self) -> None:
+
+            self.MTOW = 4000
+            self.Range = 350
+            self.n_blades = 4
+
+            self.single = SingleRotorSizingEstimation(self.MTOW, self.Range, self.n_blades)
+            self.inter = IntermeshingRotorSizingEstimation(self.MTOW, self.Range, self.n_blades)
+            self.coaxial = CoaxialRotorSizingEstimation(self.MTOW, self.Range, self.n_blades)
+
+        def tearDown(self) -> None:
+            pass
+
+        def test_diskloading(self):
+
+            self.assertNotEqual(self.single.disk_loading(), 0.0)
+            # self.assertNotEqual(self.inter.disk_loading(), 0.0)   # Uncomment when implemented
+            # self.assertNotEqual(self.coaxial.disk_loading(), 0.0) # Uncomment when implemented
+
+            self.assertEqual(self.single.disk_loading(), 2.28*(self.MTOW**(1/3)-2.34))
+            # self.assertEqual(self.single.disk_loading(), 2.28 * (self.MTOW ** (1 / 3) - 2.34)) # Uncomment when implemented
+            # self.assertEqual(self.single.disk_loading(), 2.28 * (self.MTOW ** (1 / 3) - 2.34)) # Uncomment when implemented
+
+        def test_rotor_diameter(self):
+            pass
+
+        def test_chordlength(self):
+            pass
+
+        def test_blade_area(self):
+            pass
+
+        def test_disk_area(self):
+            pass
+
+        def test_solidity(self):
+            pass
+
+        def test_fuel_weight(self):
+            pass
+
+        def test_payload_weight(self):
+            pass
+
+        def test_useful_weight(self):
+            pass
+
+        def test_empty_weight(self):
+            pass
+
+        def test_mtow(self):
+            pass
+
+        def test_max_speed(self):
+            pass
+
+        def test_takeoff_power(self):
+            pass
+
+        def test_max_continuous_power(self):
+            pass
+
 # =============================================================================
 #     MTOW = 4000 #kg
 #     range_list = np.arange(0,2000,20)
