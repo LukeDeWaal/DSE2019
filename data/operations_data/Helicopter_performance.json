@@ -27,7 +27,7 @@
     "v_full": 140.0,
     "v_empty": 150.0,
     "fuel": 1563.38,
-    "endurance": 3.9
+    "endurance": 3.5
   },
   "model_310": {
     "tank_weight": 137.0,
@@ -73,7 +73,7 @@
     "tank_weight": 626.0,
     "water_capacity": 3785.0,
     "foam_capacity": 98.0,
-    "refill_speed": 3785.0,
+    "refill_speed": 3000.0,
     "v_full": 150.0,
     "v_empty": 150.0,
     "fuel": 1544.0,
@@ -93,7 +93,7 @@
     "tank_weight": 773.0,
     "water_capacity": 11545.0,
     "foam_capacity": 530.0,
-    "refill_speed": 11545.0,
+    "refill_speed": 7000.0,
     "v_full": 140.0,
     "v_empty": 140.0,
     "fuel": 3899.0,
