@@ -17,6 +17,7 @@ class SingleRotorSizingEstimation:
         self.d = self.rotor_diameter()
         self.c = self.chord_length()
         self.Wf = self.fuel_weight()
+        self.Wp = self.payload_weight()
         self.Wu = self.useful_weight()
         self.We = self.empty_weight()
         self.Vm = self.maximum_speed()
@@ -58,18 +59,18 @@ class SingleRotorSizingEstimation:
         disk_area = np.pi*(self.d/2)**2
         return disk_area
     
+    def solidity(self):
+        """
+        Calculates the blade area over disk area ratio
+        """
+        return self.blade_area()/self.disk_area()  
+    
     def fuel_weight(self):
         """
         Calculates the fuel weight in kg
         """
         Wf = 0.0038 * self.MTOW**0.976 * self.R**0.650
-        return Wf
-    
-    def solidity(self):
-        """
-        Calculates the blade area over disk area ratio
-        """
-        return self.blade_area()/self.disk_area()        
+        return Wf      
     
     def payload_weight(self):
         """
@@ -124,6 +125,11 @@ class SingleRotorSizingEstimation:
 
 
 class IntermeshingRotorSizingEstimation:
+    """
+    Note that the empty weight from the single rotor is multiplied by certain factor to convert it to 
+    an intermeshing rotor. The ratio between the payload and fuel weight is 2:1 according to the single rotor
+    estimation, so that ratio is used here as well, but this can be changed to our needs obviously.
+    """
     
     def __init__(self, MTOW, Range, number_of_rotor_blades):
         self.single_rotor = SingleRotorSizingEstimation(MTOW, Range, number_of_rotor_blades)
@@ -132,9 +138,16 @@ class IntermeshingRotorSizingEstimation:
         self.number_of_rotor_blades = number_of_rotor_blades
         self.We = self.single_rotor.MTOW/2.5
         self.Wu = self.MTOW - self.We
+        self.Wp = self.Wu * 2/3
+        self.Wf = self.Wu * 1/3
         
         
 class CoaxialRotorSizingEstimation:
+    """
+    Note that the empty weight from the single rotor is multiplied by a certain factor to convert it to 
+    an intermeshing rotor. The ratio between the payload and fuel weight is 2:1 according to the single rotor
+    estimation, so that ratio is used here as well, but this can be changed to our needs obviously.
+    """
     
     def __init__(self, MTOW, Range, number_of_rotor_blades):
         self.single_rotor = SingleRotorSizingEstimation(MTOW, Range, number_of_rotor_blades)
