@@ -105,7 +105,7 @@ class SingleRotorSizingEstimation:
         """
         Calculates the maximum speed at sea level in m/s
         """
-        Vmax = (9.133 * self.MTOW**(0.380) / self.d)**1/0.515
+        Vmax = (9.133 * self.MTOW**(0.380) / self.d)**(1/0.515)
         return Vmax
     
     def take_off_total_power(self):
@@ -127,8 +127,7 @@ class SingleRotorSizingEstimation:
 class IntermeshingRotorSizingEstimation:
     """
     Note that the empty weight from the single rotor is multiplied by certain factor to convert it to 
-    an intermeshing rotor. The ratio between the payload and fuel weight is 2:1 according to the single rotor
-    estimation, so that ratio is used here as well, but this can be changed to our needs obviously.
+    an intermeshing rotor.
     """
     
     def __init__(self, MTOW, Range, number_of_rotor_blades):
@@ -136,17 +135,16 @@ class IntermeshingRotorSizingEstimation:
         self.MTOW = MTOW
         self.Range = Range
         self.number_of_rotor_blades = number_of_rotor_blades
-        self.We = self.single_rotor.MTOW/2.5
+        self.Wf = self.single_rotor.fuel_weight()
+        self.We = self.single_rotor.We * 1.9/2.5
         self.Wu = self.MTOW - self.We
-        self.Wp = self.Wu * 2/3
-        self.Wf = self.Wu * 1/3
+        self.Wp = self.Wu - self.Wf
         
         
 class CoaxialRotorSizingEstimation:
     """
     Note that the empty weight from the single rotor is multiplied by a certain factor to convert it to 
-    an intermeshing rotor. The ratio between the payload and fuel weight is 2:1 according to the single rotor
-    estimation, so that ratio is used here as well, but this can be changed to our needs obviously.
+    an intermeshing rotor.
     """
     
     def __init__(self, MTOW, Range, number_of_rotor_blades):
@@ -154,8 +152,10 @@ class CoaxialRotorSizingEstimation:
         self.MTOW = MTOW
         self.Range = Range
         self.number_of_rotor_blades = number_of_rotor_blades
-        self.We = self.single_rotor.MTOW/1.8
+        self.Wf = self.single_rotor.fuel_weight()
+        self.We = self.single_rotor.We * 1.9/1.8
         self.Wu = self.MTOW - self.We
+        self.Wp = self.Wu - self.Wf
         
     
         
@@ -165,18 +165,35 @@ if __name__ == '__main__':
     single = SingleRotorSizingEstimation(4000, 350, 4)
     inter = IntermeshingRotorSizingEstimation(4000, 350, 4)
     coaxial = CoaxialRotorSizingEstimation(4000, 350, 4)
-    
-# =============================================================================
-#     MTOW = 4000 #kg
-#     range_list = np.arange(0,2000,20)
-#     no_rotors = 4
-#     payload_list = []
-#     for Range in range_list:
-#         s = SingleRotorSizingEstimation(MTOW, Range, no_rotors)
-#         payload_list.append(s.payload_weight())
-#     plt.plot(range_list,payload_list)
-#     plt.xlabel('Range (km)')
-#     plt.hlines(y=0, xmin=0, xmax=2000)
-#     plt.vlines(x=0, ymin=0, ymax=2000)
-#     plt.show()
-# =============================================================================
+
+    def plot_payload_range(MTOW, number_of_rotors):
+        """
+        Plots the payload vs range for the single, inter and coaxial configurations
+        :param: Maximum Take-Off Weight in kg
+        :param: number of rotors
+        """
+        range_list = np.arange(0,2000,20) # m
+        single_payload_list, inter_payload_list, coaxial_payload_list = [], [], []
+        
+        for Range in range_list:
+            single = SingleRotorSizingEstimation(MTOW, Range, number_of_rotors)
+            inter = IntermeshingRotorSizingEstimation(MTOW, Range, number_of_rotors)
+            coxial = CoaxialRotorSizingEstimation(MTOW, Range, number_of_rotors)
+            
+            single_payload_list.append(single.Wp)
+            inter_payload_list.append(inter.Wp)
+            coaxial_payload_list.append(coxial.Wp)
+            
+        plt.plot(range_list,single_payload_list, label='Single rotor')
+        plt.plot(range_list,inter_payload_list, label='Intermeshing rotor')
+        plt.plot(range_list,coaxial_payload_list, label='Coaxial rotor')
+        plt.xlabel('Range (km)')
+        plt.ylabel('Payload (kg)')
+        plt.axhline(0, color='black')
+        plt.axvline(0, color='black')
+        plt.vlines(x=0, ymin=0, ymax=2000)
+        plt.grid()
+        plt.legend()
+        plt.show()
+        
+plot_payload_range(4000, 4)
