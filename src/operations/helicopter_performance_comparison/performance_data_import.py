@@ -20,7 +20,7 @@ class HelicopterDataImport(object):
         for folder in cwd:
             data_folder += folder + "\\"
             if folder == 'DSE2019':
-                data_folder += "data\\operations_data"
+                data_folder += "data\\performance_data"
                 break
 
         with open(data_folder + '\\' + f'{data_type}.json') as file:

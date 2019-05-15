@@ -1,10 +1,10 @@
 {
   "cl_415": {
-    "water_capacity": 6000.0,
+    "water_capacity": 5500.0,
     "refill_speed": 30000.0,
     "v_full": 80.0,
     "v_empty": 180.0,
     "fuel": 3300.0,
-    "endurance": 4.5
+    "endurance": 4.0
   }
 }

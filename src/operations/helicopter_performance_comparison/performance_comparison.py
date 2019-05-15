@@ -66,7 +66,7 @@ def __time_per_tank(endurance: float, operation_time: float, d_base: float, v_em
     return time, n
 
 
-def __n_ops_per_day(time_per_tank: float, daytime: float, n_per_tank: int, endurance: float):
+def __n_ops_per_day(time_per_tank: float, daytime: float, n_per_tank: int):
     """
     Total refueling missions per day
     :param time_per_tank: seconds
@@ -84,20 +84,17 @@ def __n_ops_per_day(time_per_tank: float, daytime: float, n_per_tank: int, endur
         if future >= daytime:
             break
 
-    # print(n, n_per_tank, round((time_per_tank-1200)/endurance, 4))
-
     return total, n*n_per_tank
 
 
 def performance(vehicle: dict, distances: dict, actions: dict):
-    # actions: dict, velocities: dict, capacities: dict, distances: dict, endurance: float):
     """
     Main Function
     :param actions: dict
     :param velocities: dict
     :param capacities: dict
     :param distances: dict
-    :return:
+    :return: s, #
     """
 
     operation_time = __operation_time(distances['source'], knots_to_mps(vehicle['v_empty']), knots_to_mps(vehicle['v_full']),
@@ -109,7 +106,7 @@ def performance(vehicle: dict, distances: dict, actions: dict):
     tank_time, n_ops = __time_per_tank(vehicle['endurance']*3600.0, operation_time,
                                        distances['base'], knots_to_mps(vehicle['v_empty']), actions['refuel'])
 
-    total_time, total_n_ops = __n_ops_per_day(tank_time, 16.00*3600, n_ops, vehicle['endurance']*3600.0)
+    total_time, total_n_ops = __n_ops_per_day(tank_time, 16.00*3600, n_ops)
 
     return total_time, total_n_ops
 
@@ -121,7 +118,7 @@ if __name__ == "__main__":
     H = ReferenceHelicopters().get_data()
     A = CL415CompData().get_data()
 
-    distances = [i for i in range(0, 200000, 100)]
+    distances = [i for i in range(0, 700000, 100)]
     ac_perf = [performance(A['cl_415'],
                            distances={
                                'base': distance,
