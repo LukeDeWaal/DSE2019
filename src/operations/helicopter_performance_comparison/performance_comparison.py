@@ -121,7 +121,7 @@ if __name__ == "__main__":
     H = ReferenceHelicopters().get_data()
     A = CL415CompData().get_data()
 
-    distances = [i for i in range(0, 100000, 100)]
+    distances = [i for i in range(0, 200000, 100)]
     ac_perf = [performance(A['cl_415'],
                            distances={
                                'base': distance,
