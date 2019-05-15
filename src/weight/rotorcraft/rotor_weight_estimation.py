@@ -227,8 +227,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_blade_area(self):
 
             # Single Rotor
@@ -240,8 +238,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_disk_area(self):
 
             # Single Rotor
@@ -252,8 +248,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_solidity(self):
 
             # Single Rotor
@@ -263,8 +257,6 @@ if __name__ == '__main__':
             # Intermeshing
 
             # Coaxial
-
-            pass
 
         def test_fuel_weight(self):
 
@@ -277,8 +269,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_payload_weight(self):
 
             # Single Rotor
@@ -289,8 +279,6 @@ if __name__ == '__main__':
             # Intermeshing
 
             # Coaxial
-
-            pass
 
         def test_useful_weight(self):
 
@@ -303,8 +291,6 @@ if __name__ == '__main__':
             # Intermeshing
 
             # Coaxial
-
-            pass
 
         def test_empty_weight(self):
 
@@ -321,8 +307,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_mtow(self):
 
             # Single Rotor
@@ -336,8 +320,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_max_speed(self):
 
             # Single Rotor
@@ -349,8 +331,6 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
-
         def test_takeoff_power(self):
 
             # Single Rotor
@@ -360,8 +340,6 @@ if __name__ == '__main__':
             # Intermeshing
 
             # Coaxial
-
-            pass
 
         def test_max_continuous_power(self):
 
@@ -373,7 +351,7 @@ if __name__ == '__main__':
 
             # Coaxial
 
-            pass
+
 
 
     def run_TestCases():
