@@ -112,13 +112,20 @@ def performance(vehicle: dict, distances: dict, actions: dict):
 
 
 def plot_distance_volume(H: dict = ReferenceHelicopters().get_data(), A: dict = CL415CompData().get_data()):
+    """
+    Plot the Distance from base against total volume dropped
+    :param H: ReferenceHelicopters
+    :param A: ReferenceAircraft
+    :return: None
+    """
 
     fig = plt.figure()
 
-    colours = ['b-', 'g-', 'r-', 'c-', 'm-', 'y-', 'k-', 'b--', 'g--', 'r--', 'c--', 'm--', 'y--', 'k--', 'b-.', 'g-.']
+    colours = ['b-', 'g-', 'r-', 'c-', 'm-', 'y-', 'k-', 'b--', 'g--', 'r--', 'c--', 'm--', 'y--', 'k--', 'b-.', 'g-.', 'r-.', 'c-.', 'm-.', 'y-.', 'k-.']
 
     distances = [i for i in range(0, 700000, 100)]
 
+    # Fixed Wings
     for j, ac in enumerate(A.keys()):
 
         ac_perf = [performance(A[ac],
@@ -126,13 +133,14 @@ def plot_distance_volume(H: dict = ReferenceHelicopters().get_data(), A: dict = 
                                    'base': distance,
                                    'source': 10000.0},
                                actions={
-                                   'turn_empty': 20.0*(j+1),
-                                   'turn_full': 35.0*(j+1),
+                                   'turn_empty': 20.0,
+                                   'turn_full': 35.0,
                                    'drop': 1.0,
                                    'refuel': 1600.0*(j+1)})[1]*A[ac]['water_capacity']/1000000 for distance in distances]
 
         plt.plot(distances, ac_perf, colours[j], label=" ".join(ac.capitalize().split('_')))
 
+    # Rotorcraft
     for i, heli in enumerate(H.keys()):
 
         heli_perf = [performance(H[heli],
@@ -154,7 +162,12 @@ def plot_distance_volume(H: dict = ReferenceHelicopters().get_data(), A: dict = 
 
 
 def plot_payload_endurance(H: dict = ReferenceHelicopters().get_data(), A: dict = CL415CompData().get_data()):
-
+    """
+    Plot the payload against endurance
+    :param H: ReferenceHelicopters
+    :param A: ReferenceAircraft
+    :return: None
+    """
     A.update(H)
 
     fig = plt.figure()
@@ -162,7 +175,7 @@ def plot_payload_endurance(H: dict = ReferenceHelicopters().get_data(), A: dict 
     endurances = [item['endurance'] for key, item in A.items()]
     payloads = [item['water_capacity'] for key, item in A.items()]
 
-    colours = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'bx', 'gx', 'rx', 'cx', 'mx', 'yx', 'kx', 'bs', 'gs']
+    colours = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'bx', 'gx', 'rx', 'cx', 'mx', 'yx', 'kx', 'bs', 'gs', 'rs', 'cs', 'ms', 'ys', 'ks']
 
     for endurance, payload, key, colour in zip(endurances, payloads, A.keys(), colours):
         plt.plot(endurance, payload, colour, label=" ".join(key.capitalize().split('_')))
@@ -174,7 +187,12 @@ def plot_payload_endurance(H: dict = ReferenceHelicopters().get_data(), A: dict 
 
 
 def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL415CompData().get_data()):
-
+    """
+    Plot Dropped Water Volume against Fuel used with ratios annotated
+    :param H: ReferenceHelicopters
+    :param A: ReferenceAircraft
+    :return: None
+    """
 
     fig = plt.figure()
 
@@ -183,7 +201,7 @@ def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL41
 
     distance = 50000
 
-    colours = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'bx', 'gx', 'rx', 'cx', 'mx', 'yx', 'kx', 'bs', 'gs']
+    colours = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'bx', 'gx', 'rx', 'cx', 'mx', 'yx', 'kx', 'bs', 'gs', 'rs', 'cs', 'ms', 'ys', 'ks']
 
     for j, ac in enumerate(A.keys()):
         perf = performance(A[ac],
@@ -223,7 +241,6 @@ def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL41
     plt.ylabel('Total Amount Dropped Per Day [$10^6$ L]')
 
 
-
 if __name__ == "__main__":
 
     # TODO: Write Tests
@@ -231,12 +248,12 @@ if __name__ == "__main__":
     H = ReferenceHelicopters().get_data()
     A = CL415CompData().get_data()
 
-    plot_distance_volume()
-    plot_payload_endurance()
-    plot_volume_fuel()
+    plot_distance_volume()  # Distance - L/day
+    plot_payload_endurance()  # Payload - Endurance
+    plot_volume_fuel()  # L/day - Fuel used
 
-# Payload - Endurance
-# Distance - L/day
-# L/day - Fuel used
+
+
+
 
 
