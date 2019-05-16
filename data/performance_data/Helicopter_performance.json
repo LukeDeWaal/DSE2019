@@ -118,5 +118,15 @@
     "v_empty": 110.0,
     "fuel": 4992.0,
     "endurance": 1.9
+  },
+  "Geert_Data": {
+    "tank_weight": null,
+    "water_capacity": 2700.0,
+    "foam_capacity": null,
+    "refill_speed": 2000.0,
+    "v_full": 99.892,
+    "v_empty": 79.9136,
+    "fuel": 831.0,
+    "endurance": 2.6
   }
 }

@@ -91,7 +91,7 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
             max_iter = kwargs['N']
 
         except KeyError:
-            max_iter = 50
+            max_iter = 100
 
         try:
             method = kwargs['method']

@@ -110,7 +110,8 @@ def estimate_parameters(name: str, **kwargs):
                            ac_data_dict={
                                 'type': ac_type,
                                 'propulsion': propulsion
-                            })
+                            },
+                           N=200)
 
     data = {
         "weights": {key: lbs_to_kg(value) for key, value in class_i['weights'].items()},
@@ -144,16 +145,18 @@ if __name__ == "__main__":
 
     # TODO: Write Tests
 
-    a = estimate_parameters(name='MT_3000L',
-                            ac_type='military_trainer',
-                            propulsion='propeller',
-                            wto=6000.0,
-                            wpl=4000.0,
-                            range=500.0,
-                            endurance=6.0,
-                            Pa=2200e3,
-                            loiter=44.0,
-                            cruise=80.0,
-                            oswald=0.7,
-                            CL_max=2.1,
-                            span=16)
+    a = estimate_parameters(
+        name='TE_5000L',
+        ac_type='twin_engine',
+        propulsion='propeller',
+        wto=6000.0,
+        wpl=5500.0,
+        range=1200.0,
+        endurance=6.0,
+        Pa=2*1061e3,
+        loiter=44.0,
+        cruise=80.0,
+        oswald=0.7,
+        CL_max=2.1,
+        span=17
+    )
