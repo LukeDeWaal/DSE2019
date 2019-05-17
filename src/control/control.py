@@ -6,4 +6,3 @@ import numpy as np
 import unittest as ut
 
 # https://python-control.readthedocs.io/en/0.8.2/control.html
-

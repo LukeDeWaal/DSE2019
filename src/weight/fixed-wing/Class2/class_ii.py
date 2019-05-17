@@ -1,5 +1,5 @@
 import json
-
+import os, pathlib
 import numpy as np
 
 g0 = 9.80665
@@ -7,14 +7,15 @@ g0 = 9.80665
 
 class ClassII(object):
 
-    def __init__(self, name: str, filepath: str = r"C:\Users\LRdeWaal\Desktop\DSE2019\data\Class II Data\estimate.json", datadict: dict = {}):
+    def __init__(self, name: str, filepath: str = r"C:\Users\LRdeWaal\Desktop\DSE2019\data\Class II Data\\", datadict: dict = {}):
 
         self.__name = name
         self.__fp = filepath
         self.__datadict = datadict
 
-        self.__full_data = None
-        self.__data = None
+        self.__full_data = dict()
+        self.__data = dict()
+
         self.__read_from_json()
 
         self.wing_area()
@@ -33,14 +34,19 @@ class ClassII(object):
 
     def __read_from_json(self):
 
-        with open(self.__fp, 'r') as file:
-            self.__full_data = json.load(file)
+        try:
+            with open(self.__fp, 'r') as file:
+                self.__full_data = json.load(file)
 
-        if self.__datadict:
+            try:
+                self.__data = dict(self.__full_data[self.__name])
+
+            except KeyError:
+                self.__data = self.__datadict
+
+        except (json.decoder.JSONDecodeError, FileNotFoundError):
+            pathlib.Path(self.__fp).touch()
             self.__data = self.__datadict
-
-        else:
-            self.__data = dict(self.__full_data[self.__name])
 
     def get_data(self):
         return self.__data

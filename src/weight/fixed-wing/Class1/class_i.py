@@ -215,11 +215,14 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
             # Do Something else
             wto = wto*(1.0 - margin)
 
+    wf_new = wf*1.2
+    diff = wf_new - wf
+
     return {
         'weights':{
-            'wto':wto,
+            'wto':wto+diff,
             'wpl':wpl,
-            'wf': wf,
+            'wf': wf_new,
             'we': we
         },
         'fractions':{

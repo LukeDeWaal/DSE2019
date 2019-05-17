@@ -136,27 +136,61 @@ def estimate_parameters(name: str, **kwargs):
     }
 
     class_ii = ClassII(name=name,
-                       datadict=data)
+                       filepath=f"C:\\Users\\LRdeWaal\\Desktop\DSE2019\\data\\Class II Data\\{ac_type}_estimate.json",
+                       datadict=data,
+                       )
 
     return class_ii.get_data()
+
 
 
 if __name__ == "__main__":
 
     # TODO: Write Tests
 
-    a = estimate_parameters(
-        name='TE_5000L',
-        ac_type='twin_engine',
-        propulsion='propeller',
-        wto=6000.0,
-        wpl=5500.0,
-        range=1200.0,
-        endurance=6.0,
-        Pa=2*1061e3,
-        loiter=44.0,
-        cruise=80.0,
-        oswald=0.7,
-        CL_max=2.1,
-        span=17
-    )
+    # a = estimate_parameters(
+    #     name='TE_5000L',
+    #     ac_type='twin_engine',
+    #     propulsion='propeller',
+    #     wto=6000.0,
+    #     wpl=5500.0,
+    #     range=1200.0,
+    #     endurance=6.0,
+    #     Pa=2*1061e3,
+    #     loiter=44.0,
+    #     cruise=80.0,
+    #     oswald=0.7,
+    #     CL_max=2.1,
+    #     span=17
+    # )
+
+    for ac in ['twin_engine', 'single_engine', 'regional_tbp', 'military_trainer']:
+        for payload in range(3000, 10500, 500):
+
+            if ac in ['single_engine', 'military_trainer']:
+                n_engines = 1
+
+            else:
+                n_engines = 2
+
+            if payload >= 6000:
+                power = 1591e3
+
+            else:
+                power = 1061e3
+
+            estimate_parameters(
+                name=f'{payload}L',
+                ac_type=ac,
+                propulsion='propeller',
+                wto=6000.0,
+                wpl=payload,
+                range=1200.0,
+                endurance=6.0,
+                Pa=n_engines * power,
+                loiter=44.0,
+                cruise=80.0,
+                oswald=0.7,
+                CL_max=2.1,
+                span=17
+            )
