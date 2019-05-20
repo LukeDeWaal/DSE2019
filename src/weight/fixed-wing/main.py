@@ -1,8 +1,14 @@
 import numpy as np
+import tqdm
 from Class1.class_i import class_i_main
 from Class2.class_ii import ClassII
 
-np.random.seed(1)
+import sys
+sys.path.insert(0, r'C:\Users\LRdeWaal\Desktop\DSE2019\src\tools')
+
+from WebScraping import extract_filtered_data
+
+# np.random.seed(1)
 
 
 def estimate_parameters(name: str, **kwargs):
@@ -37,9 +43,9 @@ def estimate_parameters(name: str, **kwargs):
             propulsion = input("Propulsion Type: ")
 
         try:
-            span = kwargs['span']
+            AR = kwargs['AR']
         except KeyError:
-            span = float(input('Wing Span: '))
+            AR = float(input('Aspect Ratio: '))
 
         try:
             wto = kg_to_lbs(kwargs['wto'])
@@ -82,14 +88,19 @@ def estimate_parameters(name: str, **kwargs):
             CLmax = float(input("CL: "))
 
         try:
-            Pa = kwargs['Pa']
+            RC = kwargs['RC']
         except KeyError:
-            Pa = float(input("Pa: "))
+            RC = float(input("RC: "))
 
         try:
             cd0 = kwargs['Cd0']
         except KeyError:
             cd0 = 0.04
+
+        try:
+            n_engines = kwargs['n_engines']
+        except KeyError:
+            n_engines = int(input("# of engines: "))
 
     else:
         return
@@ -123,7 +134,12 @@ def estimate_parameters(name: str, **kwargs):
             "range": nm_to_km(cruise_range),
             "endurance": endurance,
             "bankangle": 45*np.pi/180,
-            "Pa": Pa
+            "n_engines": n_engines,
+            "steady": {
+                "RC": RC
+            },
+            "turning":{
+            }
         },
         "aerodynamics": {
             "CL_max": CLmax,
@@ -131,7 +147,7 @@ def estimate_parameters(name: str, **kwargs):
             "oswald": oswald
         },
         "wing": {
-            "span": span
+            "AR": AR
         }
     }
 
@@ -143,29 +159,18 @@ def estimate_parameters(name: str, **kwargs):
     return class_ii.get_data()
 
 
-
 if __name__ == "__main__":
 
     # TODO: Write Tests
 
-    # a = estimate_parameters(
-    #     name='TE_5000L',
-    #     ac_type='twin_engine',
-    #     propulsion='propeller',
-    #     wto=6000.0,
-    #     wpl=5500.0,
-    #     range=1200.0,
-    #     endurance=6.0,
-    #     Pa=2*1061e3,
-    #     loiter=44.0,
-    #     cruise=80.0,
-    #     oswald=0.7,
-    #     CL_max=2.1,
-    #     span=17
-    # )
+    a = extract_filtered_data({
+        'Power': (1000, 2500),  # kW
+        'Weight': (150, 550),   # kg
+        'SFC': (0.15, 0.35)    # kg/kW-hr
+    })
 
     for ac in ['twin_engine', 'single_engine', 'regional_tbp', 'military_trainer']:
-        for payload in range(3000, 10500, 500):
+        for payload in tqdm.tqdm(range(2000, 8500, 500)):
 
             if ac in ['single_engine', 'military_trainer']:
                 n_engines = 1
@@ -187,10 +192,11 @@ if __name__ == "__main__":
                 wpl=payload,
                 range=1200.0,
                 endurance=6.0,
-                Pa=n_engines * power,
+                RC=6.0,
                 loiter=44.0,
                 cruise=80.0,
                 oswald=0.7,
                 CL_max=2.1,
-                span=17
+                AR=8.0,
+                n_engines=n_engines
             )

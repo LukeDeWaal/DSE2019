@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+from NumericalTools import multivariate_plane_fitting
+
 
 def unit_conversion(engine_data: pd.DataFrame):
 
@@ -42,10 +44,27 @@ def save_to_csv(dataframe: pd.DataFrame, filename: str, datafolder: str = r'C:\U
     dataframe.to_csv(datafolder + '\\' + filename)
 
 
-def filter_values(df: pd.DataFrame, columns: list, filter_ranges: list):
+def filter_values(df: pd.DataFrame, filter_ranges: dict):
 
-    for column in columns:
-        df = df[getattr(df, column)]
+    for column in filter_ranges.keys():
+        df = df.loc[(df[column] >= filter_ranges[column][0]) & (df[column] <= filter_ranges[column][1])]
+
+    return df
+
+
+def extract_filtered_data(filter_dict: dict):
+    civdata = import_engine_Data('civ')
+    mildata = import_engine_Data('mil')
+
+    # save_to_csv(civdata, 'civengines.csv')
+    # save_to_csv(mildata, 'milengines.csv')
+
+    data = pd.concat([civdata, mildata])
+
+    filtered_data = filter_values(data, filter_dict)
+
+    data = filtered_data.reset_index(drop=True)
+    return data
 
 
 if __name__ == '__main__':
@@ -56,11 +75,18 @@ if __name__ == '__main__':
     # save_to_csv(civdata, 'civengines.csv')
     # save_to_csv(mildata, 'milengines.csv')
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    data = pd.concat([civdata, mildata])
 
-    ax.scatter(civdata['Power'], civdata['Weight'], civdata['SFC'], c='b')
-    ax.scatter(mildata['Power'], mildata['Weight'], mildata['SFC'], c='r')
-    ax.set_xlabel('Power [kW]')
-    ax.set_ylabel('Weight [kg]')
-    ax.set_zlabel('SFC [kg/kW-hr]')
+    filtered_data = filter_values(data, {
+        'Power': (1000, 2500),  # kW
+        'Weight': (150, 550),   # kg
+        'SFC': (0.15, 0.35)    # kg/kW-hr
+    }
+    )
+
+    # data = np.array(filtered_data.reset_index()[['Power', 'Weight', 'SFC']])
+
+    fig = plt.figure()
+
+    multivariate_plane_fitting(data=np.array(mildata[['Power', 'Weight', 'SFC']]), order=2, colour='b', fig=fig)
+    multivariate_plane_fitting(data=np.array(civdata[['Power', 'Weight', 'SFC']]), order=2, colour='r', fig=fig)
