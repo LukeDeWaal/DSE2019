@@ -1,13 +1,14 @@
 import json
 import os, pathlib
 import numpy as np
+import pandas as pd
 
 g0 = 9.80665
 
 import sys
 sys.path.insert(0, r'C:\Users\LRdeWaal\Desktop\DSE2019\src\tools')
 
-from WebScraping import extract_filtered_data
+from WebScraping import extract_filtered_data, import_engine_Data
 
 
 class ClassII(object):
@@ -20,6 +21,8 @@ class ClassII(object):
 
         self.__full_data = dict()
         self.__data = dict()
+        self.__engine_data = pd.concat([import_engine_Data('civ'), import_engine_Data('mil')])
+        self.__engine_data = self.__engine_data.reset_index(drop=True)
 
         self.__read_from_json()
 
@@ -93,7 +96,7 @@ class ClassII(object):
 
     def pick_engine(self, Pa: float):
 
-        engines = extract_filtered_data({'Power': (Pa, 1.5*Pa)})
+        engines = extract_filtered_data({'Power': (Pa, 1.5*Pa)}, dataframe=self.__engine_data)
         engines = engines.sort_values('Power')
 
         delta_p = engines[['Power']] - Pa
@@ -120,16 +123,17 @@ class ClassII(object):
         # min_idx = engines['Power'].loc[0]
 
         try:
-            return engines.loc[0]
+            # print(engines.loc[0], engines['DeltaP'].idxmin())
+            return engines.loc[0]  # engines.loc[engines['DeltaP'].idxmin()]
 
-        except ValueError:
+        except (ValueError, KeyError):
             return None
 
     def steady_power_available(self):
 
         Cd = self.calculate_cd()
 
-        Pr = 0.5 * Cd * 1.225 * self.__data['wing']['area'] * (self.__data['velocities']['cruise']**3)
+        Pr = 0.5 * Cd * 1.225 * self.__data['wing']['area'] * (self.__data['velocities']['loiter']**3)
         self.__data['performance']['steady']['Pr'] = Pr
 
         Pa = Pr + self.__data['performance']['steady']['RC'] * (self.__data['weights']['wto'] * g0)
@@ -143,14 +147,18 @@ class ClassII(object):
             self.__data['performance']['engine'] = {
                 'Model': None,
                 'Pa': None,
-                'Weight': None
+                'Weight': None,
+                'SFC': None,
+                'Size': (None, None)
             }
 
         else:
             self.__data['performance']['engine'] = {
                 'Model': engine.loc['Model'],
                 'Pa': engine.loc['Power']*1000.0,
-                'Weight': engine.loc['Weight']
+                'Weight': engine.loc['Weight'],
+                'SFC': engine.loc['SFC'],
+                'Size': (engine.loc['Length'], engine.loc['Diameter'])
             }
 
             New_Pa = self.__data['performance']['engine']['Pa'] * self.__data['performance']['n_engines']
@@ -162,7 +170,7 @@ class ClassII(object):
 
         Cd = self.calculate_cd()
 
-        Pr = 0.5 * Cd * 1.225 * self.__data['wing']['area'] * (self.__data['velocities']['cruise'] ** 3)
+        Pr = 0.5 * Cd * 1.225 * self.__data['wing']['area'] * (self.__data['velocities']['loiter'] ** 3)
         self.__data['performance']['turning']['Pr'] = Pr
 
         RC = (self.__data['performance']['steady']['Pa'] - Pr)/(self.__data['weights']['wto'] * g0 * self.__data['performance']['loadfactor'])
