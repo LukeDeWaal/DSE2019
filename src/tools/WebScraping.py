@@ -52,14 +52,19 @@ def filter_values(df: pd.DataFrame, filter_ranges: dict):
     return df
 
 
-def extract_filtered_data(filter_dict: dict):
-    civdata = import_engine_Data('civ')
-    mildata = import_engine_Data('mil')
+def extract_filtered_data(filter_dict: dict, dataframe: pd.DataFrame = None):
 
-    # save_to_csv(civdata, 'civengines.csv')
-    # save_to_csv(mildata, 'milengines.csv')
+    if dataframe is None:
+        civdata = import_engine_Data('civ')
+        mildata = import_engine_Data('mil')
 
-    data = pd.concat([civdata, mildata])
+        # save_to_csv(civdata, 'civengines.csv')
+        # save_to_csv(mildata, 'milengines.csv')
+
+        data = pd.concat([civdata, mildata])
+
+    else:
+        data = dataframe
 
     filtered_data = filter_values(data, filter_dict)
 
