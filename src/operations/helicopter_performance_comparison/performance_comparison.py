@@ -217,7 +217,7 @@ def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL41
         ac_volume.append(perf[1]*A[ac]['water_capacity']/1000000)
 
         plt.plot(perf[2], perf[1]*A[ac]['water_capacity']/1000000, colours[j], label=" ".join(ac.capitalize().split('_')))
-        plt.annotate(round((perf[1]*A[ac]['water_capacity'])/perf[2], 2), (perf[2]+100, perf[1]*A[ac]['water_capacity']/1000000))
+        plt.annotate(round((perf[1]*A[ac]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*A[ac]['water_capacity']/1000000))
 
     for i,heli in enumerate(H.keys()):
 
@@ -233,7 +233,7 @@ def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL41
 
 
         plt.plot(perf[2], perf[1]*H[heli]['water_capacity']/1000000, colours[i+j+1], label=" ".join(heli.capitalize().split('_')))
-        plt.annotate(round((perf[1]*H[heli]['water_capacity'])/perf[2], 2), (perf[2]+100, perf[1]*H[heli]['water_capacity']/1000000))
+        plt.annotate(round((perf[1]*H[heli]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*H[heli]['water_capacity']/1000000))
 
     plt.legend()
     plt.grid()

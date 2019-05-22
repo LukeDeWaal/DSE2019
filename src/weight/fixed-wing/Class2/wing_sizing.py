@@ -1,30 +1,42 @@
-
 import json
 import os, pathlib
-import sys
-import math
-sys.path.insert(0, r'C:\Users\geert\Desktop\Studie dingen\3rd year\dse\DSE2019\src\weight\fixed-wing\Class2')
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits import mplot3d
+
+# sys.path.insert(0, r'C:\Users\geert\Desktop\Studie dingen\3rd year\dse\DSE2019\src\weight\fixed-wing\Class2')
+
 
 class Wing_sizing(object):
 
-    def __init__(self, name: str,taper,sweep,tc,control_surface_fraction,filepath: str = r"C:\Users\geert\Desktop\Studie dingen\3rd year\dse\DSE2019\data\Class II Data",datadict: dict = {}):
+    def __init__(self, name: str,filepath: str = r"C:\Users\LRdeWaal\Desktop\DSE2019\data\Class II Data", **kwargs):
+
         self.__name = name
         self.__fp = filepath + f'\\{self.__name}_estimate.json'
-        self.__datadict = datadict
 
         self.__full_data = dict()
         self.__data = dict()
 
         self.__read_from_json()
+        self.__weights = {key: None for key in self.__data.keys()}
 
-        # self.__wing_weight = self.wing_weight()
-        self.taper = taper
-        self.sweep = sweep
-        self.tc = tc
-        self.control_surface_fraction = control_surface_fraction
+        try:
+            self.__taper = kwargs['taper']
+            self.__sweep = kwargs['sweep']
+            self.__tc = kwargs['tc']
+            self.__Sc = kwargs['Sc']
+
+        except KeyError:
+            print("No Values Provided")
+            quit()
+
+        self.wing_weight()
 
     def getdata(self):
         return self.__data
+
+    def get_weights(self):
+        return self.__weights
 
     def __read_from_json(self):
 
@@ -37,20 +49,28 @@ class Wing_sizing(object):
         except KeyError:
             return
 
+    @staticmethod
+    def __wing_weight(wto, nz, Sw, Sc, AR, tc, taper, sweep):
+        return 0.0051*((wto * nz)**(0.557))*(Sw**(0.649))*(AR**(0.5))*((tc)**(-0.4))*((1+taper)**(0.1))*((np.cos(sweep))**(-1.0))*(Sc**(0.1))
 
     def wing_weight(self):
-        load_factor = 4.4
-        wto = self.__data['2000L']['weights']['wto']
-        Sw = self.__data['2000L']['wing']['area']
-        Aspect = self.__data['2000L']['wing']['AR']
-        control_surface = Sw*self.control_surface_fraction
-        weight = 0.0051*9((wto+load_factor)**0.557)*(Sw**0.649)*(Aspect**0.5)*(self.tc**-0.4)*((1+self.taper)**0.1)*(math.cos(self.taper)**-1)*control_surface**0.1
-        return weight
+        n_max = 4.4
 
-wing_weight_object = Wing_sizing('twin_engine',0.3,0,0.3,0.2)
+        for key, value in self.__data.items():
+
+            WTO = self.__data[key]['weights']['wto']*9.80665
+            AR = self.__data[key]['wing']['AR']
+            Sw = self.__data[key]['wing']['area']
+
+            weight = self.__wing_weight(wto=WTO, AR=AR, Sw=Sw, nz=n_max, Sc=self.__Sc*Sw, taper=self.__taper, sweep=self.__sweep, tc=self.__tc)
+            self.__weights[key] = weight
+
+
+
+wing_weight_object = Wing_sizing('twin_engine', filepath=r"C:\Users\LRdeWaal\Desktop\DSE2019\data\Class II Data", sweep=5*np.pi/180, taper=1, tc=0.1, Sc=0.14)
 # print(wing_weight_object.wing_weight())
 
-a = wing_weight_object.getdata()
+a = wing_weight_object.get_weights()
 
 
 

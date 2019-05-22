@@ -108,23 +108,20 @@ class ClassII(object):
             return None
 
         #  Uncomment for weight optimization algorithm
-        # normalized = self.__normalize_array(np.array(engines[['DeltaP', 'Weight', 'SFC']]))
-        #
-        # weights = np.array([0.65, 0.1, 0.25])
-        #
-        # costs = np.zeros((normalized.shape[0],1))
-        #
-        # for i in range(len(normalized[:,0])):
-        #     costs[i,:] = np.dot(normalized[i, :], weights)
-        #
-        # min_idx = costs.argmin()
-        #
+        normalized = self.__normalize_array(np.array(engines[['DeltaP', 'Weight', 'SFC']]))
 
-        # min_idx = engines['Power'].loc[0]
+        weights = np.array([0.65, 0.1, 0.25])
+
+        costs = np.zeros((normalized.shape[0],1))
+
+        for i in range(len(normalized[:,0])):
+            costs[i,:] = np.dot(normalized[i, :], weights)
+
+        min_idx = costs.argmin()
 
         try:
             # print(engines.loc[0], engines['DeltaP'].idxmin())
-            return engines.loc[0]  # engines.loc[engines['DeltaP'].idxmin()]
+            return engines.loc[min_idx]  # engines.loc[engines['DeltaP'].idxmin()]
 
         except (ValueError, KeyError):
             return None

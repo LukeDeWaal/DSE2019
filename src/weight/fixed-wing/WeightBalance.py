@@ -2,37 +2,44 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class CG_Calculation(object):
+class CgCalculation(object):
 
-    def __init__(self, weight_list: list, x_position_list: list, y_position_list: list = None):
+    def __init__(self, components: dict):
 
-        self.__weights = weight_list
-        self.__x_positions = x_position_list
+        self.__components = components
+        self.__cg = [None, None]
+        self.calculate_cg()
 
-        if y_position_list is None:
-            self.__y_positions = [0]*len(x_position_list)
+    def add_component(self, name: str, weight: float, position: tuple):
 
-        else:
-            self.__y_positions = y_position_list
+        self.__components[name] = (weight, position)
+        self.calculate_cg()
 
-    def add_component(self, weight: float, position: tuple):
+    def __calculate_cg_along_x(self):
+        return sum([weight * position[0] for name, (weight, position) in self.__components.items()])\
+               / sum([weight for name, (weight, position) in self.__components.items()])
 
-        self.__weights.append(weight)
-        self.__x_positions.append(position[0])
-        self.__y_positions.append(position[1])
+    def __calculate_cg_along_y(self):
+        return sum([weight * position[1] for name, (weight, position) in self.__components.items()])\
+               / sum([weight for name, (weight, position) in self.__components.items()])
 
-    def calculate_cg_along_x(self):
-        return sum([weight * position for weight, position in zip(self.__weights, self.__x_positions)]) / sum(self.__weights)
-
-    def calculate_cg_along_y(self):
-        return sum([weight * position for weight, position in zip(self.__weights, self.__y_positions)]) / sum(self.__weights)
+    def calculate_cg(self):
+        self.__cg = [self.__calculate_cg_along_x(), self.__calculate_cg_along_y()]
+        return self.__cg
 
     def plot_locations(self, fig: plt.figure = None):
 
         if fig is None:
-            fig = plt.figure()
+            fig, ax = plt.subplots()
+            ax.set_aspect(1.0)
 
-        plt.scatter(self.__x_positions, self.__y_positions, s=self.__weights)
+        for name, (weight, (x, y)) in self.__components.items():
+            plt.scatter(x, y, s=np.sqrt(weight), c='k')
+            plt.annotate(name, xy=(x+0.1, y+0.1))
+
+        plt.scatter(self.__cg[0], self.__cg[1], c='r')
+        plt.annotate('CG', xy=self.__cg)
+
         plt.grid()
         plt.xlabel('X Position [m]')
         plt.ylabel('Y Position [m]')
@@ -40,10 +47,14 @@ class CG_Calculation(object):
 
 if __name__ == '__main__':
 
-    B = CG_Calculation([100, 100, 200], [0, 10, 15.5], [0, 0, 0.5])
+    componentss = {
+        'Fuselage': (2200, (10, 0)),
+        'Wing': (800, (9, 0)),
+        'Engine': (400, (14, 1)),
+        'Empennage': (600, (15, 0)),
+        'Payload': (4000, (12, 0))
+    }
+
+    B = CgCalculation(componentss)
     B.plot_locations()
-    print(B.calculate_cg_along_x())
-    print(B.calculate_cg_along_y())
-    B.add_component(150, (2, 0))
-    print(B.calculate_cg_along_x())
-    print(B.calculate_cg_along_y())
+

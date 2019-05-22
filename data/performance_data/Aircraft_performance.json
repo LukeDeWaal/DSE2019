@@ -22,37 +22,5 @@
     "v_empty": 110.0,
     "fuel": 700.0,
     "endurance": 2.5
-  },
-  "MT_Concept_1": {
-    "water_capacity": 2000.0,
-    "refill_speed": 25000.0,
-    "v_full": 80.0,
-    "v_empty": 180.0,
-    "fuel": 1830.0,
-    "endurance": 6.0
-  },
-  "MT_Concept_2": {
-    "water_capacity": 3000.0,
-    "refill_speed": 25000.0,
-    "v_full": 80.0,
-    "v_empty": 180.0,
-    "fuel": 2100.0,
-    "endurance": 6.0
-  },
-  "TBP_Concept_1": {
-    "water_capacity": 2000.0,
-    "refill_speed": 25000.0,
-    "v_full": 80.0,
-    "v_empty": 180.0,
-    "fuel": 1830.0,
-    "endurance": 6.0
-  },
-  "TBP_Concept_2": {
-    "water_capacity": 3000.0,
-    "refill_speed": 25000.0,
-    "v_full": 80.0,
-    "v_empty": 180.0,
-    "fuel": 2680.0,
-    "endurance": 6.0
   }
 }
