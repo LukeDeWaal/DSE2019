@@ -217,28 +217,29 @@ def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL41
         ac_volume.append(perf[1]*A[ac]['water_capacity']/1000000)
 
         plt.plot(perf[2], perf[1]*A[ac]['water_capacity']/1000000, colours[j], label=" ".join(ac.capitalize().split('_')))
-        plt.annotate(round((perf[1]*A[ac]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*A[ac]['water_capacity']/1000000))
+        plt.annotate(round((perf[1]*A[ac]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*A[ac]['water_capacity']/1000000), size=12)
 
     for i,heli in enumerate(H.keys()):
 
         perf = performance(H[heli],
-                    distances={
-                        'base': distance,
-                        'source': 3500.0},
-                    actions={
-                        'turn_empty': 15.0,
-                        'turn_full': 25.0,
-                        'drop': 3.0,
-                        'refuel': 1300.0})
+                        distances={
+                            'base': distance,
+                            'source': 3500.0},
+                        actions={
+                            'turn_empty': 15.0,
+                            'turn_full': 25.0,
+                            'drop': 3.0,
+                            'refuel': 1300.0})
 
 
         plt.plot(perf[2], perf[1]*H[heli]['water_capacity']/1000000, colours[i+j+1], label=" ".join(heli.capitalize().split('_')))
-        plt.annotate(round((perf[1]*H[heli]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*H[heli]['water_capacity']/1000000))
+        plt.annotate(round((perf[1]*H[heli]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*H[heli]['water_capacity']/1000000), size=12)
 
     plt.legend()
     plt.grid()
-    plt.xlabel('Fuel Consumed [L]')
-    plt.ylabel('Total Amount Dropped Per Day [$10^6$ L]')
+    plt.xlabel('Fuel Consumed [L]', fontsize=14)
+    plt.ylabel('Total Amount Dropped Per Day [$10^6$ L]', fontsize=14)
+    plt.tick_params(axis='both', which='major', labelsize=14)
 
 
 if __name__ == "__main__":
