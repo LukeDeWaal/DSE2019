@@ -47,7 +47,7 @@ class CgCalculation(object):
 
 if __name__ == '__main__':
 
-    componentss = {
+    components = {
         'Fuselage': (2200, (10, 0)),
         'Wing': (800, (9, 0)),
         'Engine': (400, (14, 1)),
@@ -55,6 +55,6 @@ if __name__ == '__main__':
         'Payload': (4000, (12, 0))
     }
 
-    B = CgCalculation(componentss)
+    B = CgCalculation(components)
     B.plot_locations()
 
