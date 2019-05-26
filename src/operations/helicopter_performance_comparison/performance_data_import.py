@@ -1,6 +1,6 @@
 import json
 import os
-
+import unittest as ut
 
 class HelicopterDataImport(object):
 
@@ -20,7 +20,7 @@ class HelicopterDataImport(object):
         for folder in cwd:
             data_folder += folder + "\\"
             if folder == 'DSE2019':
-                data_folder += "data\\operations_data"
+                data_folder += "data\\performance_data"
                 break
 
         with open(data_folder + '\\' + f'{data_type}.json') as file:
@@ -56,5 +56,17 @@ class CL415EstData(HelicopterDataImport):
         self.data = self.import_data('CL415_estimated_performance')
 
 
+class CL415CompData(HelicopterDataImport):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self.data = self.import_data('Aircraft_performance')
 
 
+if __name__ == "__main__":
+
+    # TODO: Write Tests
+
+    pass

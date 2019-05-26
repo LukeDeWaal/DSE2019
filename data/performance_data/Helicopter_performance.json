@@ -1,0 +1,132 @@
+{
+  "model_304": {
+    "tank_weight": 179.0,
+    "water_capacity": 1420.0,
+    "foam_capacity": 114.0,
+    "refill_speed": 1514.0,
+    "v_full": 110.0,
+    "v_empty": 110.0,
+    "fuel": 1249.0,
+    "endurance": 1.5
+  },
+  "model_323": {
+    "tank_weight": 144.0,
+    "water_capacity": 1200.0,
+    "foam_capacity": 102.0,
+    "refill_speed": 1136.0,
+    "v_full": 100.0,
+    "v_empty": 120.0,
+    "fuel": 870.0,
+    "endurance": 2.75
+  },
+  "model_326": {
+    "tank_weight": 226.0,
+    "water_capacity": 1817.0,
+    "foam_capacity": 95.0,
+    "refill_speed": 1514.0,
+    "v_full": 140.0,
+    "v_empty": 150.0,
+    "fuel": 1563.38,
+    "endurance": 3.5
+  },
+  "model_310": {
+    "tank_weight": 137.0,
+    "water_capacity": 1200.0,
+    "foam_capacity": 81.0,
+    "refill_speed": 1192.0,
+    "v_full": 120.0,
+    "v_empty": 120.0,
+    "fuel": 543.691,
+    "endurance": 2.0
+  },
+  "model_301": {
+    "tank_weight": 132.0,
+    "water_capacity": 901.0,
+    "foam_capacity": 83.0,
+    "refill_speed": 1060.0,
+    "v_full": 120.0,
+    "v_empty": 140.0,
+    "fuel": 1292.026,
+    "endurance": 2.5
+  },
+  "model_311": {
+    "tank_weight": 183.0,
+    "water_capacity": 984.0,
+    "foam_capacity": 53.0,
+    "refill_speed": 1514.0,
+    "v_full": 135.0,
+    "v_empty": 135.0,
+    "fuel": 741.5,
+    "endurance": 1.5
+  },
+  "model_316": {
+    "tank_weight": 363.0,
+    "water_capacity": 2217.0,
+    "foam_capacity": 91.0,
+    "refill_speed": 3785.0,
+    "v_full": 130.0,
+    "v_empty": 130.0,
+    "fuel": 1544.0,
+    "endurance": 2.0
+  },
+  "model_380": {
+    "tank_weight": 626.0,
+    "water_capacity": 3785.0,
+    "foam_capacity": 98.0,
+    "refill_speed": 3000.0,
+    "v_full": 150.0,
+    "v_empty": 150.0,
+    "fuel": 1544.0,
+    "endurance": 2.0
+  },
+  "model_308": {
+    "tank_weight": 130.0,
+    "water_capacity": 927.0,
+    "foam_capacity": 28.0,
+    "refill_speed": 1060.0,
+    "v_full": 120.0,
+    "v_empty": 120.0,
+    "fuel": 484.0,
+    "endurance": 2.5
+  },
+  "model_328": {
+    "tank_weight": 329.0,
+    "water_capacity": 2972.0,
+    "foam_capacity": 151.0,
+    "refill_speed": 3785.0,
+    "v_full": 102.0,
+    "v_empty": 102.0,
+    "fuel": 2650.0,
+    "endurance": 2.0
+  },
+    "model_314": {
+    "tank_weight": 984.0,
+    "water_capacity": 7571.0,
+    "foam_capacity": 1060.0,
+    "refill_speed": 7200.0,
+    "v_full": 90.0,
+    "v_empty": 110.0,
+    "fuel": 4992.0,
+    "endurance": 1.9
+  },
+  "model_347": {
+    "tank_weight": 773.0,
+    "water_capacity": 11545.0,
+    "foam_capacity": 530.0,
+    "refill_speed": 7000.0,
+    "v_full": 140.0,
+    "v_empty": 140.0,
+    "fuel": 3899.0,
+    "endurance": 4.0
+  },
+  "Kamov": {
+    "tank_weight": null,
+    "water_capacity": 2700.0,
+    "foam_capacity": null,
+    "refill_speed": 2000.0,
+    "v_full": 99.892,
+    "v_empty": 79.9136,
+    "fuel": 831.0,
+    "endurance": 2.6
+  }
+}

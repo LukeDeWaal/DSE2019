@@ -1,5 +1,5 @@
 import numpy as np
-from json_import import ReferenceAircraft, NameList
+from .json_import import ReferenceAircraft, NameList
 import unittest as ut
 
 
@@ -156,93 +156,96 @@ class JetCalculations(Calculations):
 TESTS COME AFTER THIS
 """
 
-
-class CalculationTestCases(ut.TestCase):
-
-    def setUp(self):
-
-        self.RefAC = {}
-
-        for name in NameList:
-            self.RefAC[name] = [ReferenceAircraft(name)]
-            self.RefAC[name].append(PropellerCalculations(self.RefAC[name][0].get_breguet_data()))
-            self.RefAC[name].append(JetCalculations(self.RefAC[name][0].get_breguet_data()))
-
-    def tearDown(self):
-        pass
-
-    def test_extract_value(self):
-
-        for name in NameList:
-            value = self.RefAC[name][1].extract_value(0, 1, self.RefAC[name][1].decision_options)
-            self.assertGreaterEqual(value, 0)
-            self.assertLessEqual(value, 1)
-
-            value = self.RefAC[name][2].extract_value(0, 1, self.RefAC[name][1].decision_options)
-            self.assertGreaterEqual(value, 0)
-            self.assertLessEqual(value, 1)
-
-    def test_decision_options(self):
-
-        for name in NameList:
-            self.RefAC[name][1].set_decision_options(0.5)
-            self.RefAC[name][2].set_decision_options(0.5)
-
-            self.assertEqual(self.RefAC[name][1].decision_options['method'], 'single')
-            self.assertEqual(self.RefAC[name][2].decision_options['method'], 'single')
-            self.assertEqual(self.RefAC[name][1].decision_options['lower'], None)
-            self.assertEqual(self.RefAC[name][2].decision_options['lower'], None)
-            self.assertEqual(self.RefAC[name][1].decision_options['upper'], None)
-            self.assertEqual(self.RefAC[name][2].decision_options['upper'], None)
-
-            self.RefAC[name][1].set_decision_options(0.1, 0.9)
-            self.RefAC[name][2].set_decision_options(0.1, 0.9)
-            self.assertEqual(self.RefAC[name][1].decision_options['method'], 'random')
-            self.assertEqual(self.RefAC[name][2].decision_options['method'], 'random')
-            self.assertEqual(self.RefAC[name][1].decision_options['value'], None)
-            self.assertEqual(self.RefAC[name][2].decision_options['value'], None)
-
-    def test_loiter(self):
-
-        for name in NameList:
-
-            frac1 = self.RefAC[name][1].loiter_fraction_calculation(5.0, 100)
-            frac2 = self.RefAC[name][2].loiter_fraction_calculation(5.0)
-
-            if frac1 is not None:
-                self.assertLess(frac1, 1.0)
-                self.assertGreater(frac1, 0.0)
-
-            else:
-                self.assertIsNotNone(frac2)
-
-            if frac2 is not None:
-                self.assertLess(frac2, 1.0)
-                self.assertGreater(frac2, 0.0)
-
-            else:
-                self.assertIsNotNone(frac1)
-
-    def test_cruise(self):
-
-        for name in NameList:
-            frac1 = self.RefAC[name][1].cruise_fraction_calculation(1000)
-            frac2 = self.RefAC[name][2].cruise_fraction_calculation(1000, 200)
-
-            if frac1 is not None:
-                self.assertLess(frac1, 1.0)
-                self.assertGreater(frac1, 0.0)
-
-            else:
-                self.assertIsNotNone(frac2)
-
-            if frac2 is not None:
-                self.assertLess(frac2, 1.0)
-                self.assertGreater(frac2, 0.0)
-
-            else:
-                self.assertIsNotNone(frac1)
-
-
 if __name__ == "__main__":
-    ut.main()
+
+    class CalculationTestCases(ut.TestCase):
+
+        def setUp(self):
+
+            self.RefAC = {}
+
+            for name in NameList:
+                self.RefAC[name] = [ReferenceAircraft(name)]
+                self.RefAC[name].append(PropellerCalculations(self.RefAC[name][0].get_breguet_data()))
+                self.RefAC[name].append(JetCalculations(self.RefAC[name][0].get_breguet_data()))
+
+        def tearDown(self):
+            pass
+
+        def test_extract_value(self):
+
+            for name in NameList:
+                value = self.RefAC[name][1].extract_value(0, 1, self.RefAC[name][1].decision_options)
+                self.assertGreaterEqual(value, 0)
+                self.assertLessEqual(value, 1)
+
+                value = self.RefAC[name][2].extract_value(0, 1, self.RefAC[name][1].decision_options)
+                self.assertGreaterEqual(value, 0)
+                self.assertLessEqual(value, 1)
+
+        def test_decision_options(self):
+
+            for name in NameList:
+                self.RefAC[name][1].set_decision_options(0.5)
+                self.RefAC[name][2].set_decision_options(0.5)
+
+                self.assertEqual(self.RefAC[name][1].decision_options['method'], 'single')
+                self.assertEqual(self.RefAC[name][2].decision_options['method'], 'single')
+                self.assertEqual(self.RefAC[name][1].decision_options['lower'], None)
+                self.assertEqual(self.RefAC[name][2].decision_options['lower'], None)
+                self.assertEqual(self.RefAC[name][1].decision_options['upper'], None)
+                self.assertEqual(self.RefAC[name][2].decision_options['upper'], None)
+
+                self.RefAC[name][1].set_decision_options(0.1, 0.9)
+                self.RefAC[name][2].set_decision_options(0.1, 0.9)
+                self.assertEqual(self.RefAC[name][1].decision_options['method'], 'random')
+                self.assertEqual(self.RefAC[name][2].decision_options['method'], 'random')
+                self.assertEqual(self.RefAC[name][1].decision_options['value'], None)
+                self.assertEqual(self.RefAC[name][2].decision_options['value'], None)
+
+        def test_loiter(self):
+
+            for name in NameList:
+
+                frac1 = self.RefAC[name][1].loiter_fraction_calculation(5.0, 100)
+                frac2 = self.RefAC[name][2].loiter_fraction_calculation(5.0)
+
+                if frac1 is not None:
+                    self.assertLess(frac1, 1.0)
+                    self.assertGreater(frac1, 0.0)
+
+                else:
+                    self.assertIsNotNone(frac2)
+
+                if frac2 is not None:
+                    self.assertLess(frac2, 1.0)
+                    self.assertGreater(frac2, 0.0)
+
+                else:
+                    self.assertIsNotNone(frac1)
+
+        def test_cruise(self):
+
+            for name in NameList:
+                frac1 = self.RefAC[name][1].cruise_fraction_calculation(1000)
+                frac2 = self.RefAC[name][2].cruise_fraction_calculation(1000, 200)
+
+                if frac1 is not None:
+                    self.assertLess(frac1, 1.0)
+                    self.assertGreater(frac1, 0.0)
+
+                else:
+                    self.assertIsNotNone(frac2)
+
+                if frac2 is not None:
+                    self.assertLess(frac2, 1.0)
+                    self.assertGreater(frac2, 0.0)
+
+                else:
+                    self.assertIsNotNone(frac1)
+
+    def run_TestCases():
+        suite = ut.TestLoader().loadTestsFromTestCase(CalculationTestCases)
+        ut.TextTestRunner(verbosity=2).run(suite)
+
+    run_TestCases()

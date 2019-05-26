@@ -1,6 +1,6 @@
 import numpy as np
-from json_import import ReferenceAircraft, NameList
-from breguet_calculations import PropellerCalculations, JetCalculations
+from .json_import import ReferenceAircraft, NameList
+from .breguet_calculations import PropellerCalculations, JetCalculations
 
 import unittest as ut
 
@@ -91,7 +91,7 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
             max_iter = kwargs['N']
 
         except KeyError:
-            max_iter = 50
+            max_iter = 100
 
         try:
             method = kwargs['method']
@@ -215,11 +215,14 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
             # Do Something else
             wto = wto*(1.0 - margin)
 
+    wf_new = wf*1.2
+    diff = wf_new - wf
+
     return {
         'weights':{
-            'wto':wto,
+            'wto':wto+diff,
             'wpl':wpl,
-            'wf': wf,
+            'wf': wf_new,
             'we': we
         },
         'fractions':{
@@ -237,12 +240,23 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
 def class_i_range_n_endurance(wto: tuple, cr_range: tuple, endurance: tuple, prop: str = 'propeller',
                               v_ltr: float = 100.0, v_cr: float = 200.0) -> dict:
 
+    """
+    Class I estimation for varying range and endurance
+    :param wto: First wto estimate min and max
+    :param cr_range: cruise range min and max in nm
+    :param endurance: endurance min and max in hrs
+    :param prop: propeller or jet
+    :param v_ltr: loiter velocity in mph
+    :param v_cr: cruise velocity in mph
+    :return: dictionary with all data
+    """
+
     steps = 10
     counter = 0
 
     result = {}
 
-    wpl = 0.3
+    wpl = 0.5
 
     for aircraft in NameList:
         # print(f"Calculating {aircraft}")
@@ -279,7 +293,17 @@ def class_i_range_n_endurance(wto: tuple, cr_range: tuple, endurance: tuple, pro
 
 
 def class_i_payload_n_speed(wto: float, wpl: tuple, v_ltr: tuple, v_cr: tuple, cr_range: float, endurance: float, prop: str = 'propeller'):
-
+    """
+    Class I estimation for varying cruise and loiter speed
+    :param wto: First wto estimate
+    :param wpl: Desired Payload fraction
+    :param v_ltr: loiter speed in mph min and max
+    :param v_cr:  cruise speed in mph min and max
+    :param cr_range: cruise range
+    :param endurance: endurance
+    :param prop: propeller or jet
+    :return: dictionary with all data
+    """
     steps = 10
     counter = 0
 
@@ -328,87 +352,116 @@ TESTS COME AFTER THIS
 """
 
 
-class ClassITestCases(ut.TestCase):
-    # TODO: Write tests
-    def setUp(self):
-
-        self.weight = {
-            'wto': 10000.0,
-            'wpl': 2000.0,
-            'wfres': 0.05
-        }
-        self.performance = {
-            'endurance': 5.0,
-            'range': 1500.0
-        }
-        self.velocity = {
-            'loiter': 80.0,
-            'cruise': 240.0
-        }
-        self.ac_data_1 = {
-            'type': 'regional_tbp',
-            'propulsion': 'propeller'
-        }
-        self.ac_data_2 = {
-            'type': 'business_jet',
-            'propulsion': 'jet'
-        }
-        self.ac_data_3 = {
-            'type': 'single_engine',
-            'propulsion': 'jet'
-        }
-
-        self.RefAC = [ReferenceAircraft(name) for name in NameList]
-
-    def tearDown(self):
-        pass
-
-    def test_split(self):
-        minval = np.random.uniform(0, 1)
-        maxval = np.random.uniform(minval, 2)
-
-        N = np.random.randint(2, 10)
-
-        result = split((minval, maxval), N)
-
-        self.assertLessEqual(max(result), maxval)
-        self.assertGreaterEqual(min(result), minval)
-        self.assertEqual(len(result), N)
-
-    def test_class_i(self):
-
-        class_i_1 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_1, margin=0.033)
-        class_i_2 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_2, N=100, method=(0.5,))
-        class_i_3 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_3, method=(0.33, 0.66))
-
-        self.assertLessEqual(class_i_1['metadata']['iterations'], 50)
-        self.assertLessEqual(class_i_2['metadata']['iterations'], 100)
-        self.assertIsNone(class_i_3)
-
-        self.assertLessEqual(class_i_1['metadata']['diff'], 0.033)
-        self.assertLessEqual(class_i_2['metadata']['diff'], 0.025)
-
-    def test_fuel_functions(self):
-
-        for AC in self.RefAC:
-            ff = AC.get_fuel_frac()
-            mff = mff_calculation(ff)
-
-            self.assertLessEqual(len(ff), 8)
-            self.assertLessEqual(mff, 1.0)
-
-    def test_statistical_weight(self):
-
-        for AC in self.RefAC:
-            coeffs = AC.get_stat_coefficients()
-            we = get_statistical_we(10000.0, coeffs)
-
-            self.assertGreaterEqual(we, 0.0)
-            self.assertLessEqual(we, 10000.0)
-
-
 if __name__ == "__main__":
 
-    # ut.main()
+    weight = {
+        'wto': 13000.0,
+        'wpl': 4500.0,
+        'wfres': 0.025
+    }
+    performance = {
+        'endurance': 6.0,
+        'range': 745.6454
+    }
+    velocity = {
+        'loiter': 85.0,
+        'cruise': 150.0
+    }
+    ac_data_1 = {
+        'type': 'military_trainer',
+        'propulsion': 'propeller'
+    }
+    ac_data_2 = {
+        'type': 'single_engine',
+        'propulsion': 'propeller'
+    }
 
-    res = class_i_payload_n_speed(wto=20000.0, wpl=(0.1, 0.6), v_cr=(100, 250), v_ltr=(50, 150), cr_range=1000.0, endurance=4.0)
+    mil_class_i = class_i_main(ac_data_dict=ac_data_1, velocity_dict=velocity, weight_dict=weight, performance_dict=performance)
+    SE_class_i = class_i_main(ac_data_dict=ac_data_2, velocity_dict=velocity, weight_dict=weight,
+                               performance_dict=performance)
+
+
+    class ClassITestCases(ut.TestCase):
+        # TODO: Write tests
+        def setUp(self):
+
+            self.weight = {
+                'wto': 10000.0,
+                'wpl': 2000.0,
+                'wfres': 0.05
+            }
+            self.performance = {
+                'endurance': 5.0,
+                'range': 1500.0
+            }
+            self.velocity = {
+                'loiter': 80.0,
+                'cruise': 240.0
+            }
+            self.ac_data_1 = {
+                'type': 'regional_tbp',
+                'propulsion': 'propeller'
+            }
+            self.ac_data_2 = {
+                'type': 'business_jet',
+                'propulsion': 'jet'
+            }
+            self.ac_data_3 = {
+                'type': 'single_engine',
+                'propulsion': 'jet'
+            }
+
+            self.RefAC = [ReferenceAircraft(name) for name in NameList]
+
+        def tearDown(self):
+            pass
+
+        def test_split(self):
+            minval = np.random.uniform(0, 1)
+            maxval = np.random.uniform(minval, 2)
+
+            N = np.random.randint(2, 10)
+
+            result = split((minval, maxval), N)
+
+            self.assertLessEqual(max(result), maxval)
+            self.assertGreaterEqual(min(result), minval)
+            self.assertEqual(len(result), N)
+
+        def test_class_i(self):
+
+            class_i_1 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_1, margin=0.033)
+            class_i_2 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_2, N=100, method=(0.5,))
+            class_i_3 = class_i_main(self.weight, self.performance, self.velocity, self.ac_data_3, method=(0.33, 0.66))
+
+            self.assertLessEqual(class_i_1['metadata']['iterations'], 50)
+            self.assertLessEqual(class_i_2['metadata']['iterations'], 100)
+            self.assertIsNone(class_i_3)
+
+            self.assertLessEqual(class_i_1['metadata']['diff'], 0.033)
+            self.assertLessEqual(class_i_2['metadata']['diff'], 0.025)
+
+        def test_fuel_functions(self):
+
+            for AC in self.RefAC:
+                ff = AC.get_fuel_frac()
+                mff = mff_calculation(ff)
+
+                self.assertLessEqual(len(ff), 8)
+                self.assertLessEqual(mff, 1.0)
+
+        def test_statistical_weight(self):
+
+            for AC in self.RefAC:
+                coeffs = AC.get_stat_coefficients()
+                we = get_statistical_we(10000.0, coeffs)
+
+                self.assertGreaterEqual(we, 0.0)
+                self.assertLessEqual(we, 10000.0)
+
+
+    def run_TestCases():
+        suite = ut.TestLoader().loadTestsFromTestCase(ClassITestCases)
+        ut.TextTestRunner(verbosity=2).run(suite)
+
+    # run_TestCases()
