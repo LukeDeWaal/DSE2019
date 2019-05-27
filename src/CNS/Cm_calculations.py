@@ -1,4 +1,6 @@
 import numpy as np
+import os
+import json
 
 
 class Force(object):
@@ -80,26 +82,82 @@ class ForceMomentBalance(object):
 
 class MomentCoefficientCalculations(object):
 
+    def __init__(self):
+
+        try:
+            self.__data = self.load_coefficients()
+
+        except (PermissionError, FileNotFoundError):
+            print("No Data Found In Current Path")
+            self.__data = None
+
+    def __dictionary_pos_unpack_search(self, source: dict, target: dict = {}, top_key: str = ''):
+
+        cg = self.__data['geometry']['cg']
+
+        for key, value in source.items():
+            if key == "pos":
+
+                delta_x = self.__get_delta_x(value, cg)
+                delta_z = self.__get_delta_z(value, cg)
+
+                target[top_key] = [delta_x, delta_z]
+
+            else:
+                if type(value) == dict:
+                    self.__dictionary_pos_unpack_search(source[key], target, key)
+
+    def cm(self):
+
+        tail_volume = self.__data['geometry']['Sh']/self.__data['geometry']['S']*(self.__data['geometry']['Vh/V'])**2
+        thrust_coefficient = self.__data['P']['Tc']*2*(self.__data['P']['D']**2)/self.__data['geometry']['S']
+        ip = self.__data['P']['ip']
+
+        deltas = {}
+        self.__dictionary_pos_unpack_search(self.__data, deltas)
+
+        wing_contribution = self.__data['coefficients']['W']['cmac'] + self.__data['coefficients']['W']['N']*deltas['W'][0] - self.__data['coefficients']['W']['T']*deltas['W'][1]
+        tail_contribution = tail_volume*(self.__data['coefficients']['H']['cmac']*(self.__data['geometry']['Ch']/self.__data['geometry']['C']) + self.__data['coefficients']['H']['N']*deltas['H'][0] - self.__data['coefficients']['H']['T']*deltas['H'][1])
+        thrust_contribution = thrust_coefficient*(np.sin(ip)*deltas['P'][0] + np.cos(ip)*deltas['P'][1])
+
+        return wing_contribution + tail_contribution + thrust_contribution
+
     @staticmethod
-    def cm_alpha(coefficients: dict, distances: dict, misc: dict):
-
-        cma = coefficients['W']['N']['alpha'] * distances['X']['W'] + \
-              coefficients['H']['N']['alpha'] * misc['Sh/S'] * (1 - misc['de/da']) * (misc['Vh/V'])**2 * distances['X']['H']  -\
-              coefficients['W']['T']['alpha'] * distances['Z']['W'] -\
-              coefficients['H']['T']['alpha'] * misc['Sh/S'] * (1 - misc['de/da']) * (misc['Vh/V'])**2 * distances['Z']['H']
-
-        return cma
+    def __get_delta_x(first: list, second: list):
+        return second[0] - first[0]
 
     @staticmethod
-    def cm0(coefficients: dict, misc: dict):
+    def __get_delta_z(first: list, second: list):
+        return second[1] - first[1]
+
+    @staticmethod
+    def load_coefficients(filepath: str = os.getcwd()+r'\data\equation_data.json'):
+
+        with open(filepath, 'r') as file:
+            data = json.load(file)
+
+        return dict(data)
+
+
+
+    def cm_alpha(self, coefficients: dict, distances: dict, misc: dict):
+
+        deltas = {}
+        self.__dictionary_pos_unpack_search(self.__data, deltas)
+
+        wing_contribution = None
+        # TODO: Incorporate JSON format in all methods
+
+
+    def cm0(self, coefficients: dict, misc: dict):
 
         cm0 = coefficients['W']['Cmac'] - coefficients['H']['N']['alpha'] * \
               (misc['a0'] + misc['ih']) * (misc['Vh/V'])**2 * misc['Sh/S'] * misc['lh']/misc['c']
 
         return cm0
 
-    @staticmethod
-    def cm_de(coefficients: dict, misc: dict):
+
+    def cm_de(self, coefficients: dict, misc: dict):
 
         cmde = - coefficients['H']['N']['delta'] * (misc['a0'] + misc['ih']) * \
                (misc['Vh/V']) ** 2 * misc['Sh/S'] * misc['lh'] / misc['c']
@@ -121,8 +179,8 @@ if __name__ == '__main__':
          Force(np.array([0,1,0]), np.array([1,0,0])),
          Force(np.array([-1,1,0]), np.array([0,1,0]))]
 
-    Sys = ForceMomentBalance(moments=M, forces=F)
-    a = Sys.calculate(np.array([0,2,0]))
+    # Sys = ForceMomentBalance(moments=M, forces=F)
+    # a = Sys.calculate(np.array([0,2,0]))
 
 
     """
@@ -157,4 +215,5 @@ if __name__ == '__main__':
         'de/da': 0.9
     }
 
-    cma = cm_alpha(coefficients, distances, misc)
+    M = MomentCoefficientCalculations()
+    cm = M.cm()
