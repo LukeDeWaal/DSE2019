@@ -108,30 +108,40 @@ def performance(vehicle: dict, distances: dict, actions: dict):
 
     total_time, total_n_ops = __n_ops_per_day(tank_time, 16.00*3600, n_ops)
 
-    return total_time, total_n_ops
+    return total_time, total_n_ops, total_time/(vehicle['endurance']*3600)*vehicle['fuel']
 
 
-if __name__ == "__main__":
+def plot_distance_volume(H: dict = ReferenceHelicopters().get_data(), A: dict = CL415CompData().get_data()):
+    """
+    Plot the Distance from base against total volume dropped
+    :param H: ReferenceHelicopters
+    :param A: ReferenceAircraft
+    :return: None
+    """
 
-    # TODO: Write Tests
+    fig = plt.figure()
 
-    H = ReferenceHelicopters().get_data()
-    A = CL415CompData().get_data()
+    colours = ['b-', 'g-', 'r-', 'c-', 'm-', 'y-', 'k-', 'b--', 'g--', 'r--', 'c--', 'm--', 'y--', 'k--', 'b-.', 'g-.', 'r-.', 'c-.', 'm-.', 'y-.', 'k-.']
 
     distances = [i for i in range(0, 700000, 100)]
-    ac_perf = [performance(A['cl_415'],
-                           distances={
-                               'base': distance,
-                               'source': 10000.0},
-                           actions={
-                               'turn_empty': 20.0,
-                               'turn_full': 35.0,
-                               'drop': 1.0,
-                               'refuel': 1600.0})[1]*A['cl_415']['water_capacity']/1000000 for distance in distances]
 
-    plt.plot(distances, ac_perf, 'r-', label='CL415')
+    # Fixed Wings
+    for j, ac in enumerate(A.keys()):
 
-    for heli in H.keys():
+        ac_perf = [performance(A[ac],
+                               distances={
+                                   'base': distance,
+                                   'source': 10000.0},
+                               actions={
+                                   'turn_empty': 20.0,
+                                   'turn_full': 35.0,
+                                   'drop': 1.0,
+                                   'refuel': 1600.0*(j+1)})[1]*A[ac]['water_capacity']/1000000 for distance in distances]
+
+        plt.plot(distances, ac_perf, colours[j], label=" ".join(ac.capitalize().split('_')))
+
+    # Rotorcraft
+    for i, heli in enumerate(H.keys()):
 
         heli_perf = [performance(H[heli],
                                  distances={
@@ -143,13 +153,108 @@ if __name__ == "__main__":
                                      'drop': 3.0,
                                      'refuel': 1300.0})[1]*H[heli]['water_capacity']/1000000 for distance in distances]
 
-        plt.plot(distances, heli_perf, label=" ".join(heli.capitalize().split('_')))
-
-
+        plt.plot(distances, heli_perf, colours[i+j+1],label=" ".join(heli.capitalize().split('_')))
 
     plt.legend()
     plt.grid()
     plt.xlabel('Distance From Base [m]')
-    plt.ylabel('Total Amount Dropped Per Day [$10^6$ L] ')
+    plt.ylabel('Total Amount Dropped Per Day [$10^6$ L]')
+
+
+def plot_payload_endurance(H: dict = ReferenceHelicopters().get_data(), A: dict = CL415CompData().get_data()):
+    """
+    Plot the payload against endurance
+    :param H: ReferenceHelicopters
+    :param A: ReferenceAircraft
+    :return: None
+    """
+    A.update(H)
+
+    fig = plt.figure()
+
+    endurances = [item['endurance'] for key, item in A.items()]
+    payloads = [item['water_capacity'] for key, item in A.items()]
+
+    colours = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'bx', 'gx', 'rx', 'cx', 'mx', 'yx', 'kx', 'bs', 'gs', 'rs', 'cs', 'ms', 'ys', 'ks']
+
+    for endurance, payload, key, colour in zip(endurances, payloads, A.keys(), colours):
+        plt.plot(endurance, payload, colour, label=" ".join(key.capitalize().split('_')))
+
+    plt.legend()
+    plt.grid()
+    plt.xlabel('Endurance [Hrs]')
+    plt.ylabel('Payload [kg]')
+
+
+def plot_volume_fuel(H: dict = ReferenceHelicopters().get_data(), A: dict = CL415CompData().get_data()):
+    """
+    Plot Dropped Water Volume against Fuel used with ratios annotated
+    :param H: ReferenceHelicopters
+    :param A: ReferenceAircraft
+    :return: None
+    """
+
+    fig = plt.figure()
+
+    ac_fuel = []
+    ac_volume = []
+
+    distance = 50000
+
+    colours = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'bx', 'gx', 'rx', 'cx', 'mx', 'yx', 'kx', 'bs', 'gs', 'rs', 'cs', 'ms', 'ys', 'ks']
+
+    for j, ac in enumerate(A.keys()):
+        perf = performance(A[ac],
+                    distances={
+                        'base': distance,
+                        'source': 10000.0},
+                    actions={
+                        'turn_empty': 20.0,
+                        'turn_full': 35.0,
+                        'drop': 1.0,
+                        'refuel': 1600.0})
+        ac_fuel.append(perf[2])
+        ac_volume.append(perf[1]*A[ac]['water_capacity']/1000000)
+
+        plt.plot(perf[2], perf[1]*A[ac]['water_capacity']/1000000, colours[j], label=" ".join(ac.capitalize().split('_')))
+        plt.annotate(round((perf[1]*A[ac]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*A[ac]['water_capacity']/1000000), size=12)
+
+    for i,heli in enumerate(H.keys()):
+
+        perf = performance(H[heli],
+                        distances={
+                            'base': distance,
+                            'source': 3500.0},
+                        actions={
+                            'turn_empty': 15.0,
+                            'turn_full': 25.0,
+                            'drop': 3.0,
+                            'refuel': 1300.0})
+
+
+        plt.plot(perf[2], perf[1]*H[heli]['water_capacity']/1000000, colours[i+j+1], label=" ".join(heli.capitalize().split('_')))
+        plt.annotate(round((perf[1]*H[heli]['water_capacity'])/perf[2], 1), (perf[2]+100, perf[1]*H[heli]['water_capacity']/1000000), size=12)
+
+    plt.legend()
+    plt.grid()
+    plt.xlabel('Fuel Consumed [L]', fontsize=14)
+    plt.ylabel('Total Amount Dropped Per Day [$10^6$ L]', fontsize=14)
+    plt.tick_params(axis='both', which='major', labelsize=14)
+
+
+if __name__ == "__main__":
+
+    # TODO: Write Tests
+
+    H = ReferenceHelicopters().get_data()
+    A = CL415CompData().get_data()
+
+    plot_distance_volume()  # Distance - L/day
+    plot_payload_endurance()  # Payload - Endurance
+    plot_volume_fuel()  # L/day - Fuel used
+
+
+
+
 
 
