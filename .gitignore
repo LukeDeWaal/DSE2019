@@ -104,4 +104,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Mac folder metadata files
 **/.DS_Store
