@@ -27,13 +27,13 @@ class EulerAngles(object):
         if type(axis) == str:
             axis = axis.lower()
 
-        if axis == 'x' or axis == [1,0,0] or axis == np.array([1,0,0]):
+        if axis == 'x' or axis[0] == 1 or (axis == np.array([1,0,0])).all():
             return cls.x_axis_rotation(theta)
 
-        elif axis == 'y' or axis == [0,1,0] or axis == np.array([0,1,0]):
+        elif axis == 'y' or axis[1] == 1 or (axis == np.array([0,1,0])).all():
             return cls.y_axis_rotation(theta)
 
-        elif axis == 'z' or axis == [0,0,1] or axis == np.array([0,0,1]):
+        elif axis == 'z' or axis[2] == 1 or (axis == np.array([0,0,1])).all():
             return cls.z_axis_rotation(theta)
 
         else:
