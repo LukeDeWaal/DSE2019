@@ -1,6 +1,6 @@
 import numpy as np
-from .json_import import ReferenceAircraft, NameList
-from .breguet_calculations import PropellerCalculations, JetCalculations
+from json_import import ReferenceAircraft, NameList
+from breguet_calculations import PropellerCalculations, JetCalculations
 
 import unittest as ut
 

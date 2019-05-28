@@ -1,5 +1,5 @@
 import numpy as np
-from .json_import import ReferenceAircraft, NameList
+from json_import import ReferenceAircraft, NameList
 import unittest as ut
 
 
