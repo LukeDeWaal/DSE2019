@@ -44,13 +44,16 @@ class GoogleSheetsDataImport(object):
 
         try:
             header = gsheet.get('values', [])[0]  # Assumes first line is header!
-            values = gsheet.get('values', [])[1:]  # Everything else is data.
 
         except IndexError:
             return
 
+        values = gsheet.get('values', [])[1:]  # Everything else is data.
+
         if not values:
             print('No data found.')
+            return pd.Series(header)
+
         else:
             all_data = []
             for col_id, col_name in enumerate(header):
