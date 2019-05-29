@@ -43,6 +43,13 @@ class GoogleSheetsDataImport(object):
     @staticmethod
     def __sheet_to_dataframe(gsheet):
 
+        def istext(item: str):
+            for char in item:
+                if 65<= ord(char) <= 90 or 97 <= ord(char) <= 122:
+                    return True
+                else:
+                    continue
+
         try:
             header = gsheet.get('values', [])[0]  # Assumes first line is header!
 
@@ -60,7 +67,22 @@ class GoogleSheetsDataImport(object):
             for col_id, col_name in enumerate(header):
                 column_data = []
                 for row in values:
-                    column_data.append(row[col_id])
+                    item = row[col_id]
+                    print(item)
+                    if '[' in item:
+                        item = [float(i) for i in item[1:-1].split(',')]
+
+                    elif col_name == 'Date' or col_name == 'Notes':
+                        pass
+
+                    elif not istext(item):
+                        item = float(item)
+
+                    else:
+                        pass
+
+                    column_data.append(item)
+
                 ds = pd.Series(data=column_data, name=col_name)
                 all_data.append(ds)
             df = pd.concat(all_data, axis=1)
