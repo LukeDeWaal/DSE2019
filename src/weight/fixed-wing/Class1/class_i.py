@@ -91,7 +91,7 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
             max_iter = kwargs['N']
 
         except KeyError:
-            max_iter = 50
+            max_iter = 100
 
         try:
             method = kwargs['method']
@@ -215,11 +215,14 @@ def class_i_main(weight_dict: dict, performance_dict: dict, velocity_dict: dict,
             # Do Something else
             wto = wto*(1.0 - margin)
 
+    wf_new = wf*1.2
+    diff = wf_new - wf
+
     return {
         'weights':{
-            'wto':wto,
+            'wto':wto+diff,
             'wpl':wpl,
-            'wf': wf,
+            'wf': wf_new,
             'we': we
         },
         'fractions':{
@@ -351,8 +354,31 @@ TESTS COME AFTER THIS
 
 if __name__ == "__main__":
 
-    # res = class_i_payload_n_speed(wto=20000.0, wpl=(0.1, 0.6), v_cr=(100, 250), v_ltr=(50, 150), cr_range=1000.0,
-    #                               endurance=4.0)
+    weight = {
+        'wto': 13000.0,
+        'wpl': 4500.0,
+        'wfres': 0.025
+    }
+    performance = {
+        'endurance': 6.0,
+        'range': 745.6454
+    }
+    velocity = {
+        'loiter': 85.0,
+        'cruise': 150.0
+    }
+    ac_data_1 = {
+        'type': 'military_trainer',
+        'propulsion': 'propeller'
+    }
+    ac_data_2 = {
+        'type': 'single_engine',
+        'propulsion': 'propeller'
+    }
+
+    mil_class_i = class_i_main(ac_data_dict=ac_data_1, velocity_dict=velocity, weight_dict=weight, performance_dict=performance)
+    SE_class_i = class_i_main(ac_data_dict=ac_data_2, velocity_dict=velocity, weight_dict=weight,
+                               performance_dict=performance)
 
 
     class ClassITestCases(ut.TestCase):
@@ -438,4 +464,4 @@ if __name__ == "__main__":
         suite = ut.TestLoader().loadTestsFromTestCase(ClassITestCases)
         ut.TextTestRunner(verbosity=2).run(suite)
 
-    run_TestCases()
+    # run_TestCases()

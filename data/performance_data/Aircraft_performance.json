@@ -1,0 +1,26 @@
+{
+  "cl_415": {
+    "water_capacity": 5500.0,
+    "refill_speed": 30000.0,
+    "v_full": 80.0,
+    "v_empty": 180.0,
+    "fuel": 3300.0,
+    "endurance": 4.0
+  },
+  "be_200": {
+    "water_capacity": 12000.0,
+    "refill_speed": 51428.57,
+    "v_full": 92.0,
+    "v_empty": 180.0,
+    "fuel": 12000.0,
+    "endurance": 5.5
+  },
+  "Flyox": {
+    "water_capacity": 1800.0,
+    "refill_speed": 2571.0,
+    "v_full": 90.0,
+    "v_empty": 110.0,
+    "fuel": 700.0,
+    "endurance": 2.5
+  }
+}
