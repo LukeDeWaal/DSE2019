@@ -2,11 +2,15 @@ import numpy as np
 import os
 import json
 
+import sys
+sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
+
+from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+
 
 class Force(object):
 
     def __init__(self, vector: np.array, location: np.array):
-
         self.__vector = vector
         self.__position = location
 
@@ -20,13 +24,12 @@ class Force(object):
         return np.linalg.norm(self.__vector)
 
     def get_direction(self):
-        return self.__vector/self.get_magnitude()
+        return self.__vector / self.get_magnitude()
 
 
 class Moment(object):
 
     def __init__(self, magnitude: float, location: np.array):
-
         self.__moment = magnitude
         self.__position = location
 
@@ -52,7 +55,6 @@ class ForceMomentBalance(object):
 
         except KeyError:
             self.__moments = []
-
 
     def add_force(self, force_object: Force):
         self.__forces.append(force_object)
@@ -85,9 +87,9 @@ class MomentCoefficientCalculations(object):
     def __init__(self):
 
         try:
-            self.__data = self.load_coefficients()
+            self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, ConnectionError, ConnectionRefusedError, ConnectionAbortedError):
             print("No Data Found In Current Path")
             self.__data = None
 
@@ -108,19 +110,23 @@ class MomentCoefficientCalculations(object):
                     self.__dictionary_pos_unpack_search(source[key], target, key)
 
     def cm(self):
-
-        tail_volume = self.__data['geometry']['Sh']/self.__data['geometry']['S']*(self.__data['geometry']['Vh/V'])**2
-        thrust_coefficient = self.__data['P']['Tc']*2*(self.__data['P']['D']**2)/self.__data['geometry']['S']
-        ip = self.__data['P']['ip']
-
-        deltas = {}
-        self.__dictionary_pos_unpack_search(self.__data, deltas)
-
-        wing_contribution = self.__data['coefficients']['W']['cmac'] + self.__data['coefficients']['W']['N']*deltas['W'][0] - self.__data['coefficients']['W']['T']*deltas['W'][1]
-        tail_contribution = tail_volume*(self.__data['coefficients']['H']['cmac']*(self.__data['geometry']['Ch']/self.__data['geometry']['C']) + self.__data['coefficients']['H']['N']*deltas['H'][0] - self.__data['coefficients']['H']['T']*deltas['H'][1])
-        thrust_contribution = thrust_coefficient*(np.sin(ip)*deltas['P'][0] + np.cos(ip)*deltas['P'][1])
-
-        return wing_contribution + tail_contribution + thrust_contribution
+        print(self.__data['C&S']['Sh'], type(self.__data['C&S']['Sh']))
+        # tail_volume = self.__data['C&S']['Sh'] / self.__data['geometry']['S'] * (
+        # self.__data['geometry']['Vh/V']) ** 2
+        # thrust_coefficient = self.__data['P']['Tc'] * 2 * (self.__data['P']['D'] ** 2) / self.__data['geometry']['S']
+        # ip = self.__data['P']['ip']
+        #
+        # deltas = {}
+        # self.__dictionary_pos_unpack_search(self.__data, deltas)
+        #
+        # wing_contribution = self.__data['coefficients']['W']['cmac'] + self.__data['coefficients']['W']['N'] * \
+        #                     deltas['W'][0] - self.__data['coefficients']['W']['T'] * deltas['W'][1]
+        # tail_contribution = tail_volume * (
+        #             self.__data['coefficients']['H']['N'] * deltas['H'][0] - self.__data['coefficients']['H']['T'] *
+        #             deltas['H'][1])
+        # thrust_contribution = thrust_coefficient * deltas['P'][1]
+        #
+        # return wing_contribution + tail_contribution + thrust_contribution
 
     @staticmethod
     def __get_delta_x(first: list, second: list):
@@ -130,16 +136,6 @@ class MomentCoefficientCalculations(object):
     def __get_delta_z(first: list, second: list):
         return second[1] - first[1]
 
-    @staticmethod
-    def load_coefficients(filepath: str = os.getcwd()+r'\data\equation_data.json'):
-
-        with open(filepath, 'r') as file:
-            data = json.load(file)
-
-        return dict(data)
-
-
-
     def cm_alpha(self, coefficients: dict, distances: dict, misc: dict):
 
         deltas = {}
@@ -148,14 +144,12 @@ class MomentCoefficientCalculations(object):
         wing_contribution = None
         # TODO: Incorporate JSON format in all methods
 
-
     def cm0(self, coefficients: dict, misc: dict):
 
         cm0 = coefficients['W']['Cmac'] - coefficients['H']['N']['alpha'] * \
-              (misc['a0'] + misc['ih']) * (misc['Vh/V'])**2 * misc['Sh/S'] * misc['lh']/misc['c']
+              (misc['a0'] + misc['ih']) * (misc['Vh/V']) ** 2 * misc['Sh/S'] * misc['lh'] / misc['c']
 
         return cm0
-
 
     def cm_de(self, coefficients: dict, misc: dict):
 
@@ -166,22 +160,20 @@ class MomentCoefficientCalculations(object):
 
 
 if __name__ == '__main__':
-
     """
     Sum of Forces and Moments Example
     """
 
-    M = [Moment(5, np.array([0,0,0])),
-         Moment(5, np.array([1,0,0])),
-         Moment(-5, np.array([1,1,0]))]
+    M = [Moment(5, np.array([0, 0, 0])),
+         Moment(5, np.array([1, 0, 0])),
+         Moment(-5, np.array([1, 1, 0]))]
 
-    F = [Force(np.array([1,0,0]), np.array([0,0,0])),
-         Force(np.array([0,1,0]), np.array([1,0,0])),
-         Force(np.array([-1,1,0]), np.array([0,1,0]))]
+    F = [Force(np.array([1, 0, 0]), np.array([0, 0, 0])),
+         Force(np.array([0, 1, 0]), np.array([1, 0, 0])),
+         Force(np.array([-1, 1, 0]), np.array([0, 1, 0]))]
 
     # Sys = ForceMomentBalance(moments=M, forces=F)
     # a = Sys.calculate(np.array([0,2,0]))
-
 
     """
     Cma calculation Example

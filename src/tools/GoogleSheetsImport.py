@@ -3,9 +3,10 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 import pandas as pd
-import gspread
+import os
 
 SPREADSHEET_ID = '1VLmc3ztGtdGbx9eByuzozoL7C7KxIqqI5o5sgheA4SQ'  # <Your spreadsheet ID>
+SHEET_NAMES = ['Weights', 'C&S', 'Aero', 'Structures', 'FPP', 'Operations', 'Internal']
 
 
 class GoogleSheetsDataImport(object):
@@ -27,10 +28,10 @@ class GoogleSheetsDataImport(object):
 
         scopes = 'https://www.googleapis.com/auth/spreadsheets.readonly'
         # Setup the Sheets API
-        store = file.Storage('credentials.json')
+        store = file.Storage('\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools\\credentials.json')
         creds = store.get()
         if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('client_secret.json', scopes)
+            flow = client.flow_from_clientsecrets('\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools\\client_secret.json', scopes)
             creds = tools.run_flow(flow, store)
         service = build('sheets', 'v4', http=creds.authorize(Http()))
 
@@ -63,10 +64,10 @@ class GoogleSheetsDataImport(object):
                 ds = pd.Series(data=column_data, name=col_name)
                 all_data.append(ds)
             df = pd.concat(all_data, axis=1)
-            return df
+            return df.iloc[0]
 
 
 if __name__ == '__main__':
 
-    G = GoogleSheetsDataImport(SPREADSHEET_ID, 'Weights', 'FPP')
+    G = GoogleSheetsDataImport(SPREADSHEET_ID, 'Weights', 'C&S')
     data = G.get_data()
