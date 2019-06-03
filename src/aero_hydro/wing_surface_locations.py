@@ -54,6 +54,20 @@ def plot_planform():
     plt.plot([max_tail_span/2, max_tail_span/2], [-tail_position+horizontal_tail_chord/2, -tail_position-horizontal_tail_chord/2], color='k')
     #plt.plot([0, 0], [-tail_position+0.5+tail_chord, -tail_position])
     
+    # control surface
+    plt.plot([-0.9*b/2, -0.9*b/2+aileron_length], [-wing_position-c/2+aileron_chord, -wing_position-c/2+aileron_chord], color='k')
+    plt.plot([-0.9*b/2, -0.9*b/2], [-wing_position-c/2+aileron_chord, -wing_position-c/2], color='k')
+    plt.plot([-0.9*b/2+aileron_length, -0.9*b/2+aileron_length], [-wing_position-c/2+aileron_chord, -wing_position-c/2], color='k')
+    
+    plt.plot([0.9*b/2, 0.9*b/2-aileron_length], [-wing_position-c/2+aileron_chord, -wing_position-c/2+aileron_chord], color='k')
+    plt.plot([0.9*b/2, 0.9*b/2], [-wing_position-c/2+aileron_chord, -wing_position-c/2], color='k')
+    plt.plot([0.9*b/2-aileron_length, 0.9*b/2-aileron_length], [-wing_position-c/2+aileron_chord, -wing_position-c/2], color='k')
+    
+    plt.plot([-elevon_length/2, elevon_length/2], [-tail_position-horizontal_tail_chord/2+elevon_chord, -tail_position-horizontal_tail_chord/2+elevon_chord], color='k')
+    plt.plot([-elevon_length/2, -elevon_length/2], [-tail_position-horizontal_tail_chord/2+elevon_chord, -tail_position-horizontal_tail_chord/2], color='k')
+    plt.plot([elevon_length/2, elevon_length/2], [-tail_position-horizontal_tail_chord/2+elevon_chord, -tail_position-horizontal_tail_chord/2], color='k')
+
+    
     
     plt.axis('equal')
     plt.grid()
