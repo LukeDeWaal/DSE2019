@@ -1,6 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import os
+import sys
+sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
+
+from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+
 
 class CgCalculation(object):
 
@@ -31,28 +37,30 @@ class CgCalculation(object):
         self.__components[name] = (weight, position)
         self.calculate_cg()
 
-    def __calculate_cg_along_x(self):
+    @staticmethod
+    def __calculate_cg_along_x(components: dict):
         """
         Calculate X coordinate of CG
         :return:
         """
-        return sum([weight * position[0] for name, (weight, position) in self.__components.items()])\
-               / sum([weight for name, (weight, position) in self.__components.items()])
+        return sum([weight * position[0] for name, (weight, position) in components.items()])\
+               / sum([weight for name, (weight, position) in components.items()])
 
-    def __calculate_cg_along_z(self):
+    @staticmethod
+    def __calculate_cg_along_z(components: dict):
         """
         Calculate Z coordinate of CG
         :return:
         """
-        return sum([weight * position[1] for name, (weight, position) in self.__components.items()])\
-               / sum([weight for name, (weight, position) in self.__components.items()])
+        return sum([weight * position[1] for name, (weight, position) in components.items()])\
+               / sum([weight for name, (weight, position) in components.items()])
 
     def calculate_cg(self):
         """
         Calculate x, z position of CG
         :return:
         """
-        self.__cg = [self.__calculate_cg_along_x(), self.__calculate_cg_along_z()]
+        self.__cg = [self.__calculate_cg_along_x(self.__components), self.__calculate_cg_along_z(self.__components)]
         return self.__cg
 
     def cg_xlemac(self, d_xlemac: float):
@@ -98,6 +106,53 @@ class CgCalculation(object):
 
         return np.array(xdata) + offset[0], np.array(ydata) + offset[1]
 
+    def wing_positioning_plot(self, fig=None):
+        """
+        Wing Positioning
+        :return:
+        """
+
+        data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES)
+        data.coordinate_transform()
+        data = data.get_data()
+        fuselage = data['Structures']['Max_fuselage_length']
+        chord = data['Aero']['Wing chord']
+
+        if fig is None:
+            fig = plt.figure()
+
+        wing_weight = self.__components['Wing'][0]
+        wing_pos = self.__components['Wing'][1]
+        components = dict(self.__components)
+
+        empty_cgs = []
+
+        for xwing in np.linspace(0.2, 0.7):
+            components['Wing'] = (wing_weight, (xwing*fuselage - chord/2, wing_pos[1]))
+            components['Payload'] = (0,(0,0))
+            cg = (self.__calculate_cg_along_x(components) - xwing*fuselage)/chord
+            empty_cgs.append(cg)
+
+        empty_cgs = np.array(empty_cgs)
+
+        full_cgs = []
+        components = dict(self.__components)
+
+        for xwing in np.linspace(0.2, 0.7):
+            components['Wing'] = (wing_weight, (xwing*fuselage - chord/2, wing_pos[1]))
+            cg = (self.__calculate_cg_along_x(components) - xwing*fuselage)/chord
+            full_cgs.append(cg)
+
+        full_cgs = np.array(full_cgs)
+
+        plt.plot(empty_cgs, np.linspace(0.2, 0.7), 'r-', label='Empty Payload')
+        plt.plot(full_cgs, np.linspace(0.2, 0.7), 'b-', label='Full Payload')
+        plt.grid()
+        plt.legend()
+        plt.xlabel('$x_{cg}/MAC$')
+        plt.ylabel('$x_{LEMAC}/l_{fus}$')
+        plt.title(f'Payload @ {components["Payload"][1][0]} m')
+
     def plot_locations(self, fig: plt.figure = None):
         """
         Make a component plot of all components and weights
@@ -108,36 +163,47 @@ class CgCalculation(object):
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect(1.0)
+            plt.xlim(0, 15)
+            plt.ylim(0, 15)
 
+        coordinate_history = []
         for name, (weight, (x, z)) in self.__components.items():
+            i = 1
+            if (x, z) in coordinate_history:
+                i = 3
             plt.scatter(x, z, s=np.sqrt(weight), c='k')
-            plt.annotate(name, xy=(x+0.1, z+0.1))
-
+            plt.annotate(name, xy=(x+i*0.1, z+i*0.1))
+            coordinate_history.append((x,z))
         plt.scatter(self.__cg[0], self.__cg[1], c='r')
         plt.annotate('CG', xy=self.__cg)
 
         # fuselage = self.__plot_cilinder(9, 2.5)
-        # wing = self.__plot_cilinder(2.6, 0.2, offset=(3,1.5))
+        # wing = self.__plot_cilinder(2.25, 0.5, offset=(3, 1.5))
         #
-        # plt.plot(fuselage[0], fuselage[1])
-        # plt.plot(wing[0], wing[1])
+        # plt.plot(fuselage[0], fuselage[1], 'k-')
+        # plt.plot(wing[0], wing[1], 'k-')
 
         plt.grid()
         plt.xlabel('X Position [m]')
         plt.ylabel('Y Position [m]')
+        plt.title('CG Location')
 
 
 if __name__ == '__main__':
 
+    data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
+
     components = {
-        'Fuselage': (2200, (5, 0)),
-        'Wing': (800, (3, 1.5)),
-        'Engine': (400, (6, 2.0)),
-        'Empennage': (600, (9, 2.0)),
-        'Payload': (4000, (4, 0)),
-        'Fuel': (200, (3, 1.5))
+        'Fuselage': (data['Structures']['Fuselage_weight [N]'], data['C&S']['Fuselage']),
+        'Wing': (data['Structures']['Wing_weight [N]'], data['C&S']['Wing']),
+        'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
+        'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
+        'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
+        'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
+        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing'])
     }
 
     B = CgCalculation(components)
     B.plot_locations()
-
+    print("CG: ", B.calculate_cg())
+    B.wing_positioning_plot()
