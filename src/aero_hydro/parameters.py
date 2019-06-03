@@ -9,12 +9,6 @@ rho_cruise=0.85 # kg/m^3
 miu_cruise=1.650*10**-5 #Ns/m^2
 miu_SL = 1.789*10**-5 #Ns/m^2
 
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> f1eb6f5c2e55f1269526f8095bd1266282a9d3d2
 # Wing parameters
 AR = 7.5
 S_wing = 50 # m^2
@@ -42,18 +36,18 @@ horizontal_tail_area = horizontal_tail_volume_coefficient * (c*S_wing)/L_ht
 horizontal_tail_chord = horizontal_tail_area/max_tail_span * 0.9
 
 # Vertical tail parameters
-<<<<<<< HEAD
 vertital_tail_volume_coefficient = 0.04
+vertital_tail_volume_coefficient = 0.05
+vertical_tail_area = vertital_tail_volume_coefficient*b*S_wing/L_ht * 0.9
 
 #Fuselage parameters
 fus_l=9.0 #m
-fus_front_area=0.75*1.25*np.pi
-
-
-=======
-vertital_tail_volume_coefficient = 0.05
-vertical_tail_area = vertital_tail_volume_coefficient*b*S_wing/L_ht * 0.9
->>>>>>> f1eb6f5c2e55f1269526f8095bd1266282a9d3d2
+fus_A=0.75
+fus_B=1.25
+fus_front_area=fus_A*fus_B*np.pi
+fus_len_1=0
+fus_len_2=0
+fus_len_3=0
 
 # Control surface parameters
 aileron_length = 0.4 * b / 2
@@ -65,15 +59,10 @@ elevon_chord = 0.375 * horizontal_tail_chord
 hull_width = 1.5 # m
 
 #Aerodynamics Parameters
-<<<<<<< HEAD
 R_cruise_wing=rho_cruise*V_cruise*c/miu_cruise
-
-R_cruise_tail=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
-=======
-R_cruise=rho_cruise*V_cruise*c/miu_cruise
+R_cruise_ht=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
 mach = 0.286
 beta = np.sqrt(1-mach**2)
 Cl_alpha = 6.25
 airfoil_efficiency = Cl_alpha/(2*np.pi/beta) 
 CL_alpha = 2*np.pi*AR/(2 + np.sqrt(4 + (AR*beta/airfoil_efficiency)**2 * (1 + np.tan(sweep)**2))) * (S_wing - c*hull_width)/S_wing * 1.07*(1+hull_width/b)**2
->>>>>>> f1eb6f5c2e55f1269526f8095bd1266282a9d3d2
