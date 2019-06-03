@@ -64,6 +64,40 @@ class CgCalculation(object):
         self.__cg_lemac = [self.__cg[0] - d_xlemac, self.__cg[1]]
         return self.__cg_lemac
 
+    @staticmethod
+    def __plot_cilinder(length: float, height: float, offset: tuple = (0, 0)):
+
+        height = height/2
+        xdata = []
+        ydata = []
+
+        # First Circular Part
+        for theta in np.linspace(0, np.pi/2, 10):
+            xdata.append(height - np.cos(theta)*height)
+            ydata.append(np.sin(theta)*height)
+
+        # Straight Part
+        for xi in np.linspace(height, length-height, 100):
+            xdata.append(xi)
+            ydata.append(height)
+
+        # Second Circular Part
+        for theta in np.linspace(np.pi/2, 0, 10):
+            xdata.append(length - height + np.cos(theta)*height)
+            ydata.append(np.sin(theta)*height)
+
+        bottom_x = []
+        bottom_y = []
+
+        for xi, yi in zip(xdata[::-1], ydata[::-1]):
+            bottom_x.append(xi)
+            bottom_y.append(-yi)
+
+        xdata.extend(bottom_x)
+        ydata.extend(bottom_y)
+
+        return np.array(xdata) + offset[0], np.array(ydata) + offset[1]
+
     def plot_locations(self, fig: plt.figure = None):
         """
         Make a component plot of all components and weights
@@ -82,6 +116,12 @@ class CgCalculation(object):
         plt.scatter(self.__cg[0], self.__cg[1], c='r')
         plt.annotate('CG', xy=self.__cg)
 
+        # fuselage = self.__plot_cilinder(9, 2.5)
+        # wing = self.__plot_cilinder(2.6, 0.2, offset=(3,1.5))
+        #
+        # plt.plot(fuselage[0], fuselage[1])
+        # plt.plot(wing[0], wing[1])
+
         plt.grid()
         plt.xlabel('X Position [m]')
         plt.ylabel('Y Position [m]')
@@ -90,12 +130,12 @@ class CgCalculation(object):
 if __name__ == '__main__':
 
     components = {
-        'Fuselage': (2200, (10, 0)),
-        'Wing': (800, (9, 0)),
-        'Engine': (400, (14, 1)),
-        'Empennage': (600, (15, 0)),
-        'Payload': (4000, (12, 0)),
-        'Fuel': (200, (6, 0.3))
+        'Fuselage': (2200, (5, 0)),
+        'Wing': (800, (3, 1.5)),
+        'Engine': (400, (6, 2.0)),
+        'Empennage': (600, (9, 2.0)),
+        'Payload': (4000, (4, 0)),
+        'Fuel': (200, (3, 1.5))
     }
 
     B = CgCalculation(components)

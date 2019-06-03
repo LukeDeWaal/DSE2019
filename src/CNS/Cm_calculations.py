@@ -2,11 +2,15 @@ import numpy as np
 import os
 import json
 
+import sys
+sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
+
+from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+
 
 class Force(object):
 
     def __init__(self, vector: np.array, location: np.array):
-
         self.__vector = vector
         self.__position = location
 
@@ -20,13 +24,12 @@ class Force(object):
         return np.linalg.norm(self.__vector)
 
     def get_direction(self):
-        return self.__vector/self.get_magnitude()
+        return self.__vector / self.get_magnitude()
 
 
 class Moment(object):
 
     def __init__(self, magnitude: float, location: np.array):
-
         self.__moment = magnitude
         self.__position = location
 
@@ -52,7 +55,6 @@ class ForceMomentBalance(object):
 
         except KeyError:
             self.__moments = []
-
 
     def add_force(self, force_object: Force):
         self.__forces.append(force_object)
@@ -85,42 +87,60 @@ class MomentCoefficientCalculations(object):
     def __init__(self):
 
         try:
-            self.__data = self.load_coefficients()
+            self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, ConnectionError, ConnectionRefusedError, ConnectionAbortedError):
             print("No Data Found In Current Path")
             self.__data = None
 
-    def __dictionary_pos_unpack_search(self, source: dict, target: dict = {}, top_key: str = ''):
+    def aerial_cm(self):
 
-        cg = self.__data['geometry']['cg']
+        cg = self.__data['C&S']['CG_abs']
 
-        for key, value in source.items():
-            if key == "pos":
+        tail_volume = self.__data['C&S']['Sh'] / self.__data['Aero']['Wing Area'] * (self.__data['Aero']['Vh/V']) ** 2
+        thrust_coefficient = self.__data['FPP']['Tc'] * 2 * (self.__data['FPP']['Prop Diameter [m]'] ** 2) / self.__data['Aero']['Wing Area']
 
-                delta_x = self.__get_delta_x(value, cg)
-                delta_z = self.__get_delta_z(value, cg)
+        wing_contribution = self.__data['Aero']['Cm_ac'] + self.__data['Aero']['CN_w'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[0] - \
+                            self.__data['Aero']['CT_w'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[1]
 
-                target[top_key] = [delta_x, delta_z]
+        tail_contribution = tail_volume * (self.__data['Aero']['CN_h'] * self.__data['C&S']['lh'] -
+                                           self.__data['Aero']['CT_h'] * self.__get_delta(self.__data['C&S']['H Wing'], cg)[1])
 
-            else:
-                if type(value) == dict:
-                    self.__dictionary_pos_unpack_search(source[key], target, key)
-
-    def cm(self):
-
-        tail_volume = self.__data['geometry']['Sh']/self.__data['geometry']['S']*(self.__data['geometry']['Vh/V'])**2
-        thrust_coefficient = self.__data['P']['Tc']*2*(self.__data['P']['D']**2)/self.__data['geometry']['S']
-        ip = self.__data['P']['ip']
-
-        deltas = {}
-        self.__dictionary_pos_unpack_search(self.__data, deltas)
-
-        wing_contribution = self.__data['coefficients']['W']['cmac'] + self.__data['coefficients']['W']['N']*deltas['W'][0] - self.__data['coefficients']['W']['T']*deltas['W'][1]
-        tail_contribution = tail_volume*(self.__data['coefficients']['H']['cmac']*(self.__data['geometry']['Ch']/self.__data['geometry']['C']) + self.__data['coefficients']['H']['N']*deltas['H'][0] - self.__data['coefficients']['H']['T']*deltas['H'][1])
-        thrust_contribution = thrust_coefficient*(np.sin(ip)*deltas['P'][0] + np.cos(ip)*deltas['P'][1])
+        thrust_contribution = thrust_coefficient * self.__get_delta(self.__data['C&S']['Engine'], cg)[1]
 
         return wing_contribution + tail_contribution + thrust_contribution
+
+    def scooping_cm(self):
+
+        cg = self.__data['C&S']['CG_abs']
+
+        tail_volume = self.__data['C&S']['Sh'] / self.__data['Aero']['Wing Area'] * (self.__data['Aero']['Vh/V']) ** 2
+        thrust_coefficient = self.__data['FPP']['Tc'] * 2 * (self.__data['FPP']['Prop Diameter [m]'] ** 2) / self.__data['Aero']['Wing Area']
+
+        wing_contribution = self.__data['Aero']['Cm_ac'] + self.__data['Aero']['CN_w'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[0] - \
+                            self.__data['Aero']['CT_w'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[1]
+
+        tail_contribution = tail_volume * (self.__data['Aero']['CN_h'] * self.__data['C&S']['lh'] -
+                                           self.__data['Aero']['CT_h'] * self.__get_delta(self.__data['C&S']['H Wing'], cg)[1])
+
+        thrust_contribution = thrust_coefficient * self.__get_delta(self.__data['C&S']['Engine'], cg)[1]
+
+        water_contribution = self.__data['Structures']['CN_s'] * self.__get_delta_x(self.__data['Structures']['Scooper_location'], cg)*self.__data['Structures']['Scooper Area']/self.__data['Aero']['Wing Area'] - \
+                             self.__data['Structures']['CT_s'] * self.__get_delta_z(self.__data['Structures']['Scooper_location'], cg)*self.__data['Structures']['Scooper Area']/self.__data['Aero']['Wing Area']
+
+        return wing_contribution + tail_contribution + thrust_contribution + water_contribution
+
+    def cm_alpha(self):
+
+        cg = self.__data['C&S']['CG_abs']
+        tail_volume = self.__data['C&S']['Sh'] / self.__data['Aero']['Wing Area'] * (self.__data['Aero']['Vh/V']) ** 2
+
+        wing_contribution = self.__data['Aero']['CN_w_a'] * self.__get_delta_x(self.__data['C&S']['Wing'], cg) - \
+                            self.__data['Aero']['CT_w_a'] * self.__get_delta_z(self.__data['C&S']['Wing'], cg)
+
+        tail_contributuon = tail_volume * self.__data['Aero']['CN_h_a'] * self.__get_delta_x(self.__data['C&S']['H Wing'], cg)
+
+        return wing_contribution + tail_contributuon
 
     @staticmethod
     def __get_delta_x(first: list, second: list):
@@ -130,58 +150,29 @@ class MomentCoefficientCalculations(object):
     def __get_delta_z(first: list, second: list):
         return second[1] - first[1]
 
-    @staticmethod
-    def load_coefficients(filepath: str = os.getcwd()+r'\data\equation_data.json'):
-
-        with open(filepath, 'r') as file:
-            data = json.load(file)
-
-        return dict(data)
+    @classmethod
+    def __get_delta(cls, first: list, second: list):
+        return [cls.__get_delta_x(first, second), cls.__get_delta_z(first, second)]
 
 
 
-    def cm_alpha(self, coefficients: dict, distances: dict, misc: dict):
-
-        deltas = {}
-        self.__dictionary_pos_unpack_search(self.__data, deltas)
-
-        wing_contribution = None
-        # TODO: Incorporate JSON format in all methods
-
-
-    def cm0(self, coefficients: dict, misc: dict):
-
-        cm0 = coefficients['W']['Cmac'] - coefficients['H']['N']['alpha'] * \
-              (misc['a0'] + misc['ih']) * (misc['Vh/V'])**2 * misc['Sh/S'] * misc['lh']/misc['c']
-
-        return cm0
-
-
-    def cm_de(self, coefficients: dict, misc: dict):
-
-        cmde = - coefficients['H']['N']['delta'] * (misc['a0'] + misc['ih']) * \
-               (misc['Vh/V']) ** 2 * misc['Sh/S'] * misc['lh'] / misc['c']
-
-        return cmde
 
 
 if __name__ == '__main__':
-
     """
     Sum of Forces and Moments Example
     """
 
-    M = [Moment(5, np.array([0,0,0])),
-         Moment(5, np.array([1,0,0])),
-         Moment(-5, np.array([1,1,0]))]
+    M = [Moment(5, np.array([0, 0, 0])),
+         Moment(5, np.array([1, 0, 0])),
+         Moment(-5, np.array([1, 1, 0]))]
 
-    F = [Force(np.array([1,0,0]), np.array([0,0,0])),
-         Force(np.array([0,1,0]), np.array([1,0,0])),
-         Force(np.array([-1,1,0]), np.array([0,1,0]))]
+    F = [Force(np.array([1, 0, 0]), np.array([0, 0, 0])),
+         Force(np.array([0, 1, 0]), np.array([1, 0, 0])),
+         Force(np.array([-1, 1, 0]), np.array([0, 1, 0]))]
 
     # Sys = ForceMomentBalance(moments=M, forces=F)
     # a = Sys.calculate(np.array([0,2,0]))
-
 
     """
     Cma calculation Example
@@ -216,4 +207,6 @@ if __name__ == '__main__':
     }
 
     M = MomentCoefficientCalculations()
-    cm = M.cm()
+    print(M.aerial_cm())
+    print(M.scooping_cm())
+    print(M.cm_alpha())
