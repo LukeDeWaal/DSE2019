@@ -11,18 +11,21 @@ miu_SL = 1.789*10**-5 #Ns/m^2
 
 
 
+
 # Wing parameters
 AR = 7.5
 S_wing = 50 # m^2
 b = np.sqrt(AR*S_wing) # m
 c = S_wing/b # m
-V_cruise = 80 # m/s
+V_cruise = 103 # m/s
 V_loit = 44 # m/s
+M_cruise=V_cruise/np.sqrt(1.4*287*273)
 Cl_cruise = 0.45046
 Cl_loit = 2.1
 L_cruise = Cl_cruise * 0.5 * rho_cruise * V_cruise**2 * S_wing
 wing_position = cg_position * 1.2
 wing_moment = L_cruise * (wing_position - cg_position) # Nm
+
 
 # Horizontal tail parameters
 max_tail_span = 4 # m
@@ -45,4 +48,6 @@ vertital_tail_volume_coefficient = 0.04
 hull_width = 1.5 # m
 
 #Aerodynamics Parameters
-R_cruise=rho_cruise*V_cruise*c/miu_cruise
+R_cruise_wing=rho_cruise*V_cruise*c/miu_cruise
+
+R_cruise_tail=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
