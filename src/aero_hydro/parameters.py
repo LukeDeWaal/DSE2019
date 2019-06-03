@@ -42,6 +42,11 @@ horizontal_tail_chord = horizontal_tail_area/max_tail_span
 # Vertical tail parameters
 vertital_tail_volume_coefficient = 0.04
 
+#Fuselage parameters
+fus_l=9.0 #m
+fus_front_area=0.75*1.25*np.pi
+
+
 
 
 # Hull parameters

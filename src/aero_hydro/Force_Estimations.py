@@ -54,23 +54,24 @@ def skinfriction_drag(R,M, lt_ratio,t_c,x_c_max,sweep_angle_max,k,fuselage=True)
         
     FF=(1+(0.6/x_c_max)*(t_c)+100*(t_c)**4)*(1.34*M**0.18*np.cos(sweep_angle_max)**0.28)
     
-    Cd0 = FF*S_wing_wet*Cf_final/S_wing
-    
+    #Correction for Fuselage Skin Friction
     if fuselage:
-        return 0
+        
+        f=fus_l/np.sqrt/((4/np.pi)*fus_front_area)
+        
+        FF=1+60/f**3+f/400
         
     
-    return Cd0
+    Cd0 = FF*S_wing_wet*Cf_final/S_wing
+        
+    return Cd0, fus_front_area
+
+
+####MAIN####
     
 print(skinfriction_drag(R_cruise_wing,M_cruise,0.2,0.16,0.4,0,k_paint,fuselage = False))
 
 
-#if kwargs:
-#    
-#        if kwargs['fuselage']==False:
-#            return 0
-
-    
     
     
 
