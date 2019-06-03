@@ -21,6 +21,7 @@ Cl_loit = 2.1
 L_cruise = Cl_cruise * 0.5 * rho_cruise * V_cruise**2 * S_wing
 wing_position = cg_position * 1.2
 wing_moment = L_cruise * (wing_position - cg_position) # Nm
+sweep = 0 # deg
 
 # Horizontal tail parameters
 max_tail_span = 4 # m
@@ -47,3 +48,8 @@ hull_width = 1.5 # m
 
 #Aerodynamics Parameters
 R_cruise=rho_cruise*V_cruise*c/miu_cruise
+mach = 0.286
+beta = np.sqrt(1-mach**2)
+Cl_alpha = 6.25
+airfoil_efficiency = Cl_alpha/(2*np.pi/beta) 
+CL_alpha = 2*np.pi*AR/(2 + np.sqrt(4 + (AR*beta/airfoil_efficiency)**2 * (1 + np.tan(sweep)**2))) * (S_wing - c*hull_width)/S_wing * 1.07*(1+hull_width/b)**2
