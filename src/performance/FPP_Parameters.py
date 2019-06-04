@@ -22,6 +22,10 @@ rho_std = 1.225                         # kg/m^3
 n_max = 4.4                             # -
 n_min = -1.8                            # -
 g = 9.80665                             # m/s^2
+V_end = 130                             # m/s
+V_step = 0.1                            # m/s
+rho_fire = 0.75                         # kg/m^3 (.75 at ±200C) (.5 at ±400C)
+
 
 
 
