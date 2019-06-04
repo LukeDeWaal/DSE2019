@@ -36,8 +36,8 @@ def plot_planform():
     # CG
     plt.plot(0, -cg_position, marker='o', markersize=3, color='red', label='Center of Gravity') 
      
-    # center of gravity
-    plt.plot(0, -wing_position, marker='o', markersize=3, color='blue', label='Center of Pressure') 
+    # center of pressure
+    plt.plot(0, -x_ac, marker='o', markersize=3, color='blue', label='Center of Pressure') 
         
     # hull
     plt.plot([-hull_width/2, hull_width/2], [0, 0], color='k')
