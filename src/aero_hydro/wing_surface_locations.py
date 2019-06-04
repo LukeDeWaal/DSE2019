@@ -36,8 +36,8 @@ def plot_planform():
     # CG
     plt.plot(0, -cg_position, marker='o', markersize=3, color='red', label='Center of Gravity') 
      
-    # center of gravity
-    plt.plot(0, -wing_position, marker='o', markersize=3, color='blue', label='Center of Pressure') 
+    # center of pressure
+    plt.plot(0, -x_ac, marker='o', markersize=3, color='blue', label='Center of Pressure') 
         
     # hull
     plt.plot([-hull_width/2, hull_width/2], [0, 0], color='k')
@@ -77,6 +77,10 @@ def plot_planform():
     
     # side view
     plt.subplot(2, 1, 2)
+    
+    airfoil_coordinates = pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y']) * c
+    airfoil_coordinates['x'] += wing_position - c/2
+    airfoil_coordinates['y'] += hull_height/2 - 0.1 * c
         
     side_view = {
         'hull': [
@@ -85,9 +89,16 @@ def plot_planform():
             [fus_l, hull_height/2],
             [fus_l, -hull_height/2],  
         ],
-        'airfoil': pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y'])
+        'vertical_tail': [
+            [fus_l-vertical_tail_root_chord, hull_height/2],
+            [fus_l-vertical_tail_tip_chord, hull_height/2+vertical_tail_height],
+            [fus_l, hull_height/2+vertical_tail_height],
+            [fus_l, hull_height/2] 
+        ],
+        'airfoil': airfoil_coordinates,
     }
-    plt.gca().add_patch(plt.Polygon(side_view['hull'], fill=None, linewidth=1.5))
+    for component in side_view.values():
+        plt.gca().add_patch(plt.Polygon(component, fill=None, linewidth=1.5))
     
     
     
