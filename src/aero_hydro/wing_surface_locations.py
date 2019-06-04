@@ -111,11 +111,10 @@ def plot_planform():
 
 def plot_cl_alpha_curve():
     """
-    Plots the Cl-alpha curve, of the NACA 6420, based on JavaFoil
+    Plots the Cl-alpha curve, of the NACA 6415, based on JavaFoil
     """
-    plt.plot(list(range(0,21,1)), 
-             [0.706, 0.796, 0.898, 0.997, 1.093, 1.188, 1.279, 1.368, 1.454, 1.534, 1.608, 1.675, 1.733, 1.780, 1.814, 1.837, 1.844, 1.838, 1.818, 1.786, 1.739])
-    plt.plot([0,10], [0.706, 1.6])
+    data = pd.read_csv('NACA_6415_Cl_alpha.txt', skiprows=2, names=['alpha', 'Cl', 'Cd' , 'Cm0.25', 'Cp', 'M_cr'])
+    plt.plot(data['alpha'], data['Cl'])
     plt.xlabel('alpha')
     plt.ylabel('Cl')
     plt.grid()
