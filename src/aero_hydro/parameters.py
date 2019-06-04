@@ -38,7 +38,9 @@ horizontal_tail_chord = horizontal_tail_area/max_tail_span * 0.9
 # Vertical tail parameters
 vertical_tail_volume_coefficient = 0.04
 vertical_tail_volume_coefficient = 0.05
+max_tail_span_vertical = 4.
 vertical_tail_area = vertical_tail_volume_coefficient*b*S_wing/L_ht * 0.9
+vertical_tail_chord = vertical_tail_area/max_tail_span_vertical * 0.9
 
 #Fuselage parameters
 fus_l=9.0 #m
