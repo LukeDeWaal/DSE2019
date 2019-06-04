@@ -51,11 +51,12 @@ fus_front_area=0.75*1.25*np.pi
 fus_A=0.75
 fus_B=1.25
 fus_front_area=fus_A*fus_B*np.pi
-fus_len_1=0
-fus_len_2=0
-fus_len_3=0
-hull_width = 1.5 # m
-hull_height = 2.5 # m
+fus_len_1=2.25
+fus_len_2=1.53
+fus_len_3=5.22
+hull_width = 1.5 #m
+hull_height = 2.5 #m
+fus_upsweep = 10 #deg
 
 # Control surface parameters
 aileron_length = 0.4 * b / 2 # m
@@ -63,11 +64,19 @@ aileron_chord = 0.2 * c # m
 elevon_length = 0.8 * max_tail_span # m
 elevon_chord = 0.375 * horizontal_tail_chord # m
 
+#Engine parameters
+eng_l = 6.0
+eng_width = 0.6
+eng_cowling = 0.6*1.2
+
 #Aerodynamics Parameters
 R_cruise_wing=rho_cruise*V_cruise*c/miu_cruise
 R_cruise_tail=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
 R_cruise=rho_cruise*V_cruise*c/miu_cruise
 R_cruise_ht=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
+R_cruise_fus = rho_cruise*V_cruise*fus_l/miu_cruise
+R_cruise_eng = rho_cruise*V_cruise*eng_l/miu_cruise
+
 mach = 0.286
 beta = np.sqrt(1-mach**2)
 Cl_alpha = 6.25

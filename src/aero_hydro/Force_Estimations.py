@@ -40,7 +40,7 @@ def skinfriction_drag(S_ref,S_component,R,M, lt_ratio,t_c,x_c_max,sweep_angle_ma
     elif component == 'fuselage':
         S_wet = (np.pi*(fus_B*2)/4)*(1/(3*fus_len_1**2)*((4*fus_len_1**2+(fus_B*2)**2/4)**1.5-(fus_B*2)**3/8)-(fus_B*2)+4*fus_len_2+2*np.sqrt(fus_len_3**2+(fus_B*2)**2/4))
     elif component == 'nacelle':
-        S_wet = (np.pi*(cowling_diameter**2)/4)*engine_length
+        S_wet = (np.pi*(eng_cowling**2)/4)*eng_l
         
     
     #The next parameter is dependent on the type of material used in the design
@@ -79,7 +79,7 @@ def skinfriction_drag(S_ref,S_component,R,M, lt_ratio,t_c,x_c_max,sweep_angle_ma
         FF=FF*1.5
     
     if component == 'nacelle':
-        f = l/(np.sqrt((4/np.pi)*(np.pi*(cowling_diameter**2)/4)))
+        f = l/(np.sqrt((4/np.pi)*(np.pi*(eng_cowling**2)/4)))
         
         FF= 1 + (0.35/f)
         
@@ -127,7 +127,7 @@ def parasite_addition_flaps(flap_deflection):
         #Flap deflection angle as integer in degrees
  
         
-    delta_Cd0_slotted = 0.0074*0.35*(flap_deflection-10)
+    delta_Cd0_slotted = 0.0074*0.35*(flap_deflection-10)*1.2
         
     delta_Cd0_plain = 0.0144*0.25*(flap_deflection-10)
         
@@ -146,7 +146,7 @@ Sf_vt = (skinfriction_drag(S_wing,vertical_tail_area, R_cruise_ht,M_cruise,0.2,0
 
 Sf_fus = (skinfriction_drag(S_wing,0,R_cruise_fus,M_cruise,0.25,0.7,0.2,0,k_paint,fus_l,'fuselage'))
 
-Sf_nacelle = (skinfriction_drag(S_wing,0,R_cruise_eng,M_cruise,0.2,0.7,0.2,0,k_paint,engine_length,'nacelle'))*1.5
+Sf_nacelle = (skinfriction_drag(S_wing,0,R_cruise_eng,M_cruise,0.2,0.7,0.2,0,k_paint,eng_l,'nacelle'))*1.5
 
 Sf_total = Sf_wing +Sf_ht + Sf_vt+ Sf_fus + Sf_nacelle
 
@@ -154,16 +154,21 @@ misc_total=miscellaneous_drag(0.09, 0.09, 0.05,2,1,2)
 
 flap_total = parasite_addition_flaps(30)
 
+total_parasitic_noflaps = Sf_total+misc_total
+
 total_parasitic_slotted = Sf_total+misc_total+flap_total[0]
 
 total_parasitic_simple = Sf_total+misc_total+flap_total[1]
 
 #print("The Total Skin Friction Drag is", Sf_total)
 
+print(("The Total Parasitic Drag with no flaps is", total_parasitic_noflaps*1.1))
+
 print ("The Total Parasitic Drag with simple flaps is", total_parasitic_simple*1.1)
 
 print ("The Total Parasitic Drag with slotted flaps is", total_parasitic_slotted*1.1)
 
+print(Sf_nacelle)
 
 
 
