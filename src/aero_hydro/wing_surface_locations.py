@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from parameters import *
+from Control_Coefficients import *
 
 
 
@@ -109,18 +110,21 @@ def plot_planform():
     plt.show()  
 
 
-def plot_cl_alpha_curve():
+def plot_cl_alpha_curves():
     """
     Plots the Cl-alpha curve, of the NACA 6420, based on JavaFoil
     """
     plt.plot(list(range(0,21,1)), 
              [0.706, 0.796, 0.898, 0.997, 1.093, 1.188, 1.279, 1.368, 1.454, 1.534, 1.608, 1.675, 1.733, 1.780, 1.814, 1.837, 1.844, 1.838, 1.818, 1.786, 1.739])
     plt.plot([0,10], [0.706, 1.6])
+    
+    plt.plot(angles_of_attack,cL_alpha_wing)
     plt.xlabel('alpha')
     plt.ylabel('Cl')
     plt.grid()
     plt.show()
-    
+
+       
     
 def plot_naca_6415():
     coordinates = pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y'])

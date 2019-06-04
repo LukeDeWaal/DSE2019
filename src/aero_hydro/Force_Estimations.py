@@ -168,7 +168,6 @@ print ("The Total Parasitic Drag with simple flaps is", total_parasitic_simple*1
 
 print ("The Total Parasitic Drag with slotted flaps is", total_parasitic_slotted*1.1)
 
-print(Sf_nacelle)
 
 
 
