@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 from parameters import *
 
 
@@ -29,6 +30,9 @@ def plot_planform():
     """
     Plots the planform of the aircraft
     """
+    # top view
+    plt.subplot(2,1,1)
+    
     # CG
     plt.plot(0, -cg_position, marker='o', markersize=3, color='red', label='Center of Gravity') 
      
@@ -52,7 +56,6 @@ def plot_planform():
     plt.plot([-max_tail_span/2, max_tail_span/2], [-tail_position-horizontal_tail_chord/2, -tail_position-horizontal_tail_chord/2], color='k')
     plt.plot([-max_tail_span/2, -max_tail_span/2], [-tail_position+horizontal_tail_chord/2, -tail_position-horizontal_tail_chord/2], color='k')
     plt.plot([max_tail_span/2, max_tail_span/2], [-tail_position+horizontal_tail_chord/2, -tail_position-horizontal_tail_chord/2], color='k')
-    #plt.plot([0, 0], [-tail_position+0.5+tail_chord, -tail_position])
     
     # control surface
     plt.plot([-0.9*b/2, -0.9*b/2+aileron_length], [-wing_position-c/2+aileron_chord, -wing_position-c/2+aileron_chord], color='k')
@@ -67,13 +70,32 @@ def plot_planform():
     plt.plot([-elevon_length/2, -elevon_length/2], [-tail_position-horizontal_tail_chord/2+elevon_chord, -tail_position-horizontal_tail_chord/2], color='k')
     plt.plot([elevon_length/2, elevon_length/2], [-tail_position-horizontal_tail_chord/2+elevon_chord, -tail_position-horizontal_tail_chord/2], color='k')
 
-    
-    
-    plt.axis('equal')
+    plt.axis('scaled')
     plt.grid()
-    plt.legend()
-    plt.show()    
-
+    plt.legend()  
+    
+    
+    # side view
+    plt.subplot(2, 1, 2)
+        
+    side_view = {
+        'hull': [
+            [0, -hull_height/2],
+            [0, hull_height/2],
+            [fus_l, hull_height/2],
+            [fus_l, -hull_height/2],  
+        ],
+        'airfoil': pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y'])
+    }
+    plt.gca().add_patch(plt.Polygon(side_view['hull'], fill=None, linewidth=1.5))
+    
+    
+    
+    
+    
+    plt.axis('scaled')
+    plt.grid()
+    plt.show()  
 
 
 def plot_cl_alpha_curve():
@@ -88,6 +110,14 @@ def plot_cl_alpha_curve():
     plt.grid()
     plt.show()
     
+    
+def plot_naca_6415():
+    coordinates = pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y'])
+    plt.plot(coordinates['x'], coordinates['y'])
+    plt.axis('equal')
+    plt.grid()
+    plt.show()
+
 
 
 if __name__ == '__main__':

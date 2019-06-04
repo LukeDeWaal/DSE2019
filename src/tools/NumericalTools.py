@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.linalg
+import scipy.linalg as lin
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
@@ -81,7 +81,7 @@ def multivariate_plane_fitting(data: np.array, order: int, colour: str = 'b', fi
     if order == 1:
         # best-fit linear plane
         A = np.c_[data[:, 0], data[:, 1], np.ones(data.shape[0])]
-        C, _, _, _ = scipy.linalg.lstsq(A, data[:, 2])  # coefficients
+        C, _, _, _ = lin.lstsq(A, data[:, 2])  # coefficients
 
         # evaluate it on grid
         Z = C[0] * X + C[1] * Y + C[2]
@@ -92,7 +92,7 @@ def multivariate_plane_fitting(data: np.array, order: int, colour: str = 'b', fi
     elif order == 2:
         # best-fit quadratic curve
         A = np.c_[np.ones(data.shape[0]), data[:, :2], np.prod(data[:, :2], axis=1), data[:, :2] ** 2]
-        C, _, _, _ = scipy.linalg.lstsq(A, data[:, 2])
+        C, _, _, _ = lin.lstsq(A, data[:, 2])
 
         # evaluate it on a grid
         Z = np.dot(np.c_[np.ones(XX.shape), XX, YY, XX * YY, XX ** 2, YY ** 2], C).reshape(X.shape)
