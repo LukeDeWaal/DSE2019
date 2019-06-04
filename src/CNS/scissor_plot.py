@@ -28,7 +28,7 @@ class ControllabilityCurve(object):
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(-1, 2, 100)
+        xrange = np.linspace(0.2, 0.5, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
         plt.xlabel(r'$x_{cg} / c [-]$')
@@ -41,25 +41,39 @@ class ControllabilityCurve(object):
 
 class StabilityCurve(object):
 
-    def __init__(self, **kwargs):
+    def __init__(self, mode: str = 'aerial'):
 
         self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
-        self.__curve = self.__get_stability_curve()
+        self.__curve = self.__get_stability_curve(mode)
 
-    def __get_stability_curve(self):
+    def __get_stability_curve(self, mode: str = 'aerial'):
 
-        first_term = (self.__data['Aero']['CL_alpha_h'] / self.__data['Aero']['CL_alpha_A-h'] * (1 - self.__data['Aero']['de/da']) * self.__data['C&S']['lh'] / self.__data['Aero']['Wing chord'] * self.__data['Aero']['Vh/V'] ** 2) ** (-1)
-        second_term = float(first_term) * (self.__data['Aero']['x_ac'] - self.__data['C&S']['SM'])
+        chord = self.__data['Aero']['Wing chord']
+        SM = self.__data['C&S']['SM']
+        denom = ((1-self.__data['Aero']['de/da'])*(self.__data['Aero']['Vh/V'])**2*self.__data['Aero']['CL_alpha_h'])
 
-        return lambda xcg: first_term * xcg - second_term
+        aerial_term = lambda xcg: self.__data['Aero']['CL_alpha_A-h']/denom*(xcg + SM - (self.__data['C&S']['Wing'][0] + chord*self.__data['Aero']['x_ac']))/(SM - self.__data['C&S']['lh']/chord)
+
+        amphibious_term = lambda xcg: 1000.0/1.225 * 0.99 * self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*(self.__data['Structures']['CL_alpha_hull']*(xcg + SM - self.__data['Structures']['CoB'][0]) - self.__data['Structures']['CD_alpha_hull']*(10 + SM - self.__data['Structures']['CoB'][1]))/(SM - self.__data['C&S']['lh']/chord)
+
+        if mode == 'aerial':
+            function = lambda xcg: -aerial_term(xcg)
+
+        elif mode == 'amphibious':
+            function = lambda xcg: -(aerial_term(xcg) + amphibious_term(xcg))
+
+        else:
+            raise ValueError('Wrong mode')
+
+        return function
 
     def plot(self, fig: plt.figure = None):
 
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(-1, 2, 100)
+        xrange = np.linspace(0.2, 0.5, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
         plt.xlabel(r'$x_{cg} / c [-]$')
@@ -94,7 +108,7 @@ if __name__ == '__main__':
     }
 
     Ctr = ControllabilityCurve(**control_parameters)
-    Stab = StabilityCurve(**stability_parameters)
+    Stab = StabilityCurve('amphibious')
 
     fig = plt.figure()
     Stab.plot(fig)
