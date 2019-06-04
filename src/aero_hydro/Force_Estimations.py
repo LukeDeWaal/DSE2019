@@ -77,11 +77,13 @@ def skinfriction_drag(S_ref,R,M, lt_ratio,t_c,x_c_max,sweep_angle_max,k,l,compon
         #Scaling due to flying boat hull
         FF=FF*1.5
     
-        S_wet = 114
     if component == 'nacelle':
         f = l/(np.sqrt((4/np.pi)*(np.pi*(cowling_diameter**2)/4)))
         
         FF= 1 + (0.35/f)
+        
+    
+    #Extension for flaps
         
         
         
