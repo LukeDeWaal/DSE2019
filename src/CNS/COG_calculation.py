@@ -151,7 +151,7 @@ class CgCalculation(object):
         plt.legend()
         plt.xlabel('$x_{cg}/MAC$')
         plt.ylabel('$x_{LEMAC}/l_{fus}$')
-        plt.title(f'Payload @ {components["Payload"][1][0]} m')
+        plt.title(f'Payload @ {round(components["Payload"][1][0]/fuselage, 2)}')
 
     def plot_locations(self, fig: plt.figure = None):
         """
