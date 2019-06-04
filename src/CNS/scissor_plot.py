@@ -1,27 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import os
+import sys
+sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
+
+from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+
 
 class ControllabilityCurve(object):
 
     def __init__(self, **kwargs):
 
-        keys = ['CL_h', 'CL_Ah', 'Cm_ac', 'lh', 'c', 'Vh_V', 'x_ac']
-
-        self.CL_h, self.CL_Ah, self.Cm_ac, self.lh, self.c, self.Vh_V, self.x_ac = [None] * len(keys)
-
-        for key, value in kwargs.items():
-            if key in keys:
-                setattr(self, key, value)
-            else:
-                raise AttributeError(f'"{key}" is not a valid input!')
+        self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
         self.__curve = self.__get_control_curve()
 
     def __get_control_curve(self):
 
-        first_term = (self.CL_h / self.CL_Ah * self.lh / self.c * (self.Vh_V) ** 2) ** (-1)
-        second_term = float(first_term) * (self.Cm_ac / self.CL_Ah - self.x_ac)
+        first_term = (self.__data['Aero']['CL_h'] / self.__data['Aero']['CL_A-h'] * self.__data['C&S']['lh'] / self.__data['Aero']['Wing chord'] * (self.__data['Aero']['Vh/V']) ** 2) ** (-1)
+        second_term = float(first_term) * (self.__data['Aero']['Cm_ac'] / self.__data['Aero']['CL_A-h'] - self.__data['Aero']['x_ac'])
 
         return lambda xcg: first_term * xcg - second_term
 
@@ -30,7 +28,7 @@ class ControllabilityCurve(object):
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(0, 1, 100)
+        xrange = np.linspace(-1, 2, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
         plt.xlabel(r'$x_{cg} / c [-]$')
@@ -45,22 +43,14 @@ class StabilityCurve(object):
 
     def __init__(self, **kwargs):
 
-        keys = ['CL_ah', 'CL_aAh', 'de_da', 'lh', 'c', 'Vh_V', 'x_ac', 'SM']
-
-        self.CL_ah, self.CL_aAh, self.de_da, self.lh, self.c, self.Vh_V, self.x_ac, self.SM = [None] * len(keys)
-
-        for key, value in kwargs.items():
-            if key in keys:
-                setattr(self, key, value)
-            else:
-                raise AttributeError(f'"{key}" is not a valid input!')
+        self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
         self.__curve = self.__get_stability_curve()
 
     def __get_stability_curve(self):
 
-        first_term = (self.CL_ah / self.CL_aAh * (1 - self.de_da) * self.lh / self.c * self.Vh_V ** 2) ** (-1)
-        second_term = float(first_term) * (self.x_ac - self.SM)
+        first_term = (self.__data['Aero']['CL_alpha_h'] / self.__data['Aero']['CL_alpha_A-h'] * (1 - self.__data['Aero']['de/da']) * self.__data['C&S']['lh'] / self.__data['Aero']['Wing chord'] * self.__data['Aero']['Vh/V'] ** 2) ** (-1)
+        second_term = float(first_term) * (self.__data['Aero']['x_ac'] - self.__data['C&S']['SM'])
 
         return lambda xcg: first_term * xcg - second_term
 
@@ -69,7 +59,7 @@ class StabilityCurve(object):
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(0, 1, 100)
+        xrange = np.linspace(-1, 2, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
         plt.xlabel(r'$x_{cg} / c [-]$')

@@ -28,10 +28,10 @@ class GoogleSheetsDataImport(object):
 
         scopes = 'https://www.googleapis.com/auth/spreadsheets.readonly'
         # Setup the Sheets API
-        store = file.Storage('\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools\\credentials.json')
+        store = file.Storage('/'.join(os.getcwd().split('/')[:-1]) + '/tools/credentials.json')
         creds = store.get()
         if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools\\client_secret.json', scopes)
+            flow = client.flow_from_clientsecrets('/'.join(os.getcwd().split('/')[:-1]) + '/tools/client_secret.json', scopes)
             creds = tools.run_flow(flow, store)
         service = build('sheets', 'v4', http=creds.authorize(Http()))
 
@@ -39,16 +39,6 @@ class GoogleSheetsDataImport(object):
         for page in self.__pages:
             gsheet = service.spreadsheets().values().get(spreadsheetId=self.__sheet_id, range=page).execute()
             self.__sheets[page] = gsheet
-
-    def coordinate_transform(self):
-
-        for key, df in self.__dataframes.items():
-            for idx, val in enumerate(df):
-                if type(val) == list:
-                    if len(val) == 2:
-                        self.__dataframes[key][idx] = [val[0] - 1, val[1] - 10]
-                    elif len(val) == 3:
-                        self.__dataframes[key][idx] = [val[0], val[1] - 1, val[2] - 10]
 
     @staticmethod
     def __sheet_to_dataframe(gsheet):
@@ -77,8 +67,9 @@ class GoogleSheetsDataImport(object):
             for col_id, col_name in enumerate(header):
                 column_data = []
                 for row in values:
+                    #print(col_id)
                     item = row[col_id]
-
+                    #print(item)
                     if '[' in item:
                         item = [float(i) for i in item[1:-1].split(',')]
 

@@ -43,6 +43,12 @@ vertical_tail_area = vertital_tail_volume_coefficient*b*S_wing/L_ht * 0.9
 #Fuselage parameters
 fus_l=9.0 #m
 fus_front_area=0.75*1.25*np.pi
+fus_A=0.75
+fus_B=1.25
+fus_front_area=fus_A*fus_B*np.pi
+fus_len_1=0
+fus_len_2=0
+fus_len_3=0
 hull_width = 1.5 # m
 hull_height = 2.5 # m
 
@@ -56,6 +62,7 @@ elevon_chord = 0.375 * horizontal_tail_chord # m
 R_cruise_wing=rho_cruise*V_cruise*c/miu_cruise
 R_cruise_tail=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
 R_cruise=rho_cruise*V_cruise*c/miu_cruise
+R_cruise_ht=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
 mach = 0.286
 beta = np.sqrt(1-mach**2)
 Cl_alpha = 6.25
@@ -66,3 +73,4 @@ CL_alpha_h = 2*np.pi*horizontal_tail_aspect_ratio/(2 + np.sqrt(4 + (horizontal_t
 K_epsilon_delta0 = 0.1124/L_ht**2 + 0.1024/L_ht + 2
 K_epsilon_delta = (0.1124 + 0.1265*sweep + 0.1766*sweep**2)/L_ht**2 + 0.1024/L_ht + 2
 de_da = K_epsilon_delta/K_epsilon_delta0 * (L_ht/(L_ht**2  + vertical_distance_htail_wing**2) * 0.4876/np.sqrt(L_ht**2 + 0.6319 + vertical_distance_htail_wing**2) + (1 + (L_ht**2/(L_ht**2 + 0.7915 + 5.0735*vertical_distance_htail_wing**2))**0.3113) * (1 - np.sqrt(vertical_distance_htail_wing**2/(1 + vertical_distance_htail_wing**2)))) * CL_alpha_w/(np.pi*AR)
+CL_alpha = 2*np.pi*AR/(2 + np.sqrt(4 + (AR*beta/airfoil_efficiency)**2 * (1 + np.tan(sweep)**2))) * (S_wing - c*hull_width)/S_wing * 1.07*(1+hull_width/b)**2

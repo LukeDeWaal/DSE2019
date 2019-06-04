@@ -115,6 +115,7 @@ class MomentCoefficientCalculations(object):
         cg = self.__data['C&S']['CG_abs']
 
         tail_volume = self.__data['C&S']['Sh'] / self.__data['Aero']['Wing Area'] * (self.__data['Aero']['Vh/V']) ** 2
+        water_volume = self.__data['Structures']['Scooper Area']/self.__data['Aero']['Wing Area'] * 1000.0/1.225 * self.__data['Structures']['Vw/V']
         thrust_coefficient = self.__data['FPP']['Tc'] * 2 * (self.__data['FPP']['Prop Diameter [m]'] ** 2) / self.__data['Aero']['Wing Area']
 
         wing_contribution = self.__data['Aero']['Cm_ac'] + self.__data['Aero']['CN_w'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[0] - \
@@ -125,12 +126,12 @@ class MomentCoefficientCalculations(object):
 
         thrust_contribution = thrust_coefficient * self.__get_delta(self.__data['C&S']['Engine'], cg)[1]
 
-        water_contribution = self.__data['Structures']['CN_s'] * self.__get_delta_x(self.__data['Structures']['Scooper_location'], cg)*self.__data['Structures']['Scooper Area']/self.__data['Aero']['Wing Area'] - \
-                             self.__data['Structures']['CT_s'] * self.__get_delta_z(self.__data['Structures']['Scooper_location'], cg)*self.__data['Structures']['Scooper Area']/self.__data['Aero']['Wing Area']
+        water_contribution = self.__data['Structures']['CN_s'] * self.__get_delta_x(self.__data['Structures']['Scooper_location'], cg) * water_volume- \
+                             self.__data['Structures']['CT_s'] * self.__get_delta_z(self.__data['Structures']['Scooper_location'], cg) * water_volume
 
         return wing_contribution + tail_contribution + thrust_contribution + water_contribution
 
-    def cm_alpha(self):
+    def aerial_cm_alpha(self):
 
         cg = self.__data['C&S']['CG_abs']
         tail_volume = self.__data['C&S']['Sh'] / self.__data['Aero']['Wing Area'] * (self.__data['Aero']['Vh/V']) ** 2
@@ -138,9 +139,26 @@ class MomentCoefficientCalculations(object):
         wing_contribution = self.__data['Aero']['CN_w_a'] * self.__get_delta_x(self.__data['C&S']['Wing'], cg) - \
                             self.__data['Aero']['CT_w_a'] * self.__get_delta_z(self.__data['C&S']['Wing'], cg)
 
-        tail_contributuon = tail_volume * self.__data['Aero']['CN_h_a'] * self.__get_delta_x(self.__data['C&S']['H Wing'], cg)
+        tail_contribution = tail_volume * self.__data['Aero']['CN_h_a'] * self.__get_delta_x(self.__data['C&S']['H Wing'], cg)
 
-        return wing_contribution + tail_contributuon
+        return wing_contribution + tail_contribution
+
+    def scooping_cm_alpha(self):
+
+        cg = self.__data['C&S']['CG_abs']
+
+        tail_volume = self.__data['C&S']['Sh'] / self.__data['Aero']['Wing Area'] * (self.__data['Aero']['Vh/V']) ** 2
+        water_volume = self.__data['Structures']['Scooper Area']/self.__data['Aero']['Wing Area'] * 1000.0/1.225 * self.__data['Structures']['Vw/V']
+
+        wing_contribution = self.__data['Aero']['CN_w_a'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[0] - \
+                            self.__data['Aero']['CT_w_a'] * self.__get_delta(self.__data['C&S']['Wing'], cg)[1]
+
+        tail_contribution = tail_volume * (self.__data['Aero']['CN_h_a'] * self.__data['C&S']['lh'])
+
+        water_contribution = water_volume * (self.__data['Structures']['CN_s_a'] * self.__get_delta_x(self.__data['Structures']['Scooper_location'], cg) -
+                                             self.__data['Structures']['CT_s_a'] * self.__get_delta_z(self.__data['Structures']['Scooper_location'], cg))
+
+        return wing_contribution + tail_contribution + water_contribution
 
     @staticmethod
     def __get_delta_x(first: list, second: list):
@@ -209,4 +227,4 @@ if __name__ == '__main__':
     M = MomentCoefficientCalculations()
     print(M.aerial_cm())
     print(M.scooping_cm())
-    print(M.cm_alpha())
+    print(M.aerial_cm_alpha())
