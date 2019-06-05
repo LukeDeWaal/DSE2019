@@ -8,7 +8,7 @@ Created on Mon Jun  3 09:43:00 2019
 import matplotlib.pyplot as plt
 import numpy as np
 
-from wing_surface_locations import *
+#from wing_surface_locations import *
 from parameters import *
 #from Code_Verification_Parameters import *
 
@@ -142,7 +142,7 @@ Sf_wing = (skinfriction_drag(S_wing, S_wing, R_cruise_wing,M_cruise,0.2,0.15,0.5
 
 Sf_ht = (skinfriction_drag(S_wing, horizontal_tail_area, R_cruise_ht, M_cruise,0.2,0.12,0.3,0,k_paint,horizontal_tail_chord,'horizontal tail'))*1.05
 
-Sf_vt = (skinfriction_drag(S_wing,vertical_tail_area, R_cruise_ht,M_cruise,0.2,0.12,0.3,0,k_paint,vertical_tail_chord,'vertical tail'))*1.05
+Sf_vt = (skinfriction_drag(S_wing,vertical_tail_area, R_cruise_ht,M_cruise,0.2,0.12,0.3,0,k_paint,vertical_tail_average_chord,'vertical tail'))*1.05
 
 Sf_fus = (skinfriction_drag(S_wing,0,R_cruise_fus,M_cruise,0.25,0.7,0.2,0,k_paint,fus_l,'fuselage'))
 
@@ -152,7 +152,7 @@ Sf_total = Sf_wing +Sf_ht + Sf_vt+ Sf_fus + Sf_nacelle
 
 misc_total=miscellaneous_drag(0.09, 0.09, 0.05,2,1,2)
 
-flap_total = parasite_addition_flaps(30)
+flap_total = parasite_addition_flaps(40)
 
 total_parasitic_noflaps = Sf_total+misc_total
 
@@ -160,13 +160,15 @@ total_parasitic_slotted = Sf_total+misc_total+flap_total[0]
 
 total_parasitic_simple = Sf_total+misc_total+flap_total[1]
 
-#print("The Total Skin Friction Drag is", Sf_total)
+print("The Total Skin Friction Drag is", Sf_total)
 
 print(("The Total Parasitic Drag with no flaps is", total_parasitic_noflaps*1.1))
 
 print ("The Total Parasitic Drag with simple flaps is", total_parasitic_simple*1.1)
 
 print ("The Total Parasitic Drag with slotted flaps is", total_parasitic_slotted*1.1)
+
+print (flap_total)
 
 
 
