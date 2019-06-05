@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from parameters import *
+from Control_Coefficients import *
 
 
 
@@ -36,8 +37,8 @@ def plot_planform():
     # CG
     plt.plot(0, -cg_position, marker='o', markersize=3, color='red', label='Center of Gravity') 
      
-    # center of gravity
-    plt.plot(0, -wing_position, marker='o', markersize=3, color='blue', label='Center of Pressure') 
+    # center of pressure
+    plt.plot(0, -x_ac, marker='o', markersize=3, color='blue', label='Center of Pressure') 
         
     # hull
     plt.plot([-hull_width/2, hull_width/2], [0, 0], color='k')
@@ -77,6 +78,10 @@ def plot_planform():
     
     # side view
     plt.subplot(2, 1, 2)
+    
+    airfoil_coordinates = pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y']) * c
+    airfoil_coordinates['x'] += wing_position - c/2
+    airfoil_coordinates['y'] += hull_height/2 - 0.1 * c
         
     side_view = {
         'hull': [
@@ -85,9 +90,16 @@ def plot_planform():
             [fus_l, hull_height/2],
             [fus_l, -hull_height/2],  
         ],
-        'airfoil': pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y'])
+        'vertical_tail': [
+            [fus_l-vertical_tail_root_chord, hull_height/2],
+            [fus_l-vertical_tail_tip_chord, hull_height/2+vertical_tail_height],
+            [fus_l, hull_height/2+vertical_tail_height],
+            [fus_l, hull_height/2] 
+        ],
+        'airfoil': airfoil_coordinates,
     }
-    plt.gca().add_patch(plt.Polygon(side_view['hull'], fill=None, linewidth=1.5))
+    for component in side_view.values():
+        plt.gca().add_patch(plt.Polygon(component, fill=None, linewidth=1.5))
     
     
     
@@ -98,18 +110,18 @@ def plot_planform():
     plt.show()  
 
 
-def plot_cl_alpha_curve():
+def plot_cl_alpha_curves():
     """
-    Plots the Cl-alpha curve, of the NACA 6420, based on JavaFoil
+    Plots the Cl-alpha curve, of the NACA 6415, based on JavaFoil
     """
-    plt.plot(list(range(0,21,1)), 
-             [0.706, 0.796, 0.898, 0.997, 1.093, 1.188, 1.279, 1.368, 1.454, 1.534, 1.608, 1.675, 1.733, 1.780, 1.814, 1.837, 1.844, 1.838, 1.818, 1.786, 1.739])
-    plt.plot([0,10], [0.706, 1.6])
+    data = pd.read_csv('NACA_6415_Cl_alpha.txt', skiprows=2, names=['alpha', 'Cl', 'Cd' , 'Cm0.25', 'Cp', 'M_cr'])
+    plt.plot(data['alpha'], data['Cl'])
     plt.xlabel('alpha')
     plt.ylabel('Cl')
     plt.grid()
     plt.show()
-    
+
+       
     
 def plot_naca_6415():
     coordinates = pd.read_fwf('NACA_6415_coordinates.txt', names=['x', 'y'])
