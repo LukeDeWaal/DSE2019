@@ -112,8 +112,10 @@ class CgCalculation(object):
         :return:
         """
 
+        xrange = np.linspace(0, 0.75)
+
         data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES)
-        data.coordinate_transform()
+        # data.coordinate_transform()
         data = data.get_data()
         fuselage = data['Structures']['Max_fuselage_length']
         chord = data['Aero']['Wing chord']
@@ -127,8 +129,8 @@ class CgCalculation(object):
 
         empty_cgs = []
 
-        for xwing in np.linspace(0.2, 0.7):
-            components['Wing'] = (wing_weight, (xwing*fuselage - chord/2, wing_pos[1]))
+        for xwing in xrange:
+            components['Wing'] = (wing_weight, (xwing*fuselage, wing_pos[1]))
             components['Payload'] = (0,(0,0))
             cg = (self.__calculate_cg_along_x(components) - xwing*fuselage)/chord
             empty_cgs.append(cg)
@@ -138,20 +140,20 @@ class CgCalculation(object):
         full_cgs = []
         components = dict(self.__components)
 
-        for xwing in np.linspace(0.2, 0.7):
-            components['Wing'] = (wing_weight, (xwing*fuselage - chord/2, wing_pos[1]))
+        for xwing in xrange:
+            components['Wing'] = (wing_weight, (xwing*fuselage, wing_pos[1]))
             cg = (self.__calculate_cg_along_x(components) - xwing*fuselage)/chord
             full_cgs.append(cg)
 
         full_cgs = np.array(full_cgs)
 
-        plt.plot(empty_cgs, np.linspace(0.2, 0.7), 'r-', label='Empty Payload')
-        plt.plot(full_cgs, np.linspace(0.2, 0.7), 'b-', label='Full Payload')
+        plt.plot(empty_cgs, xrange, 'r-', label='Empty Payload')
+        plt.plot(full_cgs, xrange, 'b-', label='Full Payload')
         plt.grid()
         plt.legend()
         plt.xlabel('$x_{cg}/MAC$')
         plt.ylabel('$x_{LEMAC}/l_{fus}$')
-        plt.title(f'Payload @ {round(components["Payload"][1][0]/fuselage, 2)}')
+        plt.title(f'Payload @ {round((components["Payload"][1][0] - 1)/fuselage, 2)*100} % of fuselage')
 
     def plot_locations(self, fig: plt.figure = None):
         """
@@ -159,6 +161,8 @@ class CgCalculation(object):
         :param fig: fig to plot in
         :return:
         """
+
+        CoB = data['Structures']['CoB']
 
         if fig is None:
             fig, ax = plt.subplots()
@@ -176,6 +180,8 @@ class CgCalculation(object):
             coordinate_history.append((x,z))
         plt.scatter(self.__cg[0], self.__cg[1], c='r')
         plt.annotate('CG', xy=self.__cg)
+        plt.scatter(CoB[0], CoB[1], c='b')
+        plt.annotate('CoB', xy=CoB)
 
         # fuselage = self.__plot_cilinder(9, 2.5)
         # wing = self.__plot_cilinder(2.25, 0.5, offset=(3, 1.5))
@@ -192,6 +198,8 @@ class CgCalculation(object):
 if __name__ == '__main__':
 
     data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
+
+    data['C&S']['Wing'] = [data['C&S']['Wing'][0] + 0.25 * data['Aero']['Wing chord'],  data['C&S']['Wing'][1]]
 
     components = {
         'Fuselage': (data['Structures']['Fuselage_weight [N]'], data['C&S']['Fuselage']),
