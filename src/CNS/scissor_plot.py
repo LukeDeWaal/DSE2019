@@ -30,7 +30,7 @@ class ControllabilityCurve(object):
         second_term = (self.__data['Aero']['Cm_ac']/self.__data['Aero']['CL_A-h'] - xac)*coefficient
         third_term = self.__data['FPP']['Tc']/self.__data['Aero']['CL_A-h']*(2*(self.__data['FPP']['Prop Diameter [m]']**2)/self.__data['FPP']['S [m^2]'])*(self.__data['C&S']['Engine'][1] - self.__data['C&S']['Wing'][1])/chord*coefficient
 
-        return lambda xcg: first_term(xcg) + second_term - third_term
+        return lambda xcg: first_term(xcg) + second_term #- third_term
 
     def plot(self, fig: plt.figure = None):
 
