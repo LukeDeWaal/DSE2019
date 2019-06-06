@@ -37,7 +37,7 @@ class ControllabilityCurve(object):
             canard_term = (self.__data['Aero']['CL_c']/self.__data['Aero']['CL_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]']*((self.__data['C&S']['Canard'][0]-1)/chord - xac))*coefficient
         else:
             canard_term = 0
-        
+
         # Return a function to plot against xcg
         return lambda xcg: first_term(xcg) + second_term - thrust_term - canard_term
 
@@ -123,41 +123,15 @@ class StabilityCurve(object):
         plt.ylabel(r'$S_{h}/S [-]$')
         plt.grid(True, which='both')
         plt.ylim(0, 1.0)
-        plt.title(f'Wing @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage')
+        plt.title(f'Wing @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n'
+                  f'Engine @ {round((self.__data["C&S"]["Engine"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n'
+                  f'Payload @ {round((self.__data["C&S"]["Payload"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage ')
         plt.legend()
 
         return fig
 
 
 if __name__ == '__main__':
-
-    control_parameters = {
-        'CL_h': -1,
-        'CL_Ah': 1,
-        'lh': 10,
-        'c': 1,
-        'Vh_V': 1,
-        'x_ac': 1,
-        'Cm_ac': 0.2
-    }
-
-    stability_parameters = {
-        'CL_ah': 4.72,
-        'CL_aAh': 7.97,
-        'de_da': 0.1,
-        'lh': 10,
-        'c': 1,
-        'Vh_V': 1,
-        'x_ac': 0.3,
-        'SM': 0.05
-    }
-
-    Ctr = ControllabilityCurve(True)
-    Stab = StabilityCurve(True)
-
-    fig = plt.figure()
-    Stab.plot(fig)
-    Ctr.plot(fig)
 
     Ctr = ControllabilityCurve(False)
     Stab = StabilityCurve(False)
