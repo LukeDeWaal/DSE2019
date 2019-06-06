@@ -37,8 +37,15 @@ rc_req = 10
 c_V_req = 0.25
 rho_alt = 0.9 # at 3 km
 V_cruise_req = 100
+s_landing_req_land = 500 # m
+s_landing_req_water = 500 # m
+f_land = 2./3.
+f_water = 2./3.
 
-
+# Conversions
+ft_to_m = .3048
+lbs_to_kg = .454
+hp_to_W = 745.7
 
 
 
