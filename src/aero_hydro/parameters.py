@@ -68,7 +68,9 @@ aileron_length = 0.4 * b / 2 # m
 aileron_chord = 0.2 * c # m
 elevon_length = 0.8 * max_tail_span # m
 elevon_chord = 0.375 * horizontal_tail_chord # m
-
+total_area_controls = (aileron_length*aileron_chord)*2 + (elevon_length*elevon_chord)
+print(total_area_controls)
+print((aileron_length*aileron_chord)*2 )
 #Engine parameters
 eng_l = 6.0
 eng_width = 0.6
@@ -103,3 +105,4 @@ Cl_alpha = 6.25
 
 x_ac_airfoil = 0.265 # x/c
 
+    

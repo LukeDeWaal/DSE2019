@@ -7,8 +7,8 @@ import numpy as np
 
 # Mac to windows: select correct file to import from (so: GoogleSheetsImport) and change '/' to '\\'
 print()
-sys.path.insert(0, '/'.join(os.getcwd().split('/')[:-1]) + '/tools')
-from GoogleSheetsImportMac import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
+from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
 data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
 # Conversions
