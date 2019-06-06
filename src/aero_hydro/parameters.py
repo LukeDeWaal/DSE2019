@@ -86,14 +86,14 @@ R_cruise_eng = rho_cruise*V_cruise*eng_l/miu_cruise
 R_stall_wing=rho_SL*V_stall*c/miu_SL
 
 Cl_alpha = 6.25
-airfoil_efficiency = Cl_alpha/(2*np.pi/beta) 
-
-CL_alpha_w = 2*np.pi*AR/(2 + np.sqrt(4 + (AR*beta/airfoil_efficiency)**2 * (1 + np.tan(sweep)**2)))
-CL_alpha_A_h = CL_alpha_w * (S_wing - c*hull_width)/S_wing * 1.07*(1+hull_width/b)**2
-CL_alpha_h = 2*np.pi*horizontal_tail_aspect_ratio/(2 + np.sqrt(4 + (horizontal_tail_aspect_ratio*beta/airfoil_efficiency)**2 * (1 + (np.tan(sweep)/beta)**2)))
-
-angle_of_attack, incidence_angle, zero_lift_angle = 0, 1, -6.6 # deg
-CL_A_h = CL_alpha_A_h * np.deg2rad(angle_of_attack + incidence_angle - zero_lift_angle)
+#airfoil_efficiency = Cl_alpha/(2*np.pi/beta) 
+#
+#CL_alpha_w = 2*np.pi*AR/(2 + np.sqrt(4 + (AR*beta/airfoil_efficiency)**2 * (1 + np.tan(sweep)**2)))
+#CL_alpha_A_h = CL_alpha_w * (S_wing - c*hull_width)/S_wing * 1.07*(1+hull_width/b)**2
+#CL_alpha_h = 2*np.pi*horizontal_tail_aspect_ratio/(2 + np.sqrt(4 + (horizontal_tail_aspect_ratio*beta/airfoil_efficiency)**2 * (1 + (np.tan(sweep)/beta)**2)))
+#
+#angle_of_attack, incidence_angle, zero_lift_angle = 0, 1, -6.6 # deg
+#CL_A_h = CL_alpha_A_h * np.deg2rad(angle_of_attack + incidence_angle - zero_lift_angle)
 
 
 #CL_h = CL_alpha_h * 
@@ -102,5 +102,4 @@ CL_A_h = CL_alpha_A_h * np.deg2rad(angle_of_attack + incidence_angle - zero_lift
 #de_da = K_epsilon_delta/K_epsilon_delta0 * (L_ht/(L_ht**2  + vertical_tail_root_chord**2) * 0.4876/np.sqrt(L_ht**2 + 0.6319 + vertical_tail_height**2) + (1 + (L_ht**2/(L_ht**2 + 0.7915 + 5.0735*vertical_tail_height**2))**0.3113) * (1 - np.sqrt(vertical_tail_height**2/(1 + vertical_tail_height**2)))) * CL_alpha_w/(np.pi*AR)
 
 x_ac_airfoil = 0.265 # x/c
-x_ac_wing = wing_position -c/2 + x_ac_airfoil * c # m
-x_ac = x_ac_wing - (1.8 * hull_width * hull_height * fus_l)/(CL_alpha_A_h * S_wing * c) + 0.273/(1 + taper_ratio) * (hull_width * S_wing/b * (b - hull_width))/(c**2 * (b + 2.15*hull_width)) * np.tan(sweep) # m
+

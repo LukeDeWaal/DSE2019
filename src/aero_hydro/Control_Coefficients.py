@@ -20,17 +20,15 @@ def get_aerodynamic_parameters(M):
     CL_alpha_A_h = CL_alpha_w * (S_wing - c*hull_width)/S_wing * 1.07*(1+hull_width/b)**2
     CL_alpha_h = 2*np.pi*horizontal_tail_aspect_ratio/(2 + np.sqrt(4 + (horizontal_tail_aspect_ratio*beta/airfoil_efficiency)**2 * (1 + (np.tan(sweep)/beta)**2)))
     
-    #Downwash
-    K_epsilon_delta0 = 0.1124/L_ht**2 + 0.1024/L_ht + 2
-    K_epsilon_delta = (0.1124 + 0.1265*sweep + 0.1766*sweep**2)/L_ht**2 + 0.1024/L_ht + 2
-    de_da = K_epsilon_delta/K_epsilon_delta0 * (L_ht/(L_ht**2  + vertical_tail_root_chord**2) * 0.4876/np.sqrt(L_ht**2 + 0.6319 + vertical_tail_height**2) + (1 + (L_ht**2/(L_ht**2 + 0.7915 + 5.0735*vertical_tail_height**2))**0.3113) * (1 - np.sqrt(vertical_tail_height**2/(1 + vertical_tail_height**2)))) * CL_alpha_w/(np.pi*AR)
-    
+
     x_ac_wing = wing_position -c/2 + x_ac_airfoil * c # m
     x_ac = x_ac_wing - (1.8 * hull_width * hull_height * fus_l)/(CL_alpha_A_h * S_wing * c) + 0.273/(1 + taper_ratio) * (hull_width * S_wing/b * (b - hull_width))/(c**2 * (b + 2.15*hull_width)) * np.tan(sweep) 
     
-    return CL_alpha_w, CL_alpha_A_h, CL_alpha_h, K_epsilon_delta0, K_epsilon_delta,de_da, x_ac
+    return CL_alpha_w, CL_alpha_A_h, CL_alpha_h, x_ac, x_ac_wing
+
     
 CL_alpha_w=get_aerodynamic_parameters(M_stall)[0]
+#x_ac_wing=get_aerodynamic_parameters(M_stall)[7]
 
 #Read file with airfoil data
 
