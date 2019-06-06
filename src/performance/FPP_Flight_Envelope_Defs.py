@@ -1,26 +1,31 @@
 ### Imports ###
 import numpy as np
 import matplotlib.pyplot as plt
-from FPP_Parameters import W_fuel, g, W_mto, S, C_L_max, C_D_0, AR, e, P_a, rho_std, n_max, n_min, V_end, V_step, rho_fire
+from FPP_Parameters import W_fuel, g, W_mto, S, C_L_max, C_L_cruise, C_D_0, AR, e, P_a, rho_std, n_max, n_min, V_end, V_step, rho_fire
 from FPP_General_Definitions import V_row, load_factor, index_finder, V_stall_calc, V_A_calc, V_max_calc, V_cruise_calc
 
-def print_inputs(W_fuel, g, W_mto, S, C_L_max, C_D_0, AR, e, P_a, rho_std, n_max, n_min, rho_fire):
+def print_inputs(W_fuel, g, W_mto, S, C_L_max, C_D_0, AR, e, P_a, rho_std, n_max, n_min, rho_fire, C_L_cruise):
     ''' Print the input variables '''
 
     # Should make this a bit nicer with a function.
     print('Input variables:')
     print('W_fuel = ', int(W_fuel/g))
     print('W_mto = ', int(W_mto/g))
-    print('S = ', S)
-    print('C_L_max = ', C_L_max)
-    print('C_D_0 = ', C_D_0)
-    print('AR = ', AR)
-    print('e = ', e)
     print('P_a = ', P_a)
-    print('rho_std = ', rho_std)
-    print('rho_fire = ', rho_fire)
+    print()
+    print('C_L_max = ', C_L_max)
+    print('C_L_clean = ', C_L_cruise)
+    print('C_D_0 = ', C_D_0)
     print('n_max = ', n_max)
     print('n_min = ', n_min)
+    print()
+    print('S = ', S)
+    print('AR = ', AR)
+    print('e = ', e)
+    print()
+    print('rho_std = ', rho_std)
+    print('rho_fire = ', rho_fire)
+
 
     return
 
@@ -106,7 +111,7 @@ def flight_envelope():
     ''' Generate flight envelope diagram and return special velocities. '''
 
     # Print inputs
-    print_inputs(W_fuel, g, W_mto, S, C_L_max, C_D_0, AR, e, P_a, rho_std, n_max, n_min, rho_fire)
+    print_inputs(W_fuel, g, W_mto, S, C_L_max, C_D_0, AR, e, P_a, rho_std, n_max, n_min, rho_fire, C_L_cruise)
 
     # Plot maneuvre diagram
     V, n, V_stall, V_stall_index, V_A, V_A_index, V_max, V_max_index, V_C, V_C_index = maneuvre_plot(n_min, n_max, 'blue',
