@@ -7,8 +7,8 @@ import numpy as np
 
 # Mac to windows: select correct file to import from (so: GoogleSheetsImport) and change '/' to '\\'
 print()
-sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
-from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+sys.path.insert(0, '/'.join(os.getcwd().split('/')[:-1]) + '/tools')
+from GoogleSheetsImportMac import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
 data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
 # Conversions
@@ -22,6 +22,7 @@ m_to_inch = 39.37
 A = data['Aero']['AR [-]'] # -
 A_h = 3.83 # -
 A_v = 1.3 # -
+B_h = m_to_ft*6. # ft
 B_w = m_to_ft*data['Aero']['Wing Span'] # ft
 D = m_to_ft*2.5 # ft
 F_w = m_to_ft*0.2 # ft
@@ -60,6 +61,7 @@ N_l = 1.5*4.4 # -
 N_m = 2.
 N_mss = 2.
 N_mw = 2.
+N_nw =1.
 N_p = 0.
 N_t = 2.
 N_w = m_to_ft*data['FPP']['Engine Width [m]'] # ft
@@ -76,11 +78,11 @@ S_vt = m_to_ft**2*data['C&S']['Sv'] #ft^2
 S_w =  m_to_ft**2*data['FPP']['S [m^2]'] #ft^2
 tc = .15
 tc_root = .15
-V_i = data['Weights']['WF [N]']/g/804.*L_to_gal # gal (804 is density of jet fuel)
+V_i = data['Weights']['WF [N]']/g/.804*L_to_gal # gal (804 is density of jet fuel)
 V_p = V_i
 V_pr = 0.
 V_stall = 35*m_to_ft # ft/s
-V_t = data['Weights']['WF [N]']/g/804.*L_to_gal # gal (804 is density of jet fuel)
+V_t = data['Weights']['WF [N]']/g/.804*L_to_gal # gal (804 is density of jet fuel)
 W_av = -1.
 W_c = kg_to_lbs*data['Weights']['WF [N]']/g # lbs
 W_dg = kg_to_lbs*0.5*data['Weights']['WF [N]']/g # lbs
