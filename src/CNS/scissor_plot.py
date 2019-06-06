@@ -50,25 +50,29 @@ class ControllabilityCurve(object):
         chord = self.__data['Aero']['Wing chord']
 
         # Function to calculate CG
-        cg = lambda xw, PL: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * xw +
+        cg = lambda xw, PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * xw +
                               self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1)/chord +
                               self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1) / chord +
                               self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord) / \
                              (self.__data['Structures']['Wing_weight [N]'] +
-                              self.__data['Weights']['WF [N]'] +
+                              self.__data['Weights']['WF [N]']* F +
                               self.__data['Weights']['WPL [N]'] * PL +
                               self.__data['Structures']['Fuselage_weight [N]'] +
                               self.__data['FPP']['Engine Weight [N]'])
 
         # Calculate CG for plotting
-        cgx_full = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1) for i in range(10)]
-        cgx_empty = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0) for i in range(10)]
+        cgx_full = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1) for i in range(10)]
+        cgx_empty = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0) for i in range(10)]
+        cgx_fuel = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1) for i in range(10)]
+        cgx_payload = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0) for i in range(10)]
         cgy = [i for i in np.linspace(0, 1, 10)]
 
         # Plot
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
-        plt.plot(cgx_full, cgy, 'k--', label='CG - Full Payload')
-        plt.plot(cgx_empty, cgy, 'k.-', label='CG - Empty Payload')
+        plt.plot(cgx_full, cgy, 'k--', label='CG - MTOW')
+        plt.plot(cgx_empty, cgy, 'k.-', label='CG - OEW')
+        plt.plot(cgx_fuel, cgy, '.', label='CG - Only fuel')
+        plt.plot(cgx_payload, cgy, 'v', label='CG - Only Payload')
         plt.xlabel(r'$x_{cg} / MAC [-]$')
         plt.ylabel(r'$S_{h}/S [-]$')
         plt.grid(True, which='both')
