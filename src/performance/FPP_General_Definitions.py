@@ -101,3 +101,16 @@ def V_cruise_calc(V_max):
     V_C = 0.9*V_max
 
     return V_C
+
+def TOP_calc(s, ft_to_m, lbs_to_kg, hp_to_W, g):
+    ''' Find take-off parameter (Roskam). '''
+
+    s_tog = s / ft_to_m / 1.66
+    a = .009
+    b = 4.9
+    c = -s_tog
+    d = np.sqrt(b ** 2 - 4 * a * c)
+    TOP = (-b + d) / (2 * a)  # imperial units
+    TOP = lbs_to_kg ** 2 * g ** 2 / (ft_to_m ** 2 * hp_to_W) * TOP
+
+    return TOP

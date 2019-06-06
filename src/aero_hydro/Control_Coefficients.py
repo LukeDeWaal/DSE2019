@@ -8,6 +8,7 @@ Created on Tue Jun  4 15:31:37 2019
 import numpy as np
 from matplotlib import pyplot as plt
 from parameters import *
+from wing_surface_locations import *
 
 #functions
 
@@ -28,7 +29,13 @@ def get_aerodynamic_parameters(M):
 
     
 CL_alpha_w=get_aerodynamic_parameters(M_stall)[0]
-#x_ac_wing=get_aerodynamic_parameters(M_stall)[7]
+x_ac_wing=get_aerodynamic_parameters(M_stall)[4]
+x_ac=get_aerodynamic_parameters(M_stall)[3]
+Cl_alpha_h=get_aerodynamic_parameters(M_stall)[2]
+CL_alpha_A_h=get_aerodynamic_parameters(M_stall)[1]
+
+
+
 
 #Read file with airfoil data
 
@@ -116,9 +123,12 @@ for j in range(len(cD_wing[0])-1):
 cD_alpha=sum(gradient_tab)/len(gradient_tab)*(180/np.pi)
 
     
-    
-    
-    
+#Consider change in lift with different high lift devices:
+
+triple_slotted_fowler=delta_CL_max(2.24, 0.4)
+
+
+      
     
 
 ####PLOTTING####
