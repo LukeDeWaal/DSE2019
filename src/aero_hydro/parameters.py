@@ -5,7 +5,7 @@ MTOW = 9000 # kg
 aircraft_length = 9 # m
 cg_position = aircraft_length * 0.3
 rho_SL = 1.225 # kg/m^3
-rho_cruise=0.85 # kg/m^3
+rho_cruise=1.225 # kg/m^3
 miu_cruise=1.650*10**-5 #Ns/m^2
 miu_SL = 1.789*10**-5 #Ns/m^2
 
@@ -24,6 +24,9 @@ wing_position = cg_position + 1.5
 wing_moment = L_cruise * (wing_position - cg_position) # Nm
 sweep = 0 # deg
 taper_ratio = 1
+e=0.7
+V_stall=32
+M_stall=V_stall/np.sqrt(1.4*287*273)
 
 # Horizontal tail parameters
 max_tail_span = 6 # m
@@ -45,6 +48,7 @@ vertical_tail_area = vertital_tail_volume_coefficient*b*S_wing/L_ht * 0.9 # m^2
 vertical_tail_height = np.sqrt(vertical_tail_area*vertical_tail_aspect_ratio)
 vertical_tail_root_chord = 2/(1+vertical_tail_taper_ratio) * vertical_tail_area/vertical_tail_height
 vertical_tail_tip_chord = vertical_tail_root_chord * vertical_tail_taper_ratio
+vertical_tail_average_chord=(vertical_tail_tip_chord+vertical_tail_root_chord)/2
 
 #Fuselage parameters
 fus_l=9.0 #m
@@ -70,7 +74,7 @@ eng_l = 6.0
 eng_width = 0.6
 eng_cowling = 0.6*1.2
 
-#Aerodynamics Parameters
+#Reynolds numbers
 R_cruise_wing=rho_cruise*V_cruise*c/miu_cruise
 R_cruise_tail=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
 R_cruise=rho_cruise*V_cruise*c/miu_cruise
@@ -78,8 +82,8 @@ R_cruise_ht=rho_cruise*V_cruise*horizontal_tail_chord/miu_cruise
 R_cruise_fus = rho_cruise*V_cruise*fus_l/miu_cruise
 R_cruise_eng = rho_cruise*V_cruise*eng_l/miu_cruise
 
-mach = 0.286
-beta = np.sqrt(1-mach**2)
+#Aerodynamics Parameters
+R_stall_wing=rho_SL*V_stall*c/miu_SL
 
 Cl_alpha = 6.25
 airfoil_efficiency = Cl_alpha/(2*np.pi/beta) 

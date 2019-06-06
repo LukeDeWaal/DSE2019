@@ -40,7 +40,6 @@ def P_r_calc(V, W, rho, S, C_D_0, AR, e):
     ''' Generate the power required for a velocity array. '''
 
     C_L_array, C_D = aerodynamic_coefficients(V, W, rho, S, C_D_0, AR, e)
-
     P_r_list = []
 
     for i in range(len(V)):

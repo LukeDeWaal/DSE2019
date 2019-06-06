@@ -18,20 +18,29 @@ class ControllabilityCurve(object):
 
     def __get_control_curve(self):
 
-        first_term = (self.__data['Aero']['CL_h'] / self.__data['Aero']['CL_A-h'] * self.__data['C&S']['lh'] / self.__data['Aero']['Wing chord'] * (self.__data['Aero']['Vh/V']) ** 2) ** (-1)
-        second_term = float(first_term) * (self.__data['Aero']['Cm_ac'] / self.__data['Aero']['CL_A-h'] - self.__data['Aero']['x_ac'])
+        chord = self.__data['Aero']['Wing chord']
+        xlemac = self.__data['C&S']['Wing'][0]/chord
+        xac = xlemac + self.__data['Aero']['x_ac']
 
-        return lambda xcg: first_term * xcg - second_term
+        lh = self.__data['C&S']['H Wing'][0] - self.__data['C&S']['Wing'][0]
+
+        coefficient = 1.0/(self.__data['Aero']['CL_h']/self.__data['Aero']['CL_A-h'] * self.__data['Aero']['Vh/V']**2 * lh/chord)
+
+        first_term = lambda xcg: coefficient*xcg
+        second_term = (self.__data['Aero']['Cm_ac']/self.__data['Aero']['CL_A-h'] - xac)*coefficient
+        third_term = self.__data['FPP']['Tc']/self.__data['Aero']['CL_A-h']*(2*(self.__data['FPP']['Prop Diameter [m]']**2)/self.__data['FPP']['S [m^2]'])*(self.__data['C&S']['Engine'][1] - self.__data['C&S']['Wing'][1])/chord*coefficient
+
+        return lambda xcg: first_term(xcg) + second_term #- third_term
 
     def plot(self, fig: plt.figure = None):
 
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(0.2, 0.5, 100)
+        xrange = np.linspace(-0.5, 1.5, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
-        plt.xlabel(r'$x_{cg} / c [-]$')
+        plt.xlabel(r'$x_{cg} / MAC [-]$')
         plt.ylabel(r'$S_{h}/S [-]$')
         plt.grid(True, which='both')
         plt.legend()
@@ -41,44 +50,46 @@ class ControllabilityCurve(object):
 
 class StabilityCurve(object):
 
-    def __init__(self, mode: str = 'aerial'):
+    def __init__(self):
 
         self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
-        self.__curve = self.__get_stability_curve(mode)
+        self.__curve = self.__get_stability_curve()
+        self.__xlemac = self.__data['C&S']['Wing'][0]
 
-    def __get_stability_curve(self, mode: str = 'aerial'):
+    def __get_stability_curve(self, mode: str = 'simple'):
 
         chord = self.__data['Aero']['Wing chord']
         SM = self.__data['C&S']['SM']
-        denom = ((1-self.__data['Aero']['de/da'])*(self.__data['Aero']['Vh/V'])**2*self.__data['Aero']['CL_alpha_h'])
 
-        aerial_term = lambda xcg: self.__data['Aero']['CL_alpha_A-h']/denom*(xcg + SM - (self.__data['C&S']['Wing'][0] + chord*self.__data['Aero']['x_ac']))/(SM - self.__data['C&S']['lh']/chord)
+        CL_ratio = self.__data['Aero']['CL_alpha_A-h']/self.__data['Aero']['CL_alpha_h']
+        downwash_ratio = 1.0/((1 - self.__data['Aero']['de/da'])*(self.__data['Aero']['Vh/V'])**2)
 
-        amphibious_term = lambda xcg: 1000.0/1.225 * 0.99 * self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*(self.__data['Structures']['CL_alpha_hull']*(xcg + SM - self.__data['Structures']['CoB'][0]) - self.__data['Structures']['CD_alpha_hull']*(10 + SM - self.__data['Structures']['CoB'][1]))/(SM - self.__data['C&S']['lh']/chord)
+        xlemac = self.__data['C&S']['Wing'][0]/chord
+        xac = xlemac + self.__data['Aero']['x_ac']
+        function = lambda xcg: xcg + SM - xac
 
-        if mode == 'aerial':
-            function = lambda xcg: -aerial_term(xcg)
+        lh = self.__data['C&S']['H Wing'][0] - self.__data['C&S']['Wing'][0]
 
-        elif mode == 'amphibious':
-            function = lambda xcg: -(aerial_term(xcg) + amphibious_term(xcg))
+        if mode == 'accurate':
+            return lambda xcg: CL_ratio*downwash_ratio*(function(xcg + xlemac)/(lh/chord) - function(xcg))
 
-        else:
-            raise ValueError('Wrong mode')
-
-        return function
+        elif mode == 'simple':
+            return lambda xcg: function(xcg + xlemac)/(1/CL_ratio*1/downwash_ratio*lh/chord)
 
     def plot(self, fig: plt.figure = None):
 
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(0.2, 0.5, 100)
+        xrange = np.linspace(-0.5, 1.5, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
-        plt.xlabel(r'$x_{cg} / c [-]$')
+        plt.xlabel(r'$x_{cg} / MAC [-]$')
         plt.ylabel(r'$S_{h}/S [-]$')
         plt.grid(True, which='both')
+        plt.ylim(0, 1.0)
+        plt.title(f'Wing @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage')
         plt.legend()
 
         return fig
@@ -108,7 +119,7 @@ if __name__ == '__main__':
     }
 
     Ctr = ControllabilityCurve(**control_parameters)
-    Stab = StabilityCurve('amphibious')
+    Stab = StabilityCurve()
 
     fig = plt.figure()
     Stab.plot(fig)
