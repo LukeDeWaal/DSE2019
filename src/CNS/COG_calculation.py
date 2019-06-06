@@ -18,7 +18,7 @@ class CgCalculation(object):
                     ...
                     }
         """
-
+        self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
         self.__components = components
         self.__cg = [None, None]
         self.__cg_lemac = [None, None]
@@ -163,7 +163,9 @@ class CgCalculation(object):
         """
 
         CoB = data['Structures']['CoB']
-
+        fwd,aft = self.fwd_aft_cg()
+        fwd_weird_frame = fwd + 1
+        aft_weird_frame = aft + 1
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect(1.0)
@@ -182,6 +184,10 @@ class CgCalculation(object):
         plt.annotate('CG', xy=self.__cg)
         plt.scatter(CoB[0], CoB[1], c='b')
         plt.annotate('CoB', xy=CoB)
+        plt.scatter(fwd_weird_frame, 10)
+        plt.annotate('Forward CG',xy=[fwd_weird_frame,10])
+        plt.scatter(fwd_weird_frame, 10)
+        plt.annotate('Aft CG', xy=[aft_weird_frame, 10])
 
         # fuselage = self.__plot_cilinder(9, 2.5)
         # wing = self.__plot_cilinder(2.25, 0.5, offset=(3, 1.5))
@@ -193,7 +199,25 @@ class CgCalculation(object):
         plt.xlabel('X Position [m]')
         plt.ylabel('Y Position [m]')
         plt.title('CG Location')
+        plt.show()
 
+    def fwd_aft_cg(self):
+        cg = lambda PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * (data['C&S']['Wing'][0]-1) +
+                              self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1) +
+                              self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1)+
+                              self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) ) / \
+                             (self.__data['Structures']['Wing_weight [N]'] +
+                              self.__data['Weights']['WF [N]']* F +
+                              self.__data['Weights']['WPL [N]'] * PL +
+                              self.__data['Structures']['Fuselage_weight [N]'] +
+                              self.__data['FPP']['Engine Weight [N]'])
+        cgx_full = cg(1,1)
+        cgx_empty = cg(0,0)
+        cgx_fuel = cg(0,1)
+        cgx_payload = cg(0,1)
+        fwd_cg = min(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
+        aft_cg = max(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
+        return fwd_cg,aft_cg
 
 if __name__ == '__main__':
 
