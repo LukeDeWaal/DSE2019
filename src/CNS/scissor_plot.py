@@ -10,16 +10,16 @@ from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_
 
 class ControllabilityCurve(object):
 
-    def __init__(self, **kwargs):
+    def __init__(self):
 
         self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
         self.__curve = self.__get_control_curve()
 
-    def __get_control_curve(self):
+    def __get_control_curve(self, canard=False):
 
         chord = self.__data['Aero']['Wing chord']
-        xlemac = self.__data['C&S']['Wing'][0]/chord
+        xlemac = (self.__data['C&S']['Wing'][0]-1)/chord
         xac = xlemac + self.__data['Aero']['x_ac']
 
         lh = self.__data['C&S']['H Wing'][0] - self.__data['C&S']['Wing'][0]
@@ -28,16 +28,21 @@ class ControllabilityCurve(object):
 
         first_term = lambda xcg: coefficient*xcg
         second_term = (self.__data['Aero']['Cm_ac']/self.__data['Aero']['CL_A-h'] - xac)*coefficient
-        third_term = self.__data['FPP']['Tc']/self.__data['Aero']['CL_A-h']*(2*(self.__data['FPP']['Prop Diameter [m]']**2)/self.__data['FPP']['S [m^2]'])*(self.__data['C&S']['Engine'][1] - self.__data['C&S']['Wing'][1])/chord*coefficient
+        thrust_term = self.__data['FPP']['Tc']/self.__data['Aero']['CL_A-h']*(2*(self.__data['FPP']['Prop Diameter [m]']**2)/self.__data['FPP']['S [m^2]'])*(self.__data['C&S']['Engine'][1] - self.__data['C&S']['Wing'][1])/chord*coefficient
 
-        return lambda xcg: first_term(xcg) + second_term #- third_term
+        if canard:
+            canard_term = self.__data['Aero']['CL_c']/self.__data['Aero']['CL_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]']*((self.__data['C&S']['Canard'][0]-1)/chord - xac)
+        else:
+            canard_term = 0
+
+        return lambda xcg: first_term(xcg) + second_term - thrust_term - canard_term
 
     def plot(self, fig: plt.figure = None):
 
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(-0.5, 1.5, 100)
+        xrange = np.linspace(0, 3, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
         plt.xlabel(r'$x_{cg} / MAC [-]$')
@@ -57,32 +62,33 @@ class StabilityCurve(object):
         self.__curve = self.__get_stability_curve()
         self.__xlemac = self.__data['C&S']['Wing'][0]
 
-    def __get_stability_curve(self, mode: str = 'simple'):
+    def __get_stability_curve(self, canard=False):
 
         chord = self.__data['Aero']['Wing chord']
-        SM = self.__data['C&S']['SM']
-
-        CL_ratio = self.__data['Aero']['CL_alpha_A-h']/self.__data['Aero']['CL_alpha_h']
-        downwash_ratio = 1.0/((1 - self.__data['Aero']['de/da'])*(self.__data['Aero']['Vh/V'])**2)
-
-        xlemac = self.__data['C&S']['Wing'][0]/chord
+        xlemac = (self.__data['C&S']['Wing'][0]-1)/chord
         xac = xlemac + self.__data['Aero']['x_ac']
-        function = lambda xcg: xcg + SM - xac
+        SM = self.__data['C&S']['SM']
 
         lh = self.__data['C&S']['H Wing'][0] - self.__data['C&S']['Wing'][0]
 
-        if mode == 'accurate':
-            return lambda xcg: CL_ratio*downwash_ratio*(function(xcg + xlemac)/(lh/chord) - function(xcg))
+        if canard:
+            denominator = lambda xcg: self.__data['Aero']['CL_alpha_h']/self.__data['Aero']['CL_alpha_A-h']*(self.__data['Aero']['Vh/V']**2)*(1-self.__data['Aero']['de/da'])*(xcg + SM - (self.__data['C&S']['H Wing'][0]-1)/chord)
+            first_term = lambda xcg: (xcg + SM)*(1 + self.__data['Aero']['CL_alpha_c']/self.__data['Aero']['CL_alpha_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]'])
+            second_term = xac + (self.__data['C&S']['Canard'][0]-1)/chord*self.__data['Aero']['CL_alpha_c']/self.__data['Aero']['CL_alpha_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]']
+            return lambda xcg: -(first_term(xcg) - second_term)/denominator(xcg)
 
-        elif mode == 'simple':
-            return lambda xcg: function(xcg + xlemac)/(1/CL_ratio*1/downwash_ratio*lh/chord)
+        else:
+            CL_ratio = -(self.__data['Aero']['CL_alpha_A-h']/self.__data['Aero']['CL_alpha_h'])
+            coefficient = 1/((1-self.__data['Aero']['de/da'])*(self.__data['Aero']['Vh/V']**2))
+
+            return lambda xcg: coefficient*CL_ratio*(xcg+SM-xac)/(xcg+SM-(self.__data['C&S']['H Wing'][0]-1)/chord)
 
     def plot(self, fig: plt.figure = None):
 
         if fig is None:
             fig = plt.figure()
 
-        xrange = np.linspace(-0.5, 1.5, 100)
+        xrange = np.linspace(0, 3, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
         plt.xlabel(r'$x_{cg} / MAC [-]$')
@@ -118,7 +124,7 @@ if __name__ == '__main__':
         'SM': 0.05
     }
 
-    Ctr = ControllabilityCurve(**control_parameters)
+    Ctr = ControllabilityCurve()
     Stab = StabilityCurve()
 
     fig = plt.figure()
