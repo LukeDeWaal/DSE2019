@@ -50,13 +50,17 @@ class ControllabilityCurve(object):
         chord = self.__data['Aero']['Wing chord']
 
         # Function to calculate CG
-        cg = lambda xw, PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * xw +
+        cg = lambda xw, PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * (xw + self.__data['Aero']['x_ac']) +
                               self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1)/chord +
                               self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1) / chord +
-                              self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord) / \
+                              self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord +
+                              self.__data['Structures']['HTail_weight [N]'] * (self.__data['C&S']['H Wing'][0] - 1)/chord +
+                              self.__data['Structures']['VTail_weight [N]'] * (self.__data['C&S']['V Wing'][0] - 1)/chord) / \
                              (self.__data['Structures']['Wing_weight [N]'] +
                               self.__data['Weights']['WF [N]']* F +
                               self.__data['Weights']['WPL [N]'] * PL +
+                              self.__data['Structures']['HTail_weight [N]'] +
+                              self.__data['Structures']['VTail_weight [N]'] +
                               self.__data['Structures']['Fuselage_weight [N]'] +
                               self.__data['FPP']['Engine Weight [N]'])
 
@@ -67,12 +71,18 @@ class ControllabilityCurve(object):
         cgx_payload = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0) for i in range(10)]
         cgy = [i for i in np.linspace(0, 1, 10)]
 
+        # cgx_min = [min(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
+        # cgx_max = [max(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
+
+
         # Plot
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
-        plt.plot(cgx_full, cgy, 'k--', label='CG - MTOW')
-        plt.plot(cgx_empty, cgy, 'k.-', label='CG - OEW')
+        # plt.plot(cgx_min, cgy, 'k--', label='CG - Most Forward')
+        # plt.plot(cgx_max, cgy, 'k.-', label='CG - Most Aft')
         plt.plot(cgx_fuel, cgy, '.', label='CG - Only fuel')
-        plt.plot(cgx_payload, cgy, 'v', label='CG - Only Payload')
+        plt.plot(cgx_payload, cgy, '.', label='CG - Only Payload')
+        plt.plot(cgx_full, cgy, 'v', label='CG - MTOW')
+        plt.plot(cgx_empty, cgy, 'v', label='CG - Empty')
         plt.xlabel(r'$x_{cg} / MAC [-]$')
         plt.ylabel(r'$S_{h}/S [-]$')
         plt.grid(True, which='both')
@@ -127,7 +137,7 @@ class StabilityCurve(object):
         plt.ylabel(r'$S_{h}/S [-]$')
         plt.grid(True, which='both')
         plt.ylim(0, 1.0)
-        plt.title(f'Wing @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n'
+        plt.title(f'LEMAC @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n'
                   f'Engine @ {round((self.__data["C&S"]["Engine"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n'
                   f'Payload @ {round((self.__data["C&S"]["Payload"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage ')
         plt.legend()
