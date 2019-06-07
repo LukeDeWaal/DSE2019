@@ -34,7 +34,7 @@ class GoogleSheetsDataImport(object):
             flow = client.flow_from_clientsecrets('\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools\\client_secret.json', scopes)
             creds = tools.run_flow(flow, store)
         service = build('sheets', 'v4', http=creds.authorize(Http()))
-
+        print("Fetching Your Data")
         # Call the Sheets API
         for page in self.__pages:
             gsheet = service.spreadsheets().values().get(spreadsheetId=self.__sheet_id, range=page).execute()

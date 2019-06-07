@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
 
 from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+from COG_calculation import CgCalculation
 
 
 class ControllabilityCurve(object):
@@ -13,7 +14,7 @@ class ControllabilityCurve(object):
     def __init__(self, canard=False):
 
         self.canard = canard
-        self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
+        self.__data = dict(GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data())
 
         self.__curve = self.__get_control_curve()
 
@@ -41,6 +42,61 @@ class ControllabilityCurve(object):
         # Return a function to plot against xcg
         return lambda xcg: first_term(xcg) + second_term - thrust_term - canard_term
 
+    def cgcalc(self, xw, PL, F):
+
+        xw = xw*self.__data['Aero']['Wing chord']+1
+        
+        if PL == 1 and F == 1:
+            components = {
+                'Fuselage': (self.__data['Structures']['Fuselage_weight [N]'], self.__data['C&S']['Fuselage']),
+                'Wing': (self.__data['Structures']['Wing_weight [N]'], self.__data['C&S']['Wing']),
+                'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
+                'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
+                'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
+                'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload']),
+                'Fuel': (self.__data['Weights']['WF [N]'], self.__data['C&S']['Wing'])
+            }
+
+
+        elif PL == 1 and F == 0:
+
+            components = {
+                'Fuselage': (self.__data['Structures']['Fuselage_weight [N]'], self.__data['C&S']['Fuselage']),
+                'Wing': (self.__data['Structures']['Wing_weight [N]'], self.__data['C&S']['Wing']),
+                'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
+                'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
+                'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
+                'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload'])
+            }
+        
+        elif PL == 0 and F == 1:
+
+            components = {
+                'Fuselage': (self.__data['Structures']['Fuselage_weight [N]'], self.__data['C&S']['Fuselage']),
+                'Wing': (self.__data['Structures']['Wing_weight [N]'], self.__data['C&S']['Wing']),
+                'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
+                'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
+                'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
+                'Fuel': (self.__data['Weights']['WF [N]'], self.__data['C&S']['Wing'])
+            }
+        
+        elif PL == 0 and F == 0:
+
+            components = {
+                'Fuselage': (self.__data['Structures']['Fuselage_weight [N]'], self.__data['C&S']['Fuselage']),
+                'Wing': (self.__data['Structures']['Wing_weight [N]'], self.__data['C&S']['Wing']),
+                'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
+                'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
+                'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing'])
+            }
+        
+        else:
+            raise ValueError
+
+        cg = CgCalculation(components).calculate_cg()
+
+        return [(cg[0] - 1)/self.__data['Aero']['Wing chord'], (cg[1] - 10)/self.__data['Aero']['Wing chord']]
+
     def plot(self, fig: plt.figure = None):
 
         if fig is None:
@@ -65,15 +121,18 @@ class ControllabilityCurve(object):
                               self.__data['FPP']['Engine Weight [N]'])
 
         # Calculate CG for plotting
-        cgx_full = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1) for i in range(10)]
-        cgx_empty = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0) for i in range(10)]
-        cgx_fuel = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1) for i in range(10)]
-        cgx_payload = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0) for i in range(10)]
+        # cgx_full = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1) for i in range(10)]
+        # cgx_empty = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0) for i in range(10)]
+        # cgx_fuel = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1) for i in range(10)]
+        # cgx_payload = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0) for i in range(10)]
+        cgx_full = [self.cgcalc(self.__data['C&S']['Wing'][0], 1, 1)[0] for i in range(10)]
+        cgx_empty = [self.cgcalc(self.__data['C&S']['Wing'][0], 0, 0)[0] for i in range(10)]
+        cgx_fuel = [self.cgcalc(self.__data['C&S']['Wing'][0], 0, 1)[0] for i in range(10)]
+        cgx_payload = [self.cgcalc(self.__data['C&S']['Wing'][0], 1, 0)[0] for i in range(10)]
         cgy = [i for i in np.linspace(0, 1, 10)]
 
         # cgx_min = [min(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
         # cgx_max = [max(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
-
 
         # Plot
         plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
@@ -113,6 +172,7 @@ class StabilityCurve(object):
 
         # Canard Version
         if self.canard:
+            print("Canard")
             denominator = lambda xcg: self.__data['Aero']['CL_alpha_h']/self.__data['Aero']['CL_alpha_A-h']*(self.__data['Aero']['Vh/V']**2)*(1-self.__data['Aero']['de/da'])*(xcg + SM - (self.__data['C&S']['H Wing'][0]-1)/chord)
             first_term = lambda xcg: (xcg + SM)*(1 + self.__data['Aero']['CL_alpha_c']/self.__data['Aero']['CL_alpha_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]'])
             second_term = xac + (self.__data['C&S']['Canard'][0]-1)/chord*self.__data['Aero']['CL_alpha_c']/self.__data['Aero']['CL_alpha_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]']

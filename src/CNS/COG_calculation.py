@@ -18,7 +18,7 @@ class CgCalculation(object):
                     ...
                     }
         """
-        self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
+        # self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
         self.__components = components
         self.__cg = [None, None]
         self.__cg_lemac = [None, None]
@@ -201,31 +201,32 @@ class CgCalculation(object):
         plt.title('CG Location')
         plt.show()
 
-    def fwd_aft_cg(self):
+    # def fwd_aft_cg(self):
+    #
+    #     chord = self.__data['Aero']['Wing chord']
+    #
+    #     cg = lambda PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * ((self.__data['C&S']['Wing'][0]-1)/chord + self.__data['Aero']['x_ac']) +
+    #                           self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1)/chord +
+    #                           self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1) / chord +
+    #                           self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord +
+    #                           self.__data['Structures']['HTail_weight [N]'] * (self.__data['C&S']['H Wing'][0] - 1)/chord +
+    #                           self.__data['Structures']['VTail_weight [N]'] * (self.__data['C&S']['V Wing'][0] - 1)/chord) / \
+    #                          (self.__data['Structures']['Wing_weight [N]'] +
+    #                           self.__data['Weights']['WF [N]']* F +
+    #                           self.__data['Weights']['WPL [N]'] * PL +
+    #                           self.__data['Structures']['HTail_weight [N]'] +
+    #                           self.__data['Structures']['VTail_weight [N]'] +
+    #                           self.__data['Structures']['Fuselage_weight [N]'] +
+    #                           self.__data['FPP']['Engine Weight [N]'])
+    #     cgx_full = cg(1,1)
+    #
+    #     cgx_empty = cg(0,0)
+    #     cgx_fuel = cg(0,1)
+    #     cgx_payload = cg(0,1)
+    #     fwd_cg = min(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
+    #     aft_cg = max(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
+    #     return fwd_cg,aft_cg
 
-        chord = self.__data['Aero']['Wing chord']
-
-        cg = lambda PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * ((self.__data['C&S']['Wing'][0]-1)/chord + self.__data['Aero']['x_ac']) +
-                              self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1)/chord +
-                              self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1) / chord +
-                              self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord +
-                              self.__data['Structures']['HTail_weight [N]'] * (self.__data['C&S']['H Wing'][0] - 1)/chord +
-                              self.__data['Structures']['VTail_weight [N]'] * (self.__data['C&S']['V Wing'][0] - 1)/chord) / \
-                             (self.__data['Structures']['Wing_weight [N]'] +
-                              self.__data['Weights']['WF [N]']* F +
-                              self.__data['Weights']['WPL [N]'] * PL +
-                              self.__data['Structures']['HTail_weight [N]'] +
-                              self.__data['Structures']['VTail_weight [N]'] +
-                              self.__data['Structures']['Fuselage_weight [N]'] +
-                              self.__data['FPP']['Engine Weight [N]'])
-        cgx_full = cg(1,1)
-
-        cgx_empty = cg(0,0)
-        cgx_fuel = cg(0,1)
-        cgx_payload = cg(0,1)
-        fwd_cg = min(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
-        aft_cg = max(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
-        return fwd_cg,aft_cg
 
 if __name__ == '__main__':
 
