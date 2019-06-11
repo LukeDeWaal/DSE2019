@@ -24,6 +24,7 @@ class GearPositioning(object):
         self.lm_fwd = self.XMLG - self.fwd_cg[0]
         self.lm_aft = self.XMLG - self.aft_cg[0]
         self.XNLG, self.loading_NLG = self.NLG_loc()
+        self.ZNLG = self.ZMLG
         self.ln_fwd = self.fwd_cg[0] - self.XNLG
         self.ln_aft = self.aft_cg[0] - self.XNLG
         self.ymlg = self.y_mlg()
@@ -76,6 +77,7 @@ class GearPositioning(object):
 
 if __name__ == '__main__':
     gear = GearPositioning()
-    print(gear.XMLG,gear.ZMLG)
+    print('x,z main landing gear: ',gear.XMLG,gear.ZMLG)
+    print('x,z nose landing gear: ',gear.XNLG,gear.ZNLG)
     print(gear.loading_NLG)
     print(gear.ymlg)
