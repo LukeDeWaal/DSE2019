@@ -21,9 +21,12 @@ class GearPositioning(object):
         self.aft_cg = self.__data['C&S']['CG_aft']
         self.fwd_cg = self.__data['C&S']['CG_fwd']
         self.XMLG, self.ZMLG = self.MLG_loc()
-        self.distance_fwdcg_XMLG = self.XMLG - self.fwd_cg[0]
+        self.lm_fwd = self.XMLG - self.fwd_cg[0]
+        self.lm_aft = self.XMLG - self.aft_cg[0]
         self.XNLG, self.loading_NLG = self.NLG_loc()
-
+        self.ln_fwd = self.fwd_cg[0] - self.XNLG
+        self.ln_aft = self.aft_cg[0] - self.XNLG
+        self.ymlg = self.y_mlg()
 
     def MLG_loc(self):
         x_cg = self.aft_cg[0]
@@ -49,9 +52,10 @@ class GearPositioning(object):
         weight_on_NLG = [(self.XMLG-self.fwd_cg[0])/distance_NLG_MLG,(self.XMLG-self.aft_cg[0])/distance_NLG_MLG]
         return x_NLG,weight_on_NLG
 
-    def y_mlg(self, psi):
-
-        ymlg = (self.__get_delta_x(self.__data['NLG'], self.cg) + self.__get_delta_x(self.__data['MLG'], self.cg))/np.sqrt((self.__get_delta_x(self.__data['NLG'], self.cg) * np.tan(psi)/self.cg[1])**2 - 1)
+    def y_mlg(self):
+        z = self.aft_cg[1] - self.ZMLG
+        psi = self.__data['C&S']['Overturn angle']
+        ymlg = (self.ln_aft + self.lm_aft)/np.sqrt(((self.ln_aft*math.tan((psi*math.pi)/180))**2)/z**2 - 1)
         return ymlg
 
     def tip_clearance(self):
@@ -74,3 +78,4 @@ if __name__ == '__main__':
     gear = GearPositioning()
     print(gear.XMLG,gear.ZMLG)
     print(gear.loading_NLG)
+    print(gear.ymlg)
