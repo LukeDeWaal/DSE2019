@@ -18,12 +18,16 @@ class GearPositioning(object):
             print("No Data Found In Current Path")
             self.__data = None
 
-        self.cg = self.__data['C&S']['CG_aft']
+        self.aft_cg = self.__data['C&S']['CG_aft']
+        self.fwd_cg = self.__data['C&S']['CG_fwd']
         self.XMLG, self.ZMLG = self.MLG_loc()
+        self.distance_fwdcg_XMLG = self.XMLG - self.fwd_cg[0]
+        self.XNLG, self.loading_NLG = self.NLG_loc()
+
 
     def MLG_loc(self):
-        x_cg = self.cg[0]
-        z_cg = self.cg[1]
+        x_cg = self.aft_cg[0]
+        z_cg = self.aft_cg[1]
         tipback_angle_deg = self.__data['C&S']['Tipback angle']
         tipback_angle_rad = (tipback_angle_deg*math.pi)/180
         low_side_fuselage = 10 - self.__data['Structures']['Max_fuselage_height']/2
@@ -33,6 +37,17 @@ class GearPositioning(object):
         X_MLG = (math.cos(tipback_angle_rad))**2 * x_cg + (math.sin(tipback_angle_rad))**2 * x_tail -0.5*(z_tail-z_cg)*math.sin(2*tipback_angle_rad)
         Z_MLG = (1/math.tan(tipback_angle_rad))*(x_cg - X_MLG) + z_cg
         return X_MLG, Z_MLG
+
+    def NLG_loc(self):
+        lower_bound = 0.08
+        upper_bound = 0.15
+        delta_x_MLG_aft_cg = self.XMLG - self.aft_cg[0]
+        delta_x_MLG_fwd_cg = self.XMLG - self.fwd_cg[0]
+        delta_x_NLG_fwd_cg_upperbound = (delta_x_MLG_fwd_cg * (1- upper_bound))/upper_bound
+        x_NLG = max(self.fwd_cg[0]-delta_x_NLG_fwd_cg_upperbound, 1.7)
+        distance_NLG_MLG = self.XMLG - x_NLG
+        weight_on_NLG = [(self.XMLG-self.fwd_cg[0])/distance_NLG_MLG,(self.XMLG-self.aft_cg[0])/distance_NLG_MLG]
+        return x_NLG,weight_on_NLG
 
     def y_mlg(self, psi):
 
@@ -58,3 +73,4 @@ class GearPositioning(object):
 if __name__ == '__main__':
     gear = GearPositioning()
     print(gear.XMLG,gear.ZMLG)
+    print(gear.loading_NLG)
