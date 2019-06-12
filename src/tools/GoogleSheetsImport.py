@@ -79,11 +79,11 @@ class GoogleSheetsDataImport(object):
                 for row in values:
                     item = row[col_id]
 
-                    if '[' in item:
-                        item = [float(i) for i in item[1:-1].split(',')]
-
-                    elif col_name == 'Date' or col_name == 'Notes':
+                    if col_name == 'Date' or col_name == 'Notes':
                         pass
+
+                    elif '[' in item:
+                        item = [float(i) for i in item[1:-1].split(',')]
 
                     elif not istext(item):
                         item = float(item)
