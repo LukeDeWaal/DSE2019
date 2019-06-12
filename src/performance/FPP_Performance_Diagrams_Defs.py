@@ -223,7 +223,7 @@ def power_loading():
     plt.axis([0, 3000, 0, 0.6])
     plt.grid(True)
     plt.title('W/P vs. W/S diagram')
-    plt.legend(loc='best')
+    # plt.legend(loc='best')
 
     plt.show()
     return
