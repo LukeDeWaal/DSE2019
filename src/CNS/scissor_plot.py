@@ -150,19 +150,20 @@ class ControllabilityCurve(object):
         plt.plot(cgx_payload, cgy, '.', label='CG - Only Payload')
         plt.plot(cgx_full, cgy, 'v', label='CG - MTOW')
         plt.plot(cgx_empty, cgy, 'v', label='CG - Empty')
-        plt.xlabel(r'$x_{cg} / MAC [-]$')
-        plt.ylabel(r'$S_{h}/S [-]$')
+        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
+        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
         plt.grid(True, which='both')
-        plt.legend()
+        plt.legend(fontsize='large')
 
         return fig
 
 
 class StabilityCurve(object):
 
-    def __init__(self, canard=False):
+    def __init__(self, canard=False, amphib=False):
 
         self.canard = canard
+        self.amphib = amphib
         self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
         self.__curve = self.__get_stability_curve()
@@ -183,8 +184,8 @@ class StabilityCurve(object):
 
         phi = np.arcsin(mtv/r)
         delta_deda = 6.5*((1.225*self.__data['FPP']['Pa [kW] Sustain']**2*self.__data['FPP']['S [m^2]']**3*self.__data['Aero']['CL_A-h']**3)/(lh**4*self.__data['Weights']['WTO [N]']**3))**(1/4)*(np.sin(6*phi))**4.5
-        print(delta_deda)
-        delta_deda = 0
+
+
         # Canard Version
         if self.canard:
             print("Canard")
@@ -192,6 +193,11 @@ class StabilityCurve(object):
             first_term = lambda xcg: (xcg + SM)*(1 + self.__data['Aero']['CL_alpha_c']/self.__data['Aero']['CL_alpha_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]'])
             second_term = xac + (self.__data['C&S']['Canard'][0]-1)/chord*self.__data['Aero']['CL_alpha_c']/self.__data['Aero']['CL_alpha_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]']
             return lambda xcg: -(first_term(xcg) - second_term)/denominator(xcg)
+
+        elif self.amphib:
+            numerator = lambda xcg: xcg + SM - xac - 1000/1.225*self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*1*(0.010775/self.__data['Aero']['CL_alpha_A-h']*(0.64)/chord)
+            denominator = lambda xcg: (1-(self.__data['Aero']['de/da'] + delta_deda))*(self.__data['Aero']['Vh/V']**2)*self.__data['Aero']['CL_alpha_h']/self.__data['Aero']['CL_alpha_A-h']*(-xcg-SM+(self.__data['C&S']['H Wing'][0]-1)/chord)
+            return lambda xcg: numerator(xcg)/denominator(xcg)
 
         # Conventional Version
         else:
@@ -207,10 +213,15 @@ class StabilityCurve(object):
 
         xrange = np.linspace(0, 3, 100)
 
-        plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
-        plt.xlabel(r'$x_{cg} / MAC [-]$')
+        if self.amphib:
+            plt.plot(xrange, self.__curve(xrange), 'g-', label='Amphibious Stability Curve')
         
-        plt.ylabel(r'$S_{h}/S [-]$')
+        else:
+            plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
+
+        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
+        
+        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
         plt.grid(True, which='both')
         plt.ylim(0, 1.0)
 
@@ -218,7 +229,7 @@ class StabilityCurve(object):
               f'Engine @ {round((self.__data["C&S"]["Engine"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n' \
               f'Payload @ {round((self.__data["C&S"]["Payload"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage '
 
-        plt.title("Scissor Plot")
+        plt.title("Scissor Plot", fontsize=18)
         plt.legend()
 
         return fig
@@ -227,8 +238,10 @@ class StabilityCurve(object):
 if __name__ == '__main__':
 
     Ctr = ControllabilityCurve(False)
-    Stab = StabilityCurve(False)
+    Stab_amphib = StabilityCurve(False, amphib=True)
+    Stab = StabilityCurve(False, amphib=False)
 
     fig = plt.figure()
+    Stab_amphib.plot(fig)
     Stab.plot(fig)
     Ctr.plot(fig)
