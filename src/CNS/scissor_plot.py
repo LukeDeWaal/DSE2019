@@ -54,7 +54,9 @@ class ControllabilityCurve(object):
                 'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
                 'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
                 'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload']),
-                'Fuel': (self.__data['Weights']['WF [N]'], xw)
+                'Fuel': (self.__data['Weights']['WF [N]'], xw),
+                'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
             }
 
 
@@ -66,7 +68,9 @@ class ControllabilityCurve(object):
                 'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
                 'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
                 'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
-                'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload'])
+                'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload']),
+                'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
             }
         
         elif PL == 0 and F == 1:
@@ -77,7 +81,9 @@ class ControllabilityCurve(object):
                 'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
                 'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
                 'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
-                'Fuel': (self.__data['Weights']['WF [N]'], xw)
+                'Fuel': (self.__data['Weights']['WF [N]'], xw),
+                'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
             }
         
         elif PL == 0 and F == 0:
@@ -87,7 +93,9 @@ class ControllabilityCurve(object):
                 'Wing': (self.__data['Structures']['Wing_weight [N]'], xw),
                 'Engine': (self.__data['FPP']['Engine Weight [N]'], self.__data['C&S']['Engine']),
                 'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
-                'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing'])
+                'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
+                'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
             }
         
         else:
