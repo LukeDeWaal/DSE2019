@@ -34,7 +34,7 @@ class GoogleSheetsDataImport(object):
             flow = client.flow_from_clientsecrets('\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools\\client_secret.json', scopes)
             creds = tools.run_flow(flow, store)
         service = build('sheets', 'v4', http=creds.authorize(Http()))
-
+        print("Fetching Your Data")
         # Call the Sheets API
         for page in self.__pages:
             gsheet = service.spreadsheets().values().get(spreadsheetId=self.__sheet_id, range=page).execute()
@@ -79,11 +79,11 @@ class GoogleSheetsDataImport(object):
                 for row in values:
                     item = row[col_id]
 
-                    if '[' in item:
-                        item = [float(i) for i in item[1:-1].split(',')]
-
-                    elif col_name == 'Date' or col_name == 'Notes':
+                    if col_name == 'Date' or col_name == 'Notes':
                         pass
+
+                    elif '[' in item:
+                        item = [float(i) for i in item[1:-1].split(',')]
 
                     elif not istext(item):
                         item = float(item)

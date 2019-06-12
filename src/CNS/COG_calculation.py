@@ -18,7 +18,7 @@ class CgCalculation(object):
                     ...
                     }
         """
-        self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
+        # self.__data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
         self.__components = components
         self.__cg = [None, None]
         self.__cg_lemac = [None, None]
@@ -201,41 +201,87 @@ class CgCalculation(object):
         plt.title('CG Location')
         plt.show()
 
-    def fwd_aft_cg(self):
-        cg = lambda PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * (data['C&S']['Wing'][0]-1) +
-                              self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1) +
-                              self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1)+
-                              self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) ) / \
-                             (self.__data['Structures']['Wing_weight [N]'] +
-                              self.__data['Weights']['WF [N]']* F +
-                              self.__data['Weights']['WPL [N]'] * PL +
-                              self.__data['Structures']['Fuselage_weight [N]'] +
-                              self.__data['FPP']['Engine Weight [N]'])
-        cgx_full = cg(1,1)
-        cgx_empty = cg(0,0)
-        cgx_fuel = cg(0,1)
-        cgx_payload = cg(0,1)
-        fwd_cg = min(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
-        aft_cg = max(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
-        return fwd_cg,aft_cg
+    # def fwd_aft_cg(self):
+    #
+    #     chord = self.__data['Aero']['Wing chord']
+    #
+    #     cg = lambda PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * ((self.__data['C&S']['Wing'][0]-1)/chord + self.__data['Aero']['x_ac']) +
+    #                           self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1)/chord +
+    #                           self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1) / chord +
+    #                           self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord +
+    #                           self.__data['Structures']['HTail_weight [N]'] * (self.__data['C&S']['H Wing'][0] - 1)/chord +
+    #                           self.__data['Structures']['VTail_weight [N]'] * (self.__data['C&S']['V Wing'][0] - 1)/chord) / \
+    #                          (self.__data['Structures']['Wing_weight [N]'] +
+    #                           self.__data['Weights']['WF [N]']* F +
+    #                           self.__data['Weights']['WPL [N]'] * PL +
+    #                           self.__data['Structures']['HTail_weight [N]'] +
+    #                           self.__data['Structures']['VTail_weight [N]'] +
+    #                           self.__data['Structures']['Fuselage_weight [N]'] +
+    #                           self.__data['FPP']['Engine Weight [N]'])
+    #     cgx_full = cg(1,1)
+    #
+    #     cgx_empty = cg(0,0)
+    #     cgx_fuel = cg(0,1)
+    #     cgx_payload = cg(0,1)
+    #     fwd_cg = min(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
+    #     aft_cg = max(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
+    #     return fwd_cg,aft_cg
+
 
 if __name__ == '__main__':
 
     data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
-    data['C&S']['Wing'] = [data['C&S']['Wing'][0] + 0.25 * data['Aero']['Wing chord'],  data['C&S']['Wing'][1]]
+    data['C&S']['Wing'] = [data['C&S']['Wing'][0] + data['Aero']['x_ac'] * data['Aero']['Wing chord'],  data['C&S']['Wing'][1]]
 
-    components = {
+    full_components = {
         'Fuselage': (data['Structures']['Fuselage_weight [N]'], data['C&S']['Fuselage']),
         'Wing': (data['Structures']['Wing_weight [N]'], data['C&S']['Wing']),
         'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
-        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing'])
+        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
     }
 
-    B = CgCalculation(components)
-    B.plot_locations()
-    print("CG: ", B.calculate_cg())
-    B.wing_positioning_plot()
+    empty_components = {
+        'Fuselage': (data['Structures']['Fuselage_weight [N]'], data['C&S']['Fuselage']),
+        'Wing': (data['Structures']['Wing_weight [N]'], data['C&S']['Wing']),
+        'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
+        'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
+        'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+    }
+
+    full_PL_components = {
+        'Fuselage': (data['Structures']['Fuselage_weight [N]'], data['C&S']['Fuselage']),
+        'Wing': (data['Structures']['Wing_weight [N]'], data['C&S']['Wing']),
+        'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
+        'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
+        'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
+        'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+    }
+
+    full_F_components = {
+        'Fuselage': (data['Structures']['Fuselage_weight [N]'], data['C&S']['Fuselage']),
+        'Wing': (data['Structures']['Wing_weight [N]'], data['C&S']['Wing']),
+        'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
+        'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
+        'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
+        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+    }
+
+    B1 = CgCalculation(full_components).calculate_cg()
+    B2 = CgCalculation(empty_components).calculate_cg()
+    B3 = CgCalculation(full_F_components).calculate_cg()
+    B4 = CgCalculation(full_PL_components).calculate_cg()
+    # B.plot_locations()
+    # print("CG: ", B.calculate_cg())
+    # B.wing_positioning_plot()
