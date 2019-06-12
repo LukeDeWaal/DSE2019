@@ -18,8 +18,8 @@ data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
 C_rm=0.75
 theta=4
-GW= (data['Weights']['WTO [N]'])/9.80665/2
-GM= 3 #metacentric height
+GW= (data['Weights']['WL[N]'])/9.80665/2
+GM= 2 #metacentric height
 y_tip=(data['Aero']['Wing Span'])/2/.3
 
 #righting moment to be counteracted by tip float
@@ -30,8 +30,8 @@ V_fl=MR/y_tip
 #tipfloat dimensions
 
 l_fl=(32*V_fl)**(1/3)*.3
-b_fl=l_fl/4*.3
-d_fl=b_fl*0.5*.3
+b_fl=l_fl/4
+d_fl=b_fl*0.5
 
 print(l_fl,b_fl,d_fl)
 
