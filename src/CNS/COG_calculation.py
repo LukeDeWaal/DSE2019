@@ -241,7 +241,9 @@ if __name__ == '__main__':
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
-        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing'])
+        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
     }
 
     empty_components = {
@@ -249,7 +251,9 @@ if __name__ == '__main__':
         'Wing': (data['Structures']['Wing_weight [N]'], data['C&S']['Wing']),
         'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
-        'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing'])
+        'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
     }
 
     full_PL_components = {
@@ -258,7 +262,9 @@ if __name__ == '__main__':
         'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
-        'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload'])
+        'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
     }
 
     full_F_components = {
@@ -267,7 +273,9 @@ if __name__ == '__main__':
         'Engine': (data['FPP']['Engine Weight [N]'], data['C&S']['Engine']),
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
-        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing'])
+        'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
+        'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
     }
 
     B1 = CgCalculation(full_components).calculate_cg()
