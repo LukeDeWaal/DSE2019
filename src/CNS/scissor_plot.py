@@ -142,10 +142,10 @@ class ControllabilityCurve(object):
         plt.plot(cgx_payload, cgy, '.', label='CG - Only Payload')
         plt.plot(cgx_full, cgy, 'v', label='CG - MTOW')
         plt.plot(cgx_empty, cgy, 'v', label='CG - Empty')
-        plt.xlabel(r'$x_{cg} / MAC [-]$')
-        plt.ylabel(r'$S_{h}/S [-]$')
+        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
+        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
         plt.grid(True, which='both')
-        plt.legend()
+        plt.legend(fontsize='large')
 
         return fig
 
@@ -200,9 +200,9 @@ class StabilityCurve(object):
         xrange = np.linspace(0, 3, 100)
 
         plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
-        plt.xlabel(r'$x_{cg} / MAC [-]$')
+        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
         
-        plt.ylabel(r'$S_{h}/S [-]$')
+        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
         plt.grid(True, which='both')
         plt.ylim(0, 1.0)
 
@@ -210,7 +210,7 @@ class StabilityCurve(object):
               f'Engine @ {round((self.__data["C&S"]["Engine"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n' \
               f'Payload @ {round((self.__data["C&S"]["Payload"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage '
 
-        plt.title("Scissor Plot")
+        plt.title("Scissor Plot", fontsize=18)
         plt.legend()
 
         return fig
