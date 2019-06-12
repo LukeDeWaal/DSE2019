@@ -195,7 +195,7 @@ class StabilityCurve(object):
             return lambda xcg: -(first_term(xcg) - second_term)/denominator(xcg)
 
         elif self.amphib:
-            numerator = lambda xcg: xcg + SM - xac - 1000/1.225*self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*1*(0.010775/self.__data['Aero']['CL_alpha_A-h']*(0.64)/chord)
+            numerator = lambda xcg: xcg + SM - xac + 1000/1.225*self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*1*(0.010775/self.__data['Aero']['CL_alpha_A-h']*(0.64)/chord)
             denominator = lambda xcg: (1-(self.__data['Aero']['de/da'] + delta_deda))*(self.__data['Aero']['Vh/V']**2)*self.__data['Aero']['CL_alpha_h']/self.__data['Aero']['CL_alpha_A-h']*(-xcg-SM+(self.__data['C&S']['H Wing'][0]-1)/chord)
             return lambda xcg: numerator(xcg)/denominator(xcg)
 
@@ -215,7 +215,7 @@ class StabilityCurve(object):
 
         if self.amphib:
             plt.plot(xrange, self.__curve(xrange), 'g-', label='Amphibious Stability Curve')
-        
+
         else:
             plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
 
