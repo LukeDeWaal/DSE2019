@@ -31,35 +31,59 @@ def dead_rise_angle_calc(H,alpha,La):                   #min allowed dead rise a
     y = a*x + b
     return y
 
-def f_1(x,y,dead_angle = dead_rise_angle, H = H_Cone, L = L_Cone):
-    return -(y/(L/(H)**2))**0.5 + np.tan(np.radians(dead_angle))*x
+def f_1(x,y):
+    global L_Cone
+    global dead_rise_angle
+    global H_Cone
+    return -(y/(L_Cone/(H_Cone)**2))**0.5 + np.tan(np.radians(dead_rise_angle))*x
 
-def f_2(x,y,dead_angle = dead_rise_angle, H = H_Cone):
-    return -H + np.tan(np.radians(dead_angle))*x
+def f_2(x,y):
+    global dead_rise_angle
+    global H_Cone
+    return -H_Cone + np.tan(np.radians(dead_rise_angle))*x
 
-def f_3(x,y,stern_angle=stern_post_angle,L_step = step_location,L_A = L_Afterbody, H_step=step_depth[0], H=H_Cone,dead_angle=dead_rise_angle):
-    a = ((np.tan(np.radians(stern_angle))*L_A)-H_step)/(L_A)
-    b = (-H+H_step)-L_step*a
-    return a * y + b + np.tan(np.radians(dead_angle)) * x
+def f_3(x,y):
+    global stern_post_angle
+    global step_location
+    global L_Afterbody
+    global step_depth
+    global H_Cone
+    global dead_rise_angle
+    a = ((np.tan(np.radians(stern_post_angle))*L_Afterbody)-step_depth[0])/(L_Afterbody)
+    b = (-H_Cone+step_depth[0])-step_location*a
+    return a * y + b + np.tan(np.radians(dead_rise_angle)) * x
 
-def bounds_y_1(L=L_Cone):
-    return [0,L]
+def bounds_y_1():
+    global L_Cone
+    return [0,L_Cone]
 
-def bounds_y_2(Beam = Beam_Fuselage, L=L_Cone):
-    return [L,1.5*Beam+L]
+def bounds_y_2():
+    global Beam_Fuselage
+    global L_Cone
+    return [L_Cone,1.5*Beam_Fuselage+L_Cone]
 
-def bounds_y_3(Beam = Beam_Fuselage, L=L_Cone, L_A=L_Afterbody):
-    return [L+1.5*Beam/2,L+1.5*Beam/2+L_A]
+def bounds_y_3():
+    global Beam_Fuselage
+    global L_Cone
+    global L_Afterbody
+    return [L_Cone+1.5*Beam_Fuselage/2,L_Cone+1.5*Beam_Fuselage/2+L_Afterbody]
 
-def bounds_x_1(y, L=L_Cone, Beam=Beam_Fuselage):
-    return [0,(y/((L)/(Beam/2)**2))**0.5]
+def bounds_x_1(y):
+    global L_Cone
+    global Beam_Fuselage
+    return [0,(y/((L_Cone)/(Beam_Fuselage/2)**2))**0.5]
 
-def bounds_x_2(y, Beam=Beam_Fuselage):
-    return [0, Beam/2]
+def bounds_x_2(y):
+    global Beam_Fuselage
+    return [0, Beam_Fuselage/2]
 
-def bounds_x_3(y, Beam_a = Beam_aft, Beam=Beam_Fuselage, L_A=L_Afterbody, L_step=step_location):
-    a = (Beam_a/2-Beam/2)/L_A
-    b = Beam/2 - a*L_step
+def bounds_x_3(y):
+    global Beam_aft
+    global Beam_Fuselage
+    global L_Afterbody
+    global step_location
+    a = (Beam_aft/2-Beam_Fuselage/2)/L_Afterbody
+    b = Beam_Fuselage/2 - a*step_location
     return [0,a*y + b]
 
 CG = data['C&S']['CG_abs']
