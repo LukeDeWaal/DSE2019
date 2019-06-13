@@ -106,3 +106,5 @@ venv.bak/
 
 # Mac folder metadata files
 **/.DS_Store
+
+src/tools/credentials.json

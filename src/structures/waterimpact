@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun 12 12:42:30 2019
+
+@author: liesbethwijn
+"""
+
+import numpy as np
+import os
+import sys
+import matplotlib.pyplot as plt
+import pandas as pd
+
+### Google Sheet Import ###
+sys.path.insert(0, '/'.join(os.getcwd().split('/')[:-1]) + '/tools')
+from GoogleSheetsImportMac import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
+
+
+#conversion
+kg2lb=2.20462262
+ms2knots=1.94384449
+lb2kg=1/2.20462262
+knots2ms=1/1.94384449
+
+
+#para
+g=9.80665    #m/s^2
+C_1=0.012   #-
+V_so=(data['FPP']['V_stall [m/s]'])*ms2knots     #knots
+W_l=(data['Weights']['WL[N]'])/g*kg2lb     #kg
+V_0=1.1*V_so     #knots
+beta=25     #degrees
+b=1.5    #metres
+rhow=1000 #kg/m^3
+x=b/2    #metres
+K1_b=1.35
+rx=3.2/2.5
+
+#landing
+Fw0=((V_0*knots2ms)**2*(1/(np.tan(np.radians(beta)))))/((1+(rhow*g*np.pi*x**2)/(2*W_l*lb2kg))**3)*(rhow*np.pi*x)
+    #symmetrical step landing
+n_sl=(C_1*V_so**2)/((np.tan(np.radians(25)))**(1/3)*W_l) #-
+Fw_ssl=n_sl*Fw0 #N
+    #symmetrical bow landing (applied at 0.2*lf from bow, perp to keel)
+#n_bl=n_sl*K1_b/((1+rx**2)**(2/3))
+#always take 4 as most extreme cases and statistic data gives bad unrealistic numbers
+Fw_sbl=Fw_ssl
+Fw_ssl=Fw_ssl
+    #unsymmetrical step
+Fw_usl_up=n_sl*Fw0*0.75*np.tan(beta)
+Fw_usl_side=n_sl*Fw0*0.25*np.tan(beta)
+
+
+
+

@@ -201,32 +201,6 @@ class CgCalculation(object):
         plt.title('CG Location')
         plt.show()
 
-    # def fwd_aft_cg(self):
-    #
-    #     chord = self.__data['Aero']['Wing chord']
-    #
-    #     cg = lambda PL, F: ((self.__data['Structures']['Wing_weight [N]'] + self.__data['Weights']['WF [N]']) * F * ((self.__data['C&S']['Wing'][0]-1)/chord + self.__data['Aero']['x_ac']) +
-    #                           self.__data['Weights']['WPL [N]'] * PL * (self.__data['C&S']['Payload'][0]-1)/chord +
-    #                           self.__data['Structures']['Fuselage_weight [N]'] * (self.__data['C&S']['Fuselage'][0] - 1) / chord +
-    #                           self.__data['FPP']['Engine Weight [N]'] * (self.__data['C&S']['Engine'][0] - 1) / chord +
-    #                           self.__data['Structures']['HTail_weight [N]'] * (self.__data['C&S']['H Wing'][0] - 1)/chord +
-    #                           self.__data['Structures']['VTail_weight [N]'] * (self.__data['C&S']['V Wing'][0] - 1)/chord) / \
-    #                          (self.__data['Structures']['Wing_weight [N]'] +
-    #                           self.__data['Weights']['WF [N]']* F +
-    #                           self.__data['Weights']['WPL [N]'] * PL +
-    #                           self.__data['Structures']['HTail_weight [N]'] +
-    #                           self.__data['Structures']['VTail_weight [N]'] +
-    #                           self.__data['Structures']['Fuselage_weight [N]'] +
-    #                           self.__data['FPP']['Engine Weight [N]'])
-    #     cgx_full = cg(1,1)
-    #
-    #     cgx_empty = cg(0,0)
-    #     cgx_fuel = cg(0,1)
-    #     cgx_payload = cg(0,1)
-    #     fwd_cg = min(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
-    #     aft_cg = max(cgx_payload,cgx_fuel,cgx_empty,cgx_full)
-    #     return fwd_cg,aft_cg
-
 
 if __name__ == '__main__':
 
@@ -282,6 +256,14 @@ if __name__ == '__main__':
     B2 = CgCalculation(empty_components).calculate_cg()
     B3 = CgCalculation(full_F_components).calculate_cg()
     B4 = CgCalculation(full_PL_components).calculate_cg()
-    # B.plot_locations()
+
     # print("CG: ", B.calculate_cg())
     # B.wing_positioning_plot()
+    # print(B1,B2,B3,B4)
+    # def cg_shift(cg1,cg2):
+    #     deltax = cg1[0] - cg2[0]
+    #     deltaz = cg1[1] - cg2[1]
+    #     return [deltax,deltaz]
+    # drop1 = cg_shift(B1,B3)
+    # drop2 = cg_shift(B4,B2)
+    # print(drop1,drop2)
