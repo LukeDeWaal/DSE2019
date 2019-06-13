@@ -1,8 +1,43 @@
 import numpy as np
 import imageio as im
 from typing import Union
+from tqdm import tqdm
 
-class Grid(object):
+
+class Cell(object):
+
+    def __init__(self, fuel: Union[float, list, tuple, np.array], position: Union[tuple, list, np.array]):
+
+        if type(fuel) == float:
+            self.fuel = [fuel, fuel]
+
+        else:
+            self.fuel = list(fuel)
+
+        self.position = position
+        self.intensity = 0.0
+        self.retardant_present = 0.0
+
+    def __bool__(self):
+        return True if self.intensity > 0 else False
+
+    def __str__(self):
+        return f"F: {self.fuel}, R: {self.retardant_present}, I: {self.intensity}, P: {self.position}"
+
+    def set_intensity(self, intensity: float):
+        self.intensity = intensity
+
+    def set_retardant(self, amount: float):
+        self.retardant_present = amount
+
+    def update_fuel(self):
+        self.fuel = [self.fuel, self.fuel*(1/(1+self.intensity))]
+
+    def update_intensity(self, *cell_intensities):
+        self.intensity -= self.intensity*(abs(self.fuel[1] - self.fuel[0])) + np.sum([intensity for intensity in cell_intensities])/8
+
+
+class ClassicGrid(object):
 
     def __init__(self, time: int, forest_size: Union[tuple, list, np.array], p: float = 0.6):
         """
@@ -17,8 +52,8 @@ class Grid(object):
         if type(forest_size) in (tuple, list, np.array):
             self.size = tuple(forest_size)
 
-        self.grid = np.zeros((time, *self.size), dtype=int)
-        self.coloured_grid = np.zeros((time, *self.size, 3), dtype=int)
+        self.grid = np.zeros((time, *self.size), dtype=np.uint8)
+        self.coloured_grid = np.zeros((time, *self.size, 3), dtype=np.uint8)
         self.probability = p
 
         self.__initialize_grid(clearspot_1=((8, 100), (100, 75)))
@@ -64,9 +99,8 @@ class Grid(object):
         """
         Method to colour the graphics after the simulation
         """
-
-        for t in range(self.time):
-            print(t, self.time)
+        print("=== COLOURING ===")
+        for t in tqdm(range(self.time)):
             for x in range(self.size[0]):
                 for y in range(self.size[1]):
                     value = self.grid[t, x, y]
@@ -82,10 +116,9 @@ class Grid(object):
         """
         Method to start the simulation
         """
-
-        for t in range(1, self.time):
+        print("=== SIMULATING ===")
+        for t in tqdm(range(1, self.time)):
             self.grid[t] = self.grid[t - 1].copy()
-            print(t, self.time)
 
             for x in range(1, self.size[0] - 1):
                 for y in range(1, self.size[1] - 1):
@@ -124,9 +157,15 @@ class Grid(object):
         im.mimsave((path+f'/{name}.gif'), self.coloured_grid)
 
 
-
 if __name__ == '__main__':
 
-    grid = Grid(500, (300, 300), p=0.6)
+    import os
+
+    DATA_PATH = r'C:\Users\LRdeWaal\Desktop\DSE2019\data\FireSim'
+
+    time = 500
+    shape = (300, 300)
+
+    grid = ClassicGrid(time, shape, p=0.6)
     grid.clear_spot(0, (8, 100), (100, 75))
-    grid.run('test', r'C:\Users\lucky\Desktop')
+    # grid.run(f'fire_sim_{len(os.listdir(DATA_PATH))}_{(time, shape)}', DATA_PATH)
