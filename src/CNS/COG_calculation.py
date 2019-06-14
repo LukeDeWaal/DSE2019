@@ -163,9 +163,8 @@ class CgCalculation(object):
         """
 
         CoB = data['Structures']['CoB']
-        fwd,aft = self.fwd_aft_cg()
-        fwd_weird_frame = fwd + 1
-        aft_weird_frame = aft + 1
+
+
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect(1.0)
@@ -173,8 +172,17 @@ class CgCalculation(object):
             plt.ylim(0, 15)
 
         coordinate_history = []
-        for name, (weight, (x, z)) in self.__components.items():
+        for name, location in self.__components.items():
+            weight = location[0]
+            if len(location[1]) == 2:
+                x = location[1][0]
+                z = location[1][1]
+            if len(location[1]) == 3:
+                x = location[1][0]
+                z = location[1][1]
+                y = location[1][2]
             i = 1
+            print(x,z)
             if (x, z) in coordinate_history:
                 i = 3
             plt.scatter(x, z, s=np.sqrt(weight), c='k')
@@ -184,10 +192,6 @@ class CgCalculation(object):
         plt.annotate('CG', xy=self.__cg)
         plt.scatter(CoB[0], CoB[1], c='b')
         plt.annotate('CoB', xy=CoB)
-        plt.scatter(fwd_weird_frame, 10)
-        plt.annotate('Forward CG',xy=[fwd_weird_frame,10])
-        plt.scatter(fwd_weird_frame, 10)
-        plt.annotate('Aft CG', xy=[aft_weird_frame, 10])
 
         # fuselage = self.__plot_cilinder(9, 2.5)
         # wing = self.__plot_cilinder(2.25, 0.5, offset=(3, 1.5))
@@ -260,7 +264,8 @@ if __name__ == '__main__':
     B2 = CgCalculation(empty_components).calculate_cg()
     B3 = CgCalculation(full_F_components).calculate_cg()
     B4 = CgCalculation(full_PL_components).calculate_cg()
-
+    plotting = CgCalculation(full_components)
+    plotting.plot_locations()
     # print("CG: ", B.calculate_cg())
     # B.wing_positioning_plot()
     print(B1,B2,B3,B4)
