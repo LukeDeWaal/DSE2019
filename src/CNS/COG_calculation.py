@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib
 import os
 import sys
+
 sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
 
 from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
-
+from adjustText import adjust_text
 
 class CgCalculation(object):
 
@@ -172,6 +173,9 @@ class CgCalculation(object):
             plt.ylim(0, 15)
 
         coordinate_history = []
+        xs = []
+        zs = []
+        text = []
         for name, location in self.__components.items():
             weight = location[0]
             if len(location[1]) == 2:
@@ -185,9 +189,17 @@ class CgCalculation(object):
             print(x,z)
             if (x, z) in coordinate_history:
                 i = 3
+            matplotlib.rcParams.update({'font.size': 8})
             plt.scatter(x, z, s=np.sqrt(weight), c='k')
-            plt.annotate(name, xy=(x+i*0.1, z+i*0.1))
+            #plt.annotate(name, xy=(x+i*0.1, z+i*0.1))
             coordinate_history.append((x,z))
+            xs.append(x)
+            zs.append(z)
+            text.append(name)
+        texts = []
+        for (a,b,c) in zip(xs,zs,text):
+            texts.append(plt.text(a,b,c))
+
         plt.scatter(self.__cg[0], self.__cg[1], c='r')
         plt.annotate('CG', xy=self.__cg)
         plt.scatter(CoB[0], CoB[1], c='b')
@@ -201,8 +213,9 @@ class CgCalculation(object):
 
         plt.grid()
         plt.xlabel('X Position [m]')
-        plt.ylabel('Y Position [m]')
+        plt.ylabel('Z Position [m]')
         plt.title('CG Location')
+        adjust_text(texts)
         plt.show()
 
 
