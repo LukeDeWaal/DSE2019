@@ -24,4 +24,6 @@ def vtail_size(k, flight, vratio):
 
 if __name__ == '__main__':
 
-    Sv = vtail_size(1.1, 'loiter', 1.0)
+    f = 100000
+    Sv = vtail_size(f, 'loiter', 1.0)
+    print(Sv*f, Sv)

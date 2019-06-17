@@ -83,7 +83,9 @@ class GoogleSheetsDataImport(object):
                         pass
 
                     elif '[' in item:
+
                         item = [float(i) for i in item[1:-1].split(',')]
+
 
                     elif not istext(item):
                         item = float(item)

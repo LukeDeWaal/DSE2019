@@ -30,8 +30,8 @@ class GearPositioning(object):
         self.ymlg = self.y_mlg()
 
     def MLG_loc(self):
-        x_cg = self.aft_cg[0]
-        z_cg = self.aft_cg[1]
+        x_cg = self.fwd_cg[0]
+        z_cg = self.fwd_cg[1]
         tipback_angle_deg = self.__data['C&S']['Tipback angle']
         tipback_angle_rad = (tipback_angle_deg*math.pi)/180
         low_side_fuselage = 10 - self.__data['Structures']['Max_fuselage_height']/2
