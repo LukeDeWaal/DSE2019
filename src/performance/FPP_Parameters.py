@@ -32,15 +32,15 @@ delta_e_to = 0.05
 delta_e_landing = 0.10
 delta_C_D_0_to = data['Aero']['delta_CD0_plain_TO']
 delta_C_D_0_landing = data['Aero']['delta_CD0_plain_LAND']
-V_stall_req = 40
+V_stall_req = 35
 rc_req = 10
 c_V_req = 0.25
 rho_alt = 0.9 # at 3 km
 V_cruise_req = 100
 s_landing_req_land = 500 # m
 s_landing_req_water = 500 # m
-f_land = 2./3.
-f_water = 2./3.
+f_land = 0.71
+f_water = 0.71
 
 # Conversions
 ft_to_m = .3048

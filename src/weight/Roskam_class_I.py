@@ -42,7 +42,7 @@ L_D_cl = 10.2  # lift over drag for climb
 L_D_cr = 8.0  # lift over drag for cruise at 113 m/s
 L_D_9_8 = 7.9  # lift over drag at 44 m/s (assumed dropping speed/loiter)
 # L_D_9_8_empty = 10.2  # at 44 m/s (for MTOW = 6000 in Kars Excel)
-x = 20  # 23  # number of refills 16
+x = 23  # 23  # number of refills 16
 
 # Distances
 d_fire_loiter = 1.0  # km
@@ -58,14 +58,16 @@ def range_endurance_time_values():
     E_cl = h_cr / rc / 3600  # fraction of an hour
     R_cr = (d_airport_fire - V_cl / ms_to_mph / 1000 * E_cl * 3600) \
            * km_to_sm  # sm, distance airport to fire, assume horizontal speed is indicated speed
+    print('R_cr', R_cr/km_to_sm)
     R_9_8 = d_fire_loiter * km_to_sm  # sm, distance covered to get away from dropping location before climbing
     E_10_9 = h_refill / rc / 3600  # fraction of an hour
     R_refill = (d_fire_source - V_cl / ms_to_mph / 1000 * E_10_9 *
                 3600) * km_to_sm  # distance cruise between fire and water
+    print('R_refill', R_refill/km_to_sm)
 
     # Time estimations for different phases of flight
     t_initial_attack = 60 + 60 + 30 + E_cl * 3600 + R_cr / km_to_sm * 1000 / V_cr + 60 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter  # 60 for 1, 2, 6 and 8, 30 for 3 and 8, calculated for 4, 5 and 9
-    t_one_refill = E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 60 + 30 + E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 60 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter  # 60 for 12 and 16, 30 for 13 and 18, calculated for 10, 11, 14, 15 and 19
+    t_one_refill = E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 25 + 30 + E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 25 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter  # 25 for 12 and 16, 30 for 13 and 18, calculated for 10, 11, 14, 15 and 19
     t_back_to_base = E_cl * 3600 + R_cr / km_to_sm * 1000 / V_cr + 60 + 60  # 60 for 22 and 23, calculated for 20 and 21
 
     # Total mission time
@@ -101,7 +103,7 @@ def print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total
 
     # Print final values Class I
     print('Iterated weights (in kg)')
-    print('TO  ', 'Fuel', 'Tent.')  # , 'Exp.')
+    print('TO  ', 'Fuel', 'Empty')  # , 'Exp.')
     print(int(W_to / kg_to_lb), int(W_fuel / kg_to_lb), int(W_E_tent / kg_to_lb))  # , int(W_E_allowed / kg_to_lb))
 
     return
@@ -291,8 +293,9 @@ def W_structure(W_to):
     S_h = m_to_ft ** 2 * data['C&S']['Sh']  # CS
     l_h = (data['C&S']['H Wing'][0] - (
                 0.25 * data['Aero']['Wing chord'] + data['C&S']['Wing'][0])) * m_to_ft  # CS 2.33 is wing chord
-    b_h = data['Aero']['B_ht'] * m_to_ft  # Aero
-    t_r_h = 0.12 * b_h  # Aero
+    print('l h', l_h/m_to_ft)
+    b_h = data['Aero']['horizontail_tail_span [m]'] * m_to_ft  # Aero
+    t_r_h = 0.12 * data['Aero']['horizontal_tail_chord [m]'] * m_to_ft  # Aero
 
     S_v = data['C&S']['Sv_t'] * m_to_ft ** 2  # Aero
     b_v = data['Aero']['vertical_tail_height [m]'] * m_to_ft  # Aero
@@ -327,7 +330,8 @@ def W_structure(W_to):
             V_C / 100) ** 0.338) ** 1.1)  # 1.65*W_f because of flying boat (p75 Roskam)
     W_g = 0.054 * (l_s_m) ** 0.501 * (W_L * n_ult_l) ** 0.684
     # print(W_g / kg_to_lb)
-    W_float = 2 * 80 * kg_to_lb  # Liesbeth
+    W_float = data['Structures']['Float_weight']/g* kg_to_lb  # Liesbeth
+    print(W_float/kg_to_lb)
 
     print('W w, h, v, f, g', W_w / kg_to_lb, W_h / kg_to_lb, W_v / kg_to_lb, W_f / kg_to_lb, W_g / kg_to_lb)
 
@@ -356,10 +360,12 @@ def W_power(W_f):
     # print(W_eng/kg_to_lb)
     # print(W_prop / kg_to_lb)
     # print(W_ai_p / kg_to_lb)
-    # print(W_fs/kg_to_lb)
+    print(W_fs/kg_to_lb)
 
     W_pwr = W_eng + W_ai_p + W_prop + W_fs
     # print(W_pwr/kg_to_lb)
+
+    W_pwr = 654 * kg_to_lb + W_fs # Kars!
 
     return W_pwr, W_fs
 
@@ -380,7 +386,7 @@ def W_fixed_equipment(W_fs, W_to):
     return W_feq
 
 
-def class_II(W_to):
+def class_II(W_to, W_fuel):
     # Addition of all weight components
     W_struc, W_f = W_structure(W_to)
     W_pwr, W_fs = W_power(W_f)
@@ -400,21 +406,23 @@ def class_II(W_to):
 
     return W_E_ratio_class_II, W_to_class_II
 
+def final_weights():
 
-## Main ##
-W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
-    W_to_initial, W_E_ratio_initial)
-W_E_ratio_class_II, W_to_class_II = class_II(W_to)
+    W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
+        W_to_initial, W_E_ratio_initial)
+    W_E_ratio_class_II, W_to_class_II = class_II(W_to, W_fuel)
 
-while abs((W_to_class_II - W_to) / W_to) > 0.005:
-    print('W_to before and after class II', W_to / kg_to_lb, W_to_class_II / kg_to_lb)
+    while abs((W_to_class_II - W_to) / W_to) > 0.005:
+        W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
+            W_to_class_II, W_E_ratio_class_II)
+        W_E_ratio_class_II, W_to_class_II = class_II(W_to, W_fuel)
+
+    print()
     W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
         W_to_class_II, W_E_ratio_class_II)
-    W_E_ratio_class_II, W_to_class_II = class_II(W_to)
-    print('W_to before and after class II', W_to / kg_to_lb, W_to_class_II / kg_to_lb)
+    print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop,
+                         W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent)
 
-print()
-W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
-    W_to_class_II, W_E_ratio_class_II)
-print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop,
-                     W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent)
+    return W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base
+## Main ##
+
