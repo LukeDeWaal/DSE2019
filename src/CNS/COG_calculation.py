@@ -217,7 +217,8 @@ if __name__ == '__main__':
         'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
         'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     empty_components = {
@@ -227,7 +228,8 @@ if __name__ == '__main__':
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     full_PL_components = {
@@ -238,7 +240,8 @@ if __name__ == '__main__':
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     full_F_components = {
@@ -249,7 +252,8 @@ if __name__ == '__main__':
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     B1 = CgCalculation(full_components).calculate_cg()
@@ -259,11 +263,11 @@ if __name__ == '__main__':
 
     # print("CG: ", B.calculate_cg())
     # B.wing_positioning_plot()
-    # print(B1,B2,B3,B4)
-    # def cg_shift(cg1,cg2):
-    #     deltax = cg1[0] - cg2[0]
-    #     deltaz = cg1[1] - cg2[1]
-    #     return [deltax,deltaz]
-    # drop1 = cg_shift(B1,B3)
-    # drop2 = cg_shift(B4,B2)
-    # print(drop1,drop2)
+    print(B1,B2,B3,B4)
+    def cg_shift(cg1,cg2):
+        deltax = cg1[0] - cg2[0]
+        deltaz = cg1[1] - cg2[1]
+        return [deltax,deltaz]
+    drop1 = cg_shift(B1,B3)
+    drop2 = cg_shift(B4,B2)
+    print(drop1,drop2)

@@ -1,10 +1,20 @@
 ### Imports ###
+import os
+import sys
 import numpy as np
+
+sys.path.insert(0, '/'.join(os.getcwd().split('/')[:-1]) + '/tools')
+from GoogleSheetsImportMac import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
+data = GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data()
 
 ### Conversions ###
 kg_to_lb = 2.205
 ms_to_mph = 2.237
 km_to_sm = .6214
+g = 9.80665
+ms_to_kts = 1.944
+m_to_ft = 3.281
+W_to_hp = 1.341
 
 ### Initial values ###
 # Weights
@@ -12,7 +22,7 @@ W_pl = 3000 * kg_to_lb  # lb
 W_pl_mto_ratio = .33333
 W_to_initial = W_pl / W_pl_mto_ratio  # lb
 W_F_res_used_ratio = 0.05
-W_E_ratio = 6751. / 16000.  # AT 802
+W_E_ratio_initial = 6751. / 16000.  # AT 802
 
 ### Class I ###
 ## Input Parameters ##
@@ -22,17 +32,17 @@ h_refill = 250  # m, assumed altitude to travel
 
 # Performance parameters
 rc = 10  # m/s
-V_cl = 59 * ms_to_mph  # mph
+V_cl = data['FPP']['V_climb [m/s]'] * ms_to_mph  # mph
 # V_cl_empty = 45 * ms_to_mph  # mph (for MTOW = 6000 in Kars Excel)
-V_cr = 112.5  # m/s
-V_loiter = 44  # m/s
-eta_p = 0.83  # propeller efficiency
+V_cr = 0.9 * data['FPP']['V_max [m/s]']  # m/s
+V_loiter = data['FPP']['V_loit [m/s]']  # m/s
+eta_p = data['FPP']['eta_p [-]']  # propeller efficiency
 c_p = 0.45  # specific fuel consumption
 L_D_cl = 10.2  # lift over drag for climb
 L_D_cr = 8.0  # lift over drag for cruise at 113 m/s
 L_D_9_8 = 7.9  # lift over drag at 44 m/s (assumed dropping speed/loiter)
 # L_D_9_8_empty = 10.2  # at 44 m/s (for MTOW = 6000 in Kars Excel)
-x = 23  # number of refills
+x = 20  # 23  # number of refills 16
 
 # Distances
 d_fire_loiter = 1.0  # km
@@ -40,7 +50,7 @@ d_fire_source = 10  # km, distance fire to water
 d_airport_fire = 50  # km
 
 
-## Fuel fractions ##
+## Definitions ##
 def range_endurance_time_values():
     """ Find the endurance and range values for differen performance and mission parameters, also finds the time estimate for different phases of the flight. """
 
@@ -54,9 +64,9 @@ def range_endurance_time_values():
                 3600) * km_to_sm  # distance cruise between fire and water
 
     # Time estimations for different phases of flight
-    t_initial_attack = 60 + 60 + 30 + E_cl * 3600 + R_cr / km_to_sm * 1000 / V_cr + 60 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter # 60 for 1, 2, 6 and 8, 30 for 3 and 8, calculated for 4, 5 and 9
-    t_one_refill = E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 60 + 30 + E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 60 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter # 60 for 12 and 16, 30 for 13 and 18, calculated for 10, 11, 14, 15 and 19
-    t_back_to_base = E_cl * 3600 + R_cr / km_to_sm * 1000 / V_cr + 60 + 60 # 60 for 22 and 23, calculated for 20 and 21
+    t_initial_attack = 60 + 60 + 30 + E_cl * 3600 + R_cr / km_to_sm * 1000 / V_cr + 60 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter  # 60 for 1, 2, 6 and 8, 30 for 3 and 8, calculated for 4, 5 and 9
+    t_one_refill = E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 60 + 30 + E_10_9 * 3600 + R_refill / km_to_sm * 1000 / V_cr + 60 + 30 + R_9_8 / km_to_sm * 1000 / V_loiter  # 60 for 12 and 16, 30 for 13 and 18, calculated for 10, 11, 14, 15 and 19
+    t_back_to_base = E_cl * 3600 + R_cr / km_to_sm * 1000 / V_cr + 60 + 60  # 60 for 22 and 23, calculated for 20 and 21
 
     # Total mission time
     t_total = t_initial_attack + t_one_refill * x + t_back_to_base
@@ -65,7 +75,7 @@ def range_endurance_time_values():
 
 
 def print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop,
-                         W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent, W_E_allowed):
+                         W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent):
     """ Prints the values for an overview of the values found for the Class I Weight Estimation (Roskam). """
 
     # Print title
@@ -91,8 +101,8 @@ def print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total
 
     # Print final values Class I
     print('Iterated weights (in kg)')
-    print('TO  ', 'Fuel', 'Tent.', 'Exp.')
-    print(int(W_to / kg_to_lb), int(W_fuel / kg_to_lb), int(W_E_tent / kg_to_lb), int(W_E_allowed / kg_to_lb))
+    print('TO  ', 'Fuel', 'Tent.')  # , 'Exp.')
+    print(int(W_to / kg_to_lb), int(W_fuel / kg_to_lb), int(W_E_tent / kg_to_lb))  # , int(W_E_allowed / kg_to_lb))
 
     return
 
@@ -144,7 +154,6 @@ def get_ff(W_to, x, E_cl, R_cr, R_9_8, E_10_9, R_refill):
     # For loop for the number of refills (x)
     W_fuel_refill_total = 0
     for i in range(x):
-
         # Fuel fractions: 9 to 13
         ff_10_9 = 1 / (np.e ** (E_10_9 / 375 * V_cl / eta_p * c_p / L_D_cl))  # eq. 2.7
         ff_11_10 = 1 / (np.e ** (R_refill / 375 / eta_p * c_p / L_D_cr))  # eq. 2.9
@@ -244,6 +253,7 @@ def class_I(W_to, W_E_to_ratio):
     # Iterate until tentative and allowed empty weights are within one percent of each other
     while abs((W_E_allowed - W_E_tent) / W_E_allowed) > 0.01:
 
+        # print('W E allowed', W_E_allowed / kg_to_lb)
         # Add take-off weight to initial take-off weight, if too small
         if W_E_allowed > W_E_tent:
             W_to = W_to + 10
@@ -262,10 +272,149 @@ def class_I(W_to, W_E_to_ratio):
         W_E_allowed = W_E_to_ratio * W_to
 
     # Print final values
-    print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop,
-                         W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent, W_E_allowed)
+    # print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop,
+    #                      W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent, W_E_allowed)
 
-    return
+    return W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base
 
 
-class_I(W_to_initial, W_E_ratio)
+def W_structure(W_to):
+    # Struc parameters
+    n_ult = 1.5 * data['FPP']['n_ult [-]']  # x1.5? 6.8 from FPP
+    A = data['Aero']['AR [-]']  # Aero
+    Lambda = 0  # Aero
+    S = m_to_ft ** 2 * data['FPP']['S [m^2]']  # FPP
+    lambda_ = 1.0  # Aero
+    t_c_m = .15  # Aero
+    V_H = data['FPP']['V_max [m/s]'] * ms_to_kts  # V_max from FPP_main
+
+    S_h = m_to_ft ** 2 * data['C&S']['Sh']  # CS
+    l_h = (data['C&S']['H Wing'][0] - (
+                0.25 * data['Aero']['Wing chord'] + data['C&S']['Wing'][0])) * m_to_ft  # CS 2.33 is wing chord
+    b_h = data['Aero']['B_ht'] * m_to_ft  # Aero
+    t_r_h = 0.12 * b_h  # Aero
+
+    S_v = data['C&S']['Sv_t'] * m_to_ft ** 2  # Aero
+    b_v = data['Aero']['vertical_tail_height [m]'] * m_to_ft  # Aero
+    t_r_v = 0.12 * data['Aero']['vertical_tail_root [m]'] * m_to_ft  # Aero
+    # S_v_m = data['C&S']['Sv_m'] * m_to_ft ** 2  # Aero
+    # b_v_m = 1249 / 1000 * m_to_ft  # Aero
+    # t_r_v_m = 0.12 * 1478 / 1000 * m_to_ft  # Aero
+
+    l_f = m_to_ft * data['Structures']['Max_fuselage_length']  # Struc
+    w_f = data['Structures']['Max_fuselage_width'] * m_to_ft  # Struc
+    h_f = data['Structures']['Max_fuselage_height'] * m_to_ft  # Struc
+    V_C = 0.9 * data['FPP']['V_max [m/s]'] * np.sqrt(
+        0.9 / 1.225) * ms_to_kts  # KEAS (equivalent air speed (3km altitude))
+
+    l_s_m = 2.5 * m_to_ft  # Ask Geert
+    W_L = W_to - W_pl  # same assumption as in wing loading diagram (get rid of water before landing)
+    n_ult_l = 5.7  # Roskam p81
+
+    # W_struc
+    W_w = 10848 / g * kg_to_lb  # Max
+    W_w_USAF = 96.948 * ((W_to * n_ult / 10 ** 5) ** 0.65 * (A / np.cos(Lambda)) ** 0.57 * (S / 100) ** 0.61 * (
+            (1 + lambda_) / (2 * t_c_m)) ** 0.36 * (1 + V_H / 500) ** 0.5) ** 0.993
+    W_h = 127 * ((W_to * n_ult / 10 ** 5) ** 0.87 * (S_h / 100) ** 1.2 * 0.289 * (l_h / 10) ** 0.483 * (
+            b_h / t_r_h) ** 0.5) ** 0.458
+    W_v = 98.5 * ((W_to * n_ult / 10 ** 5) ** 0.87 * (S_v / 100) ** 1.2 * 0.289 * (
+            b_v / t_r_v) ** 0.5) ** 0.458
+    # W_v_m = 98.5 * ((W_to * n_ult / 10 ** 5) ** 0.87 * (S_v_m / 100) ** 1.2 * 0.289 * (
+    #         b_v_m / t_r_v_m) ** 0.5) ** 0.458
+    # W_v_USAF = 2 * W_v_s + W_v_m
+    # W_v_torenbeek = (0.04 * (n_ult * (S_h + 2 * S_v_s + S_v_m) ** 2) ** 0.75)  # but not conventional
+    W_f = 1.65 * (200 * ((W_to * n_ult / 10 ** 5) ** 0.286 * (l_f / 10) ** 0.857 * ((w_f + h_f) / 10) * (
+            V_C / 100) ** 0.338) ** 1.1)  # 1.65*W_f because of flying boat (p75 Roskam)
+    W_g = 0.054 * (l_s_m) ** 0.501 * (W_L * n_ult_l) ** 0.684
+    # print(W_g / kg_to_lb)
+    W_float = 2 * 80 * kg_to_lb  # Liesbeth
+
+    print('W w, h, v, f, g', W_w / kg_to_lb, W_h / kg_to_lb, W_v / kg_to_lb, W_f / kg_to_lb, W_g / kg_to_lb)
+
+    W_struc = W_w + W_h + W_v + W_f + W_g + W_float  # + W_detachment
+
+    return W_struc, W_f
+
+
+def W_power(W_f):
+    # Pwr parameters
+    N_p = 2.0
+    N_bl = data['FPP']['No. Blades [-]']
+    D_p = data['FPP']['Prop Diameter [m]'] * m_to_ft
+    P_to = data['FPP']['Pa [kW] Ultim'] * W_to_hp
+    N_e = 1.0
+
+    K_fsp = 5.87  # p91 Roskam
+    N_t = 2
+
+    # W_pwr
+    W_eng = 220 * kg_to_lb  # Kars (dry weight engines)
+    W_prop = 24.0 * N_p * N_bl ** 0.391 * (D_p * P_to / N_e / 1000) ** .782
+    W_ai_p = 1.03 * N_e ** 0.3 * (P_to / N_e) ** 0.7
+    W_fs = 2.49 * ((W_f / K_fsp) ** 0.6 * (1 / (1 + 1)) ** 0.3 * N_t ** 0.2 * N_e ** 0.13) ** 1.21
+
+    # print(W_eng/kg_to_lb)
+    # print(W_prop / kg_to_lb)
+    # print(W_ai_p / kg_to_lb)
+    # print(W_fs/kg_to_lb)
+
+    W_pwr = W_eng + W_ai_p + W_prop + W_fs
+    # print(W_pwr/kg_to_lb)
+
+    return W_pwr, W_fs
+
+
+def W_fixed_equipment(W_fs, W_to):
+    # W_feq
+    W_bat = 8 * 36 * kg_to_lb  # Wissam/Berend
+    W_systems = (450 * kg_to_lb / 1.2 - W_bat)  # Wissam/Berend (1.2 because els account
+
+    W_fc = (1.08 * W_to ** 0.7) / 2
+    W_iae = W_systems
+    W_els = 426 * ((W_fs + W_iae) / 1000) ** 0.51
+
+    print('W bat, fc, iae, els', W_bat / kg_to_lb, W_fc / kg_to_lb, W_iae / kg_to_lb, W_els / kg_to_lb)
+
+    W_feq = W_fc + W_els + W_iae + W_bat
+
+    return W_feq
+
+
+def class_II(W_to):
+    # Addition of all weight components
+    W_struc, W_f = W_structure(W_to)
+    W_pwr, W_fs = W_power(W_f)
+    W_feq = W_fixed_equipment(W_fs, W_to)
+
+    print('Str.', 'Pwr', 'FEq')
+    print(int(W_struc / kg_to_lb), int(W_pwr / kg_to_lb), int(W_feq / kg_to_lb))
+
+    # New empty weight and take-off weight, also ratio
+    W_E = W_struc + W_pwr + W_feq
+    W_to_class_II = W_E + W_pl + W_fuel
+    W_E_ratio_class_II = W_E / W_to_class_II
+
+    # print()
+    # print(W_to_class_II / kg_to_lb)
+    print('W empty class II', W_E / kg_to_lb)
+
+    return W_E_ratio_class_II, W_to_class_II
+
+
+## Main ##
+W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
+    W_to_initial, W_E_ratio_initial)
+W_E_ratio_class_II, W_to_class_II = class_II(W_to)
+
+while abs((W_to_class_II - W_to) / W_to) > 0.005:
+    print('W_to before and after class II', W_to / kg_to_lb, W_to_class_II / kg_to_lb)
+    W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
+        W_to_class_II, W_E_ratio_class_II)
+    W_E_ratio_class_II, W_to_class_II = class_II(W_to)
+    print('W_to before and after class II', W_to / kg_to_lb, W_to_class_II / kg_to_lb)
+
+print()
+W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = class_I(
+    W_to_class_II, W_E_ratio_class_II)
+print_class_I_values(t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop,
+                     W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent)
