@@ -151,17 +151,48 @@ class ControllabilityCurve(object):
         # cgx_min = [min(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
         # cgx_max = [max(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
 
-        # Plot
-        if not self.amphib:
-            plt.plot(xrange, self.__curve(xrange), '-x', c=(91/255, 188/255, 47/255),label='Aerial Control Curve')
-        elif self.amphib:
-            plt.plot(xrange, self.__curve(xrange), '-.', c=(47/255, 71/255, 183/255), label='Amphibious Control Curve')
+
         # plt.plot(cgx_min, cgy, 'k--', label='CG - Most Forward')
         # plt.plot(cgx_max, cgy, 'k.-', label='CG - Most Aft')
-        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
-        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
-        plt.grid(b=True, which='major')
-        plt.legend(fontsize='large')
+        # plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
+        # plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
+        # plt.grid(b=True, which='major')
+        # plt.legend(fontsize='large')
+
+        colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+            (255 / 255, 0, 0),
+            (107 / 255, 142 / 255, 35 / 255),
+            (30 / 255, 144 / 255, 255 / 255),
+            (0, 0, 139 / 255),
+            (255 / 255, 165 / 255, 0),
+            (34 / 255, 139 / 255, 34 / 255)
+        ]
+
+        line_types = ['-', '--']  # Choose one of these linetypes
+        marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+        # data = [[1, 2, 3], [1, 2, 3]]  # Replace with our data sets
+        plot_labels = ['Amphibious Control Curve', 'Aerial Control Curve']  # Set the desired label
+        axis_labels = [r'$\bar{x}_{cg} [-]$', r'$S_{h}/S [-]$']  # Set the axis labels
+        axis_ranges = [(0, 3), (0, 1)]  # Set the axis ranges
+        plot_title = 'Scissor Plot'
+
+        # Plot
+        if not self.amphib:
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[0]}{marker_types[1]}', c=colours[1],
+                     label=plot_labels[1])
+        elif self.amphib:
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[0]}{marker_types[1]}', c=colours[3],
+                     label=plot_labels[0])
+
+        plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+        plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.grid(True)
+        plt.legend()
+        plt.xlabel(axis_labels[0], fontsize=16)
+        plt.ylabel(axis_labels[1], fontsize=16)
+        plt.title(plot_title, fontsize=18)
 
         return fig
 
@@ -240,27 +271,43 @@ class StabilityCurve(object):
         if fig is None:
             fig = plt.figure()
 
+        colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+            (255 / 255, 0, 0),
+            (107 / 255, 142 / 255, 35 / 255),
+            (30 / 255, 144 / 255, 255 / 255),
+            (0, 0, 139 / 255),
+            (255 / 255, 165 / 255, 0),
+            (34 / 255, 139 / 255, 34 / 255)
+        ]
+        line_types = ['-', '--']  # Choose one of these linetypes
+        marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+        # data = [[1, 2, 3], [1, 2, 3]]  # Replace with our data sets
+        plot_labels = ['Amphibious Stability Curve', 'Aerial Stability Curve']  # Set the desired label
+        axis_labels = [r'$\bar{x}_{cg} [-]$', r'$S_{h}/S [-]$']  # Set the axis labels
+        axis_ranges = [(0, 3), (0, 1)]  # Set the axis ranges
+        plot_title = 'Scissor Plot'
+
         xrange = np.linspace(0, 3, 100)
 
         if self.amphib:
-            plt.plot(xrange, self.__curve(xrange), '-^', c=(49/255, 165/255, 183/255), label='Amphibious Stability Curve')
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[1]}{marker_types[0]}', c=colours[2], label=plot_labels[0])
 
         else:
-            plt.plot(xrange, self.__curve(xrange), '-o', c=(216/255, 39/255, 39/255), label='Aerial Stability Curve')
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[1]}{marker_types[0]}', c=colours[0], label=plot_labels[1])
 
-        plt.xlabel(r'$\bar{x}_{cg} [-]$', fontsize=16)
-        
-        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
-        plt.grid(b=True, which='major', linestyle='-')
-        # plt.grid(b=True, which='minor', color='k', linestyle='-')
-        plt.ylim(0, 1.0)
+        plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+        plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.grid(True)
+        plt.legend()
+        plt.xlabel(axis_labels[0], fontsize=16)
+        plt.ylabel(axis_labels[1], fontsize=16)
+        plt.title(plot_title, fontsize=18)
 
         t = f'LEMAC @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n' \
               f'Engine @ {round((self.__data["C&S"]["Engine"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n' \
               f'Payload @ {round((self.__data["C&S"]["Payload"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage '
-
-        plt.title("Scissor Plot", fontsize=18)
-        plt.legend()
 
         return fig
 
