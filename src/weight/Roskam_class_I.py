@@ -424,5 +424,5 @@ def final_weights():
                          W_fuel_refill, W_fuel_back_to_base, W_to, W_fuel, W_E_tent)
 
     return W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base
-## Main ##
 
+W_fuel, W_to, W_E_tent, t_initial_attack, t_one_refill, t_back_to_base, t_total, W_fuel_after_first_drop, W_fuel_refill, W_fuel_back_to_base = final_weights()

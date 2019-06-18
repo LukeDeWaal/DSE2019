@@ -6,85 +6,244 @@ from FPP_Parameters import V_end, V_step, W_mto, rho_std, S, C_D_0, AR, e, P_a, 
     c_V_req, rho_alt, V_cruise_req, s_landing_req_land, s_landing_req_water, f_land, f_water, ft_to_m, lbs_to_kg, \
     hp_to_W, g
 from FPP_General_Definitions import V_row, aerodynamic_coefficients, P_r_calc, P_dif_calc, index_finder, V_stall_calc, \
-    TOP_calc
+    TOP_calc, V_max_calc
 from FPP_Flight_Envelope_Defs import arrays_maneuvre
 
+colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+    (255 / 255, 0, 0),
+    (255 / 255, 165 / 255, 0),
+    (132 / 255, 198 / 255, 0 / 255),
+    (30 / 255, 144 / 255, 255 / 255),
+    (0, 0, 139 / 255),
+    (193 / 255, 38 / 255, 144 / 255)
+]
+line_types = ['-', '--', ':', '-.']  # Choose one of these linetypes
 
-def power_diagram():
+
+def power_diagram_bank():
     ''' Generate power diagram (available and required) for different densities. '''
 
     # Get velocity arrays (also for stall and plots)
     V_stall_std, V_stall_fire, V_std, V_fire, V_stall_std_line, V_stall_fire_line = V_performance()
 
-    # Find power required for the two densities
-    P_r_array_std = P_r_calc(V_std, W_mto, rho_std, S, C_D_0, AR, e)
-    P_r_array_fire = P_r_calc(V_fire, W_mto, rho_fire, S, C_D_0, AR, e)
-
-    # Arrays for line plotting
+    # Find power required for the two densities and plot
     V_Pa = np.linspace(0, V_end, 2)
     P_Pa = np.linspace(P_a, P_a, 2)
 
-    P_stall_std = np.linspace(0, 1.5 * P_a, 2)
-    P_stall_fire = np.linspace(0, 1.5 * P_a, 2)
+    # Generate figure, plot power available
+    fig_power_bank = plt.figure()
+    plt.plot(V_Pa, P_Pa, f'{line_types[0]}', c=colours[0], label='Power available')
 
-    # Plotting of power diagram
-    plt.plot(V_Pa, P_Pa, 'navy', label='Power available')
-    plt.plot(V_std, P_r_array_std, 'orange', label='Power required, standard atmosphere (15C)')
-    plt.plot(V_fire, P_r_array_fire, 'firebrick', label='Power required, fire atmosphere (200C)')
+    # Find power required for banked condition for two densities and plot
+    x = 1  # to loop colours
+    for i in range(0, 66, 15):
+        if i == 15:
+            x = x
+        else:
+            n = 1 / np.cos(i / 180 * np.pi)
+            P_r_array_std_banked = P_r_calc(V_std, W_mto * n, rho_std, S, C_D_0, AR, e)
+            plt.plot(V_std, P_r_array_std_banked, f'{line_types[0]}', c=colours[x],
+                     label=f'Pr, {i} degrees banking')
+            x = x + 1
 
+    # Stall line
+    P_stall_std = np.linspace(0, P_r_array_std_banked[0], 2)
     plt.plot(V_stall_std_line, P_stall_std, '--', color='black', linewidth=0.8)
-    plt.plot(V_stall_fire_line, P_stall_fire, '--', color='black', linewidth=0.8)
 
-    plt.xlabel('V (m/s)')
-    plt.ylabel('P (kW)')
-    plt.axis([0, V_end, 0, 1.5 * P_a])
+    # Plot rest of figure
+    axis_labels = ['V (m/s)', 'P (kW)']  # Set the axis labels
+    axis_ranges = [(0, V_end), (0, 1.5 * P_a)]  # Set the axis ranges
+    plot_title = 'Power Required at different banking angles, T = 15C'
+
+    plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
     plt.grid(True)
-    plt.title('Power vs. Velocity')
-    plt.legend(loc='upper left')
+    plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.title(plot_title, fontsize=18)
 
     plt.show()
 
-    return V_stall_std, V_stall_fire
+    return V_stall_std, fig_power_bank
 
 
-def rc_diagram():
+def power_diagram_temp():
+    ''' Generate power diagram (available and required) for different densities. '''
+    # Generate plot
+    fig_power_temp = plt.figure()
+
+    # Find power required for banked condition for two densities and plot
+    density = [[15, 100, 200, 300, 400], [1.225, .947, .745, .617, .523]]
+    P_stall_fire = np.linspace(0, P_a, 2)
+
+    x = 0
+    z = 0
+    for i in density[1][:4]:
+        if i < 1.225:
+            z = 0
+
+        # Get velocity arrays (also for stall and plots)
+        V_stall_fire = V_stall_calc(W_mto, i, S, C_L_max)
+        V_fire = V_row(V_stall_fire, V_end + 50, V_step)
+        V_stall_fire_line = np.linspace(V_stall_fire, V_stall_fire, 2)
+
+        # Find power required at different temperatures and plot (also the stall line)
+        P_r_array_fire = P_r_calc(V_fire, W_mto, i, S, C_D_0, AR, e)
+
+        T = density[0][x]
+        plt.plot(V_fire, P_r_array_fire, f'{line_types[z]}', c=colours[x + 1],
+                 label=f'Pr at T = {T}C')
+        plt.plot(V_stall_fire_line, P_stall_fire, '--', color='black', linewidth=0.8)
+
+        # Loop colours
+        x = x + 1
+
+    # Determine maximum velocity for plotting range
+    V_stall_index = index_finder(V_fire, V_stall_fire)
+    V_max, V_max_index = V_max_calc(V_stall_index, V_fire, W_mto, i, S, C_D_0, AR, e, P_a)
+
+    # Power available
+    V_Pa = np.linspace(0, V_max + 10, 2)
+    P_Pa = np.linspace(P_a, P_a, 2)
+    plt.plot(V_Pa, P_Pa, f'{line_types[0]}', c=colours[0], label='Power available')
+
+    # Plot rest
+    axis_labels = ['V (m/s)', 'P (kW)']  # Set the axis labels
+    plot_title = 'Power Required at different temperatures'
+    axis_ranges = [(0, int(V_max + 5)), (0, 1.5 * P_a)]  # Set the axis ranges
+    plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True)
+    plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.title(plot_title, fontsize=18)
+
+    plt.show()
+
+    return V_stall_fire, fig_power_temp
+
+
+def rc_diagram_temp():
     ''' Generates the rate of climb diagram for different densities. '''
 
-    # Get velocity arrays (also for stall and plots)
-    V_stall_std, V_stall_fire, V_std, V_fire, V_stall_std_line, V_stall_fire_line = V_performance()
+    # Generate figure
+    fig_rc_temp = plt.figure()
 
-    # Get excess power for the two densities
-    P_dif_std = P_dif_calc(V_std, W_mto, rho_std, S, C_D_0, AR, e, P_a)
-    P_dif_fire = P_dif_calc(V_fire, W_mto, rho_fire, S, C_D_0, AR, e, P_a)
+    # Temperature-Density table
+    density = [[15, 100, 200, 300, 400], [1.225, .947, .745, .617, .523]]
 
-    # Calculate (maximum) rate of climb (*1000 because of kW to W)
-    RC_std = P_dif_std * 1000 / W_mto
-    RC_fire = P_dif_fire * 1000 / W_mto
+    # Stall line
 
-    RC_std_max = max(RC_std)
-    RC_fire_max = max(RC_fire)
+    # Find rate of climb for different temperatures and plot
+    x = 0
+    for i in density[1][:5]:
+        # Get specific velocity arrays and stalls
+        V_stall_fire = V_stall_calc(W_mto, i, S, C_L_max)
+        V = V_row(V_stall_fire, V_end + 50, V_step)
+        V_stall_fire_line = np.linspace(V_stall_fire, V_stall_fire, 2)
 
-    # Arrays for line plotting
-    RC_stall_std = np.linspace(0, 1.5 * P_a, 2)
-    RC_stall_fire = np.linspace(0, 1.5 * P_a, 2)
+
+        # Get excess power for the two densities
+        P_dif_fire = P_dif_calc(V, W_mto, i, S, C_D_0, AR, e, P_a)
+
+        # Calculate rate of climb (*1000 because of kW to W)
+        RC_fire = P_dif_fire * 1000 / W_mto
+
+        # Calculate maximum rc
+        if i == 1.225:
+            RC_fire_max = max(RC_fire)
+
+        RC_stall_fire = np.linspace(0, RC_fire[0], 2)
+
+        # Plot lines (including stall line)
+        plt.plot(V, RC_fire, f'{line_types[0]}', c=colours[x + 1], label=f'RC at {density[0][x]}C')
+        plt.plot(V_stall_fire_line, RC_stall_fire, '--', color='black', linewidth=0.8)
+
+        x = x + 1
 
     # Plotting of rate of climb diagram
-    plt.plot(V_std, RC_std, 'orange', label='Rate of Climb, standard atmosphere (15C)')
-    plt.plot(V_fire, RC_fire, 'firebrick', label='Rate of Climb, fire atmosphere (200C)')
+    axis_labels = ['Velocity (m/s)', 'Rate of Climb (m/s)']  # Set the axis labels
+    axis_ranges = [(0, V_end + 20), (0, 14)]  # Set the axis ranges
+    plot_title = 'Rate of Climb at different temperatures'
 
-    plt.plot(V_stall_std_line, RC_stall_std, '--', color='black', linewidth=0.8)
-    plt.plot(V_stall_fire_line, RC_stall_fire, '--', color='black', linewidth=0.8)
-
-    plt.xlabel('V (m/s)')
-    plt.ylabel('RC (m/s)')
-    plt.axis([0, V_end, 0, int(max(RC_std) + 1)])
+    plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
     plt.grid(True)
-    plt.title('Rate of Climb vs. Velocity')
-    plt.legend(loc='best')
+    plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.title(plot_title, fontsize=18)
 
     plt.show()
 
-    return RC_std_max, RC_fire_max
+    return RC_fire_max, fig_rc_temp
+
+
+def rc_diagram_bank():
+    ''' Generates the rate of climb diagram for different densities. '''
+
+    # Generate figure
+    fig_rc_bank = plt.figure()
+
+
+    # Velocity arrays and stall
+    V_stall_std = V_stall_calc(W_mto, rho_std, S, C_L_max)
+    V_std = V_row(V_stall_std, V_end, V_step)
+    V_stall_fire_line = np.linspace(V_stall_std, V_stall_std, 2)
+
+    # Calculate rate of climb for different banking angles and plot
+    x = 1
+    for i in range(0, 66, 15):
+        # Skip 15 degrees
+        if i == 15:
+            x = x
+        else:
+            # Find load factor
+            n = 1 / np.cos(i / 180 * np.pi)
+
+            # Calculate excess in power and find rc
+            P_dif_std = P_dif_calc(V_std, W_mto * n, rho_std, S, C_D_0, AR, e, P_a)
+            RC_std = P_dif_std * 1000 / W_mto
+
+            # Find maximum rc
+            if i == 0:
+                RC_std_max = RC_std[0]
+
+            # Plot
+            plt.plot(V_std, RC_std, f'{line_types[0]}', c=colours[x], label=f'RC, {i} degrees banking')
+            x = x + 1
+
+    # Plotting of rate of climb diagram
+    axis_labels = ['Velocity (m/s)', 'Rate of Climb (m/s)']  # Set the axis labels
+    axis_ranges = [(0, V_end), (0, 14)]  # Set the axis ranges
+    plot_title = 'Rate of Climb at different banking angles, T = 15C'
+
+
+    # Lines for stall
+    RC_stall_std = np.linspace(0, RC_std_max, 2)
+    plt.plot(V_stall_fire_line, RC_stall_std, '--', color='black', linewidth=0.8)
+
+    plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True)
+    plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.title(plot_title, fontsize=18)
+
+    plt.show()
+
+    return max(RC_std), fig_rc_bank
 
 
 def V_performance():
@@ -129,20 +288,33 @@ def drag_polar():
     C_L_to, C_D_to = C_L_to[to_index:], C_D_to[to_index:]
 
     # Plot drag polar
-    plt.plot(C_L_clean, C_D_clean, 'gold', label='clean')
-    plt.plot(C_L_landing, C_D_landing, 'orange', label='landing, gear up')
-    plt.plot(C_L_to, C_D_to, 'firebrick', label='take-off, gear up')
+    fig_drag = plt.figure()
 
-    plt.xlabel('Lift Coefficient (-)')
-    plt.ylabel('Drag Coefficient (-)')
-    plt.axis([0, 3, 0, 0.6])
+    axis_labels = ['Lift Coefficient (-)', 'Drag Coefficient (-)']  # Set the axis labels
+    axis_ranges = [(0, 3.5), (0, 0.7)]  # Set the axis ranges
+    plot_title = 'Drag Polar at different configuration'
+
+    plt.plot(C_L_landing, C_D_landing, f'{line_types[0]}', c=colours[2], label='Landing')
+    plt.plot(C_L_to, C_D_to, f'{line_types[0]}', c=colours[3], label='Take-off')
+    plt.plot(C_L_clean, C_D_clean, f'{line_types[0]}', c=colours[1], label='Cruise')
+
+    plt.plot([C_L_clean[0], C_L_clean[0]], [0, C_D_clean[0]], '--', color='black', linewidth=0.8)
+    plt.plot([C_L_to[0], C_L_to[0]], [0, C_D_to[0]], '--', color='black', linewidth=0.8)
+    plt.plot([C_L_landing[0], C_L_landing[0]], [0, C_D_landing[0]], '--', color='black', linewidth=0.8)
+
+    plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
     plt.grid(True)
-    plt.title('Drag Polar')
-    plt.legend(loc='upper left')
+    plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.title(plot_title, fontsize=18)
 
     plt.show()
 
-    return
+    return fig_drag
 
 
 def power_loading():
@@ -153,13 +325,12 @@ def power_loading():
 
     # Stall
     x = 0
-    for i in np.arange(C_L_max-0.6, C_L_max, 0.3):
-
+    for i in np.arange(C_L_max - 0.6, C_L_max, 0.3):
         wing_stall = 0.5 * rho_std * V_stall_req ** 2 * i
         wing_stall = np.linspace(wing_stall, wing_stall, 2)
         power_stall = np.linspace(0, 1, 2)
 
-        plt.plot(wing_stall, power_stall, linestyles[x], color = 'gold', label= f'Stall for C_L_max of {round(i,3)}')
+        plt.plot(wing_stall, power_stall, linestyles[x], color='gold', label=f'Stall for C_L_max of {round(i, 3)}')
         x = x + 1
 
     # # Rate of climb
@@ -184,15 +355,18 @@ def power_loading():
     # Cruise
     x = 0
     for i in np.arange(AR - 2, AR + 4, 2):
-        power_cruise = 0.8*eta_p * (rho_alt/rho_std)**0.75 * (C_D_0*0.5*rho_alt*V_cruise_req**3/wing_loading+wing_loading/(np.pi*i*e*0.5*rho_alt*V_cruise_req))**(-1)
+        power_cruise = 0.8 * eta_p * (rho_alt / rho_std) ** 0.75 * (
+                C_D_0 * 0.5 * rho_alt * V_cruise_req ** 3 / wing_loading + wing_loading / (
+                np.pi * i * e * 0.5 * rho_alt * V_cruise_req)) ** (-1)
 
-        plt.plot(wing_loading, power_cruise, linestyles[x], color='steelblue', label=f'Cruise at {V_cruise_req} m/s with A of {i}')
+        plt.plot(wing_loading, power_cruise, linestyles[x], color='steelblue',
+                 label=f'Cruise at {V_cruise_req} m/s with A of {i}')
         x = x + 1
 
     # Landing
     x = 0
     for i in np.arange(C_L_max - 0.6, C_L_max, 0.3):
-        wing_landing_land = 0.5 * rho_std * i * s_landing_req_land/0.5915/f_land
+        wing_landing_land = 0.5 * rho_std * i * s_landing_req_land / 0.5915 / f_land
         wing_landing_land = np.linspace(wing_landing_land, wing_landing_land, 2)
 
         # wing_landing_water = 0.5 * rho_std * i * s_landing_req_water/0.5915/f_water
@@ -200,7 +374,8 @@ def power_loading():
 
         power_landing = np.linspace(0, 1, 2)
 
-        plt.plot(wing_landing_land, power_landing, linestyles[x], color='darkorchid', label=f'Landing (land and water) for C_L_max of {round(i, 3)}')
+        plt.plot(wing_landing_land, power_landing, linestyles[x], color='darkorchid',
+                 label=f'Landing (land and water) for C_L_max of {round(i, 3)}')
         # plt.plot(wing_landing_water, power_landing, linestyles[x], color='darkorchid', label=f'Landing (land and water) for C_L_max of {round(i, 3)}')
 
         x = x + 1
@@ -209,11 +384,12 @@ def power_loading():
     TOP = TOP_calc(s_landing_req_land, ft_to_m, lbs_to_kg, hp_to_W, g)
 
     x = 0
-    for i in np.arange(C_L_max, C_L_max+0.7, 0.3):
-        C_L_max_to = 0.8*i
+    for i in np.arange(C_L_max, C_L_max + 0.7, 0.3):
+        C_L_max_to = 0.8 * i
         power_to = TOP * C_L_max_to / wing_loading
 
-        plt.plot(wing_loading, power_to, linestyles[x], color='pink', label=f'Take-off (land) for C_L_max of {round(i, 3)}')
+        plt.plot(wing_loading, power_to, linestyles[x], color='pink',
+                 label=f'Take-off (land) for C_L_max of {round(i, 3)}')
         x = x + 1
 
     # # Load factor maneuvring
@@ -236,3 +412,25 @@ def power_loading():
 
     plt.show()
     return
+
+
+def lift_over_drag():
+    V_std = V_row(30., V_end, V_step)
+    C_L, C_D = aerodynamic_coefficients(V_std, W_mto, rho_std, S, C_D_0, AR, e)
+    L_D = C_L / C_D
+
+    i = np.argmax(L_D)
+    print(i, L_D[i], V_std[i])
+
+    plt.plot(V_std, L_D, 'gold', label='Lift over Drag')
+
+    plt.xlabel('Velocity (m/s)')
+    plt.ylabel('Lift over Drag (-)')
+    plt.axis([0, 150, 0, 15])
+    plt.grid(True)
+    plt.title('L/D vs Velocity')
+    plt.legend(loc='upper left')
+
+    plt.show()
+
+    return L_D
