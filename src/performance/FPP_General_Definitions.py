@@ -114,3 +114,27 @@ def TOP_calc(s, ft_to_m, lbs_to_kg, hp_to_W, g):
     TOP = lbs_to_kg ** 2 * g ** 2 / (ft_to_m ** 2 * hp_to_W) * TOP
 
     return TOP
+
+def rho_altitude(h):
+    P = 101325*(1-2.25569*10**(-5)*h)**5.25616
+    T = 288.15 - .0065 * h
+    rho_h = P/287.05/T
+
+    return rho_h
+
+def V_climb_calc(V, W, rho, S, C_D_0, AR, e, Pa):
+
+    P_dif = P_dif_calc(V, W, rho, S, C_D_0, AR, e, Pa)
+    i = np.argmax(P_dif)
+    V_climb = V[i]
+
+    return V_climb
+
+def rc_calc(V, W, rho, S, C_D_0, AR, e, Pa):
+    RC = []
+
+    for i in rho:
+        P_dif = P_dif_calc(V, W, i, S, C_D_0, AR, e, Pa)
+        RC.append(P_dif*1000/W)
+
+    return RC
