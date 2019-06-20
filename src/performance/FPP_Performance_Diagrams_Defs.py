@@ -537,4 +537,7 @@ def lift_over_drag_alt():
 
     return L_D_alt, fig_LD_alt
 
-
+#
+# def range_calc():
+#     c_p = 0.45  # specific fuel consumption
+#     R = eta_p/c_p*

@@ -7,13 +7,6 @@ from FPP_Parameters import V_end, V_step, W_mto, rho_std, S, C_D_0, AR, e, P_a, 
     hp_to_W, g
 import matplotlib.pyplot as plt
 
-    # P_dif = P_dif_calc(V, W_mto, rho_altitude, S, C_D_0, AR, e, P_a)
-
-    # t_cl = h[i] / rc[i]
-    # d_cruise = d_airport_fire * 1000 - V_cl[i] * t_cl
-    # t_arrival = t_cl + d_cruise/V_cruise[i]
-    # print(t_arrival, t_cl, d_cruise)
-
 def arrays_maneuvre(rho):
     ''' Generate the arrays required for the maneuvre diagram. '''
 
@@ -26,8 +19,8 @@ def arrays_maneuvre(rho):
     return V_array, V_stall, V_stall_index, V_max, V_max_index, V_C
 
 
-d_airport_fire = 250  # km
-h = np.arange(0, 5100, 100)
+d_airport_fire = 50  # km
+h = np.arange(0, 3100, 100)
 
 rho = rho_altitude(h)
 
@@ -35,8 +28,6 @@ V_max = []
 V_stall = []
 V_cruise = []
 V_climb = []
-
-
 
 for i in range(len(h)):
     V_array, Vstall, V_stall_index, Vmax, V_max_index, V_C = arrays_maneuvre(rho[i])
@@ -66,11 +57,11 @@ for i in range(len(h)):
 
     x = 100
     for j in range(0, h[i] + x, x):
-        j = int(j/x)
+        j = int(j / x)
         V_climb_index = index_finder(V_array, V_climb[j])
-        t_this_climb = x/RC[int(j)][int(j)]
+        t_this_climb = x / RC[int(j)][int(j)]
         t_climb = t_climb + t_this_climb
-        d_climb = d_climb + V_climb[j]*t_this_climb
+        d_climb = d_climb + V_climb[j] * t_this_climb
 
     d_cruise = d_airport_fire * 1000 - d_climb
     t_cruise = d_cruise / V_cruise[i]
@@ -81,27 +72,27 @@ for i in range(len(h)):
     t_cruise_list.append(t_cruise)
     t_total_list.append(t_total)
 
-    print(h[i], int(t_total), int(t_climb), int(t_cruise))
 
+# Plot
 colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
-       (255 / 255, 0, 0),
-       (107 / 255, 142 / 255, 35 / 255),
-       (30 / 255, 144 / 255, 255 / 255),
-       (0, 0, 139 / 255),
-       (255 / 255, 165 / 255, 0),
-       (34 / 255, 139 / 255, 34 / 255)
-    ]
+    (255 / 255, 0, 0),
+    (107 / 255, 142 / 255, 35 / 255),
+    (30 / 255, 144 / 255, 255 / 255),
+    (0, 0, 139 / 255),
+    (255 / 255, 165 / 255, 0),
+    (34 / 255, 139 / 255, 34 / 255)
+]
 line_types = ['-', '--']  # Choose one of these linetypes
 marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
 plot_label = 'label'  # Set the desired label
-axis_labels = ['altitude (m)','time (s)']  # Set the axis labels
-axis_ranges = [(0, 5000), (0, 5000)]  # Set the axis ranges
-plot_title = 'total time vs altitude'
+axis_labels = ['Altitude, h (m)', 'Time, t (s)']  # Set the axis labels
+axis_ranges = [(0, 3000), (0, 600)]  # Set the axis ranges
+plot_title = f'Attack time at different cruise altitudes for {d_airport_fire} km between airport and fire'
 
-fig = plt.figure()
-plt.plot(h, t_climb_list, f'{line_types[0]}', c=colours[0], label='climb')
-plt.plot(h, t_cruise_list, f'{line_types[0]}', c=colours[1], label='cruise')
-plt.plot(h, t_total_list, f'{line_types[0]}', c=colours[2], label='total')
+fig = plt.figure(figsize=(20,5))
+plt.plot(h, t_climb_list, f'{line_types[0]}', c=colours[0], label='Climbing time')
+plt.plot(h, t_cruise_list, f'{line_types[0]}', c=colours[1], label='Cruising time')
+plt.plot(h, t_total_list, f'{line_types[0]}', c=colours[2], label='Total time')
 plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
 plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
 plt.xticks(fontsize=12)
