@@ -122,27 +122,27 @@ cD_alpha=sum(gradient_tab)/len(gradient_tab)*(180/np.pi)
     
 
 ####PLOTTING####
-
-plt.figure()
-plt.plot(angles_of_attack,cL_wing[0], marker = '.', label = 'CL')
-plt.plot(angles_of_attack,cl_airfoil, marker = 'v', label= 'Cl')
-plt.axvline(x=alpha_stall,color='r', label = 'Stall angle wing' )
-plt.axhline(y=cL_max, label = 'CL max')
-plt.axhline(y=0)
-plt.xlabel('alpha [deg]')
-plt.ylabel('lift coefficient')
-plt.title('Lift coefficient curves for airfoil and wing')
-plt.legend()
-
-plt.figure()    
-plt.plot(angles_attack_wing,cT_wing[0], marker = '.' , label = 'CT')
-plt.plot(angles_attack_wing,cD_wing[0], marker = 'v', label = 'CD')
-plt.xlabel('alpha [deg]')
-plt.title ('CD and CT')
-plt.legend()
-
-print('CL_max of the wing is', cL_max)
-print('Stall angle for the wing is', alpha_stall, 'deg')
+if __name__ == "__main__":
+    plt.figure()
+    plt.plot(angles_of_attack,cL_wing[0], marker = '.', label = 'CL')
+    plt.plot(angles_of_attack,cl_airfoil, marker = 'v', label= 'Cl')
+    plt.axvline(x=alpha_stall,color='r', label = 'Stall angle wing' )
+    plt.axhline(y=cL_max, label = 'CL max')
+    plt.axhline(y=0)
+    plt.xlabel('alpha [deg]')
+    plt.ylabel('lift coefficient')
+    plt.title('Lift coefficient curves for airfoil and wing')
+    plt.legend()
+    
+    plt.figure()    
+    plt.plot(angles_attack_wing,cT_wing[0], marker = '.' , label = 'CT')
+    plt.plot(angles_attack_wing,cD_wing[0], marker = 'v', label = 'CD')
+    plt.xlabel('alpha [deg]')
+    plt.title ('CD and CT')
+    plt.legend()
+    
+    print('CL_max of the wing is', cL_max)
+    print('Stall angle for the wing is', alpha_stall, 'deg')
 
 
 

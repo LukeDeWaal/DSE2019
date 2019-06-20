@@ -3,15 +3,15 @@ import numpy as np
 # General parameters
 MTOW = 9000 # kg
 aircraft_length = 9 # m
-cg_position = aircraft_length * 0.3
+cg_position = aircraft_length * 0.2
 rho_SL = 1.225 # kg/m^3
 rho_cruise=1.225 # kg/m^3
 miu_cruise=1.650*10**-5 #Ns/m^2
 miu_SL = 1.789*10**-5 #Ns/m^2
 
 # Wing parameters
-AR = 7.5
-S_wing = 40.76 # m^2
+AR = 4#7.5
+S_wing = 6.12#40 # m^2
 b = np.sqrt(AR*S_wing) # m
 c = S_wing/b # m
 V_cruise = 103 # m/s
@@ -29,22 +29,22 @@ V_stall=32
 M_stall=V_stall/np.sqrt(1.4*287*273)
 
 # Horizontal tail parameters
-max_tail_span = 6 # m
+max_tail_span = 4 # m
 tail_position = 8.75 # m
 tail_force = wing_moment/(tail_position - cg_position) # N
 Cl_h = -0.5
 L_ht = tail_position - wing_position # m
 horizontal_tail_volume_coefficient = 0.5
-horizontal_tail_area = horizontal_tail_volume_coefficient * (c*S_wing)/L_ht # m^2
+horizontal_tail_area = 0.12*S_wing #horizontal_tail_volume_coefficient * (c*S_wing)/L_ht # m^2
 horizontal_tail_chord = horizontal_tail_area/max_tail_span * 0.9 # m
 horizontal_tail_aspect_ratio = max_tail_span/horizontal_tail_chord
 
 # Vertical tail parameters
 vertital_tail_volume_coefficient = 0.05
 vertical_tail_aspect_ratio = 1.3
-vertical_tail_taper_ratio = 0.3
+vertical_tail_taper_ratio = 0.6
 
-vertical_tail_area = vertital_tail_volume_coefficient*b*S_wing/L_ht * 0.9 # m^2
+vertical_tail_area = 2.8 #vertital_tail_volume_coefficient*b*S_wing/L_ht * 0.9 # m^2
 vertical_tail_height = np.sqrt(vertical_tail_area*vertical_tail_aspect_ratio)
 vertical_tail_root_chord = 2/(1+vertical_tail_taper_ratio) * vertical_tail_area/vertical_tail_height
 vertical_tail_tip_chord = vertical_tail_root_chord * vertical_tail_taper_ratio
@@ -102,4 +102,8 @@ Cl_alpha = 6.25
 #de_da = K_epsilon_delta/K_epsilon_delta0 * (L_ht/(L_ht**2  + vertical_tail_root_chord**2) * 0.4876/np.sqrt(L_ht**2 + 0.6319 + vertical_tail_height**2) + (1 + (L_ht**2/(L_ht**2 + 0.7915 + 5.0735*vertical_tail_height**2))**0.3113) * (1 - np.sqrt(vertical_tail_height**2/(1 + vertical_tail_height**2)))) * CL_alpha_w/(np.pi*AR)
 
 x_ac_airfoil = 0.265 # x/c
+
+print('height', vertical_tail_height)
+print('root', vertical_tail_root_chord)
+print('tip', vertical_tail_tip_chord)
 

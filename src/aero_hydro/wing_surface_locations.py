@@ -32,6 +32,8 @@ def plot_planform():
     """
     Plots the planform of the aircraft
     """
+    CL_alpha_w, CL_alpha_A_h, CL_alpha_h, x_ac, x_ac_wing = get_aerodynamic_parameters(mach)
+    
     # top view
     plt.subplot(2,1,1)
 
@@ -132,13 +134,37 @@ def plot_cl_alpha_curve():
     Plots the Cl-alpha curve, of the NACA 6415, based on JavaFoil
     """
     data = pd.read_csv('NACA_6415_Cl_alpha.txt', skiprows=2, names=['alpha', 'Cl', 'Cd' , 'Cm0.25', 'Cp', 'M_cr'])
-    plt.plot(data['alpha'], data['Cl'], color='k')
-    plt.xlabel('alpha [deg]')
-    plt.ylabel('Cl [-]')
+    
+    colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+   (255 / 255, 0, 0),
+   (255 / 255, 165 / 255, 0),
+   (132 / 255, 198 / 255, 0 / 255),
+   (30 / 255, 144 / 255, 255 / 255),
+   (0, 0, 139 / 255),
+   (193 / 255, 38 / 255, 144 / 255)
+   ]
+    
+    line_types = ['-', '--']  # Choose one of these linetypes
+    marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+    data = [data['alpha'], data['Cl']]  # Replace with our data sets
+    #plot_label = 'label'  # Set the desired label
+    axis_labels = ['alpha [deg]', 'Cl [-]']  # Set the axis labels
+    #axis_ranges = [(0, 3), (0, 5)]  # Set the axis ranges
+    plot_title = 'Cl-alpha curve'
+    
+    fig = plt.figure()
+    plt.plot(data[0], data[1], f'{line_types[0]}', c=colours[1])#, label=plot_label)
+    #plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    #plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True)
+    #plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
     plt.axhline(color='k')
     plt.axvline(color='k')
-    plt.grid()
-    plt.show()
+    plt.title(plot_title, fontsize=18)
 
        
     
@@ -155,9 +181,79 @@ def delta_CL_max(Cl_max_flaps, Cl_max_slats):
     S_slatted = 7*c * 2
     delta_CL_max = 0.9 * (Cl_max_flaps*S_flapped/S_wing + Cl_max_slats*S_slatted/S_wing) * np.cos(np.deg2rad(0))
     return delta_CL_max
+
+def plot_cm_alpha_curve():
+    data = pd.read_csv('NACA_6415_Cl_alpha.txt', skiprows=2, names=['alpha', 'Cl', 'Cd' , 'Cm0.25', 'Cp', 'M_cr'])
+    
+    colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+   (255 / 255, 0, 0),
+   (255 / 255, 165 / 255, 0),
+   (132 / 255, 198 / 255, 0 / 255),
+   (30 / 255, 144 / 255, 255 / 255),
+   (0, 0, 139 / 255),
+   (193 / 255, 38 / 255, 144 / 255)
+   ]
+    
+    line_types = ['-', '--']  # Choose one of these linetypes
+    marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+    data = [data['alpha'], data['Cm0.25']]  # Replace with our data sets
+    #plot_label = 'label'  # Set the desired label
+    axis_labels = ['alpha [deg]', 'Cm [-]']  # Set the axis labels
+    axis_ranges = [(-3, 20), (0, 5)]  # Set the axis ranges
+    plot_title = 'Cm-alpha curve'
+    
+    fig = plt.figure()
+    plt.plot(data[0], data[1], f'{line_types[0]}', c=colours[1])#, label=plot_label)
+    plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    #plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True)
+    #plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.axhline(color='k')
+    plt.axvline(color='k')
+    plt.title(plot_title, fontsize=18)
+    
+def plot_cl_cd_curve():
+    data = pd.read_csv('NACA_6415_Cl_alpha.txt', skiprows=2, names=['alpha', 'Cl', 'Cd' , 'Cm0.25', 'Cp', 'M_cr'])
+    
+    colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+   (255 / 255, 0, 0),
+   (255 / 255, 165 / 255, 0),
+   (132 / 255, 198 / 255, 0 / 255),
+   (30 / 255, 144 / 255, 255 / 255),
+   (0, 0, 139 / 255),
+   (193 / 255, 38 / 255, 144 / 255)
+   ]
+    
+    line_types = ['-', '--']  # Choose one of these linetypes
+    marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+    data = [data['Cd'], data['Cl']]  # Replace with our data sets
+    #plot_label = 'label'  # Set the desired label
+    axis_labels = ['Cd [-]', 'Cl [-]']  # Set the axis labels
+    axis_ranges = [(-3, 20), (0, 5)]  # Set the axis ranges
+    plot_title = 'Cl-Cd curve'
+    
+    fig = plt.figure()
+    plt.plot(data[0], data[1], f'{line_types[0]}', c=colours[1])#, label=plot_label)
+    #plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+    #plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True)
+    #plt.legend()
+    plt.xlabel(axis_labels[0], fontsize=16)
+    plt.ylabel(axis_labels[1], fontsize=16)
+    plt.axhline(color='k')
+    plt.axvline(color='k')
+    plt.title(plot_title, fontsize=18)
+    
     
 
 
 
 if __name__ == '__main__':
-    plot_planform()
+    #plot_planform()
+    plot_cl_cd_curve()
