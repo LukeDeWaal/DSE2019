@@ -18,19 +18,38 @@ def area_calc(airfoil,centroid):
         line = line_calc(airfoil.iloc[i],airfoil.iloc[i+1])
         dist = shortest_distance(centroid, airfoil.iloc[i], airfoil.iloc[i+1])
         area += 0.5*dist*line[0]
+#    print (area)
     return area    
 
-def load_calc(w, b, z):
-    shear = w*(b/2-z)
-    moment = (w*b/2)*z - ((w*z**2)/2) - ((w*b**2)/8)
-    return {'shear':shear,
-            'moment':moment}
-
+def load_y_calc(w_lift, w_torque, F_float, F_prop, M_prop, chord, T_prop, b, z):
+    if 2.05 < z <= b/2:
+        Fy = -F_float - z * w_lift + (b/2) * w_lift
+#        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - 1406279.463392286
+        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - 1406279.463392286
+        Tz = w_torque*(-z+(b/2))+(-F_float*0.25*chord)
+    if 0.75 <= z <= 2.05:
+        Fy = -F_float - z * w_lift + (b/2) * w_lift - F_prop
+#        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(-z+1.3) + M_prop - 1406279.463392286
+        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(z-2.05) + M_prop - 1406279.463392286
+        Tz = w_torque*(-z+(b/2))+(-F_float*0.25*chord) + (F_prop*0.6*0.75*chord) + (T_prop*0.393)
+    return {'shear':Fy,
+            'moment':Mx,
+            'torque':Tz}
+    
+def load_x_calc(w_drag, T_prop, b, z ):
+    if 2.05 < z <= b/2:
+        Fx = w_drag*(b/2)-w_drag*z
+        My = w_drag*(b/2)*z - (w_drag/2)*z**2 - 153439.77212
+    if 0.75 <= z <= 2.05:
+        Fx = w_drag*(b/2) - w_drag*z - T_prop
+        My = w_drag*(b/2)*z - (w_drag/2)*z**2 - T_prop*(z-2.05) - 153439.77212
+    return {'shear':Fx,
+            'moment':My}
 def normal_stress_calc(Mx, My, inertia, point, centroid):
     sigma_z = (Mx/inertia['Ixx'])*(point['y']-centroid['y'])+(My/inertia['Iyy'])*(point['x']-centroid['x'])
     return sigma_z
 
-def shear_flow_calc(Vx, Vy, booms, inertia, centroid, point_forces):
+def shear_flow_calc(Vx, Vy, booms, inertia, centroid, point_forces, Torque):
     boom_term_y = booms['Area']*(booms['y']-centroid['y'])
     boom_term_x = booms['Area']*(booms['x']-centroid['x'])
     inertia_term_y = Vy/inertia['Ixx']
@@ -50,14 +69,15 @@ def shear_flow_calc(Vx, Vy, booms, inertia, centroid, point_forces):
     qs_0 = -(temp_moment/(2*area_encl))
     #print (shearflows)
     #print (qs_0)
-    shearflows += qs_0
+    flow_torque = Torque/(2*area_encl)
+    shearflows += qs_0 + flow_torque #REPHRASE
 #    print (shearflows/t)
     return shearflows/t
         
-def boom_calc(airfoil, inertia, t, centroid, w, b, z):
+def boom_calc(airfoil, inertia, t, centroid, w, b, z, w_torque, F_float, F_prop, M_prop, chord, T_prop):
     boomareas = []
-    loadx = load_calc(w[0],b,z)
-    loady = load_calc(w[1],b,z)
+    loadx = load_x_calc(w[1], T_prop, b, z)
+    loady = load_y_calc(w[0], w_torque, F_float, F_prop, M_prop, chord, T_prop, b, z)
     for i in range(0, len(airfoil['x'])-1):
         if i == 0:
             line = line_calc(airfoil.iloc[i],airfoil.iloc[i+1])
@@ -108,23 +128,35 @@ def von_mises_stress_calc(shearstresses, normal_stresses, booms):
 coordinates = pd.read_fwf('Rectangular.txt', names=['x', 'y'])
 coordinates.insert(loc=0, column='Area', value=0)
 
+g = 9.80665
+
+
+w_torque = 2139.32
+F_float = 80 * g * 6.7
+F_prop = 200 * g * 6.7
+T_prop = 15000
+M_prop = 2043
+
+z = (((wing_span/2)-0.75)/3)*3+0.75
+
 wing_span = 17.48
 chord = 2.33
-t = 0.0005
-w = 33600.93, 4017.4
+t = 0.001
+w = 33600.93-(5424/(wing_span/2)), 4017.4
 force_application = {'x':0.25*chord,
                      'y':0}
 
 centroid = centroid_location(coordinates, t, t)
 inertia = inertia_calc(coordinates, centroid, t, t)
 #print (inertia)
-booms = boom_calc(coordinates, inertia, t, centroid, w, wing_span, 5)
+#booms = boom_calc(coordinates, inertia, t, centroid, w, wing_span, z)
+booms = boom_calc(coordinates, inertia, t, centroid, w, b, z, w_torque, F_float, F_prop, M_prop, chord, T_prop)
 #print (booms)
-loady = load_calc(w[0],wing_span,0)
-loadx = load_calc(w[1],wing_span,0)
-print (loady)
+loady = load_y_calc(w[0], w_torque, F_float, F_prop, M_prop, chord, T_prop, wing_span, z)
+loadx = load_x_calc(w[1], T_prop, wing_span, z)
+print (loady,loadx)
 print (inertia)
-shear = shear_flow_calc(loadx['shear'],loady['shear'],booms, inertia, centroid, force_application)
+shear = shear_flow_calc(loadx['shear'],loady['shear'],booms, inertia, centroid, force_application, loady['torque'])
 print (shear)
 area_calc(coordinates, centroid)
 stress = normal_stress_calc(loady['moment'], loadx['moment'], inertia, booms, centroid)
@@ -134,14 +166,14 @@ Running = True
 while Running:
     centroid = centroid_location(coordinates, t, t)
     inertia = inertia_calc(coordinates, centroid, t, t)
-    booms = boom_calc(coordinates, inertia, t, centroid, w, wing_span, 5)
-    shear = shear_flow_calc(loadx['shear'],loady['shear'],booms, inertia, centroid, force_application)
+    booms = boom_calc(coordinates, inertia, t, centroid, w, wing_span, z, w_torque, F_float, F_prop, M_prop, chord, T_prop)
+    shear = shear_flow_calc(loadx['shear'],loady['shear'],booms, inertia, centroid, force_application, loady['torque'])
     stress = normal_stress_calc(loady['moment'], loadx['moment'], inertia, booms, centroid)
     final_stress = von_mises_stress_calc(shear,stress, booms)
     if np.max(final_stress) < 241*10**6:
         Running = False
         print (t)
         print (final_stress)
-    t += 0.0005
+    t += 0.001
     
     
