@@ -11,9 +11,10 @@ from COG_calculation import CgCalculation
 
 class ControllabilityCurve(object):
 
-    def __init__(self, canard=False):
+    def __init__(self, canard=False, amphib=False):
 
         self.canard = canard
+        self.amphib = amphib
         self.__data = dict(GoogleSheetsDataImport(SPREADSHEET_ID, *SHEET_NAMES).get_data())
 
         self.__curve = self.__get_control_curve()
@@ -22,7 +23,8 @@ class ControllabilityCurve(object):
 
         # Common items in formulas
         chord = self.__data['Aero']['Wing chord']
-        xlemac = (self.__data['C&S']['Wing'][0]-1)/chord
+        xlemac = (self.__data['C&S']['Wing'][0] - 1) / chord
+        zlemac = (self.__data['C&S']['Wing'][1] - 10) / chord
         xac = xlemac + self.__data['Aero']['x_ac']
 
         lh = self.__data['C&S']['H Wing'][0] - self.__data['C&S']['Wing'][0]
@@ -36,11 +38,18 @@ class ControllabilityCurve(object):
 
         if self.canard:
             canard_term = (self.__data['Aero']['CL_c']/self.__data['Aero']['CL_A-h']*self.__data['C&S']['Sc']/self.__data['FPP']['S [m^2]']*((self.__data['C&S']['Canard'][0]-1)/chord - xac))*coefficient
+            return lambda xcg: first_term(xcg) + second_term - thrust_term - canard_term
+
+        elif self.amphib:
+            amphib_term = self.__data['Structures']['CR']/self.__data['Aero']['CL_A-h']*1000/1.225*(0.05)/self.__data['FPP']['S [m^2]']*(self.__data['Structures']['Vw/V']**2)*(zlemac - (self.__data['Structures']['CoB'][1]-10)/chord)*coefficient
+            print(amphib_term, (zlemac - (self.__data['Structures']['CoB'][1]-10)/chord))
+            return lambda xcg: first_term(xcg) + second_term - thrust_term - amphib_term
+
         else:
-            canard_term = 0
+            return lambda xcg: first_term(xcg) + second_term - thrust_term
 
         # Return a function to plot against xcg
-        return lambda xcg: first_term(xcg) + second_term - thrust_term - canard_term
+
 
     def cgcalc(self, PL, F):
 
@@ -56,7 +65,8 @@ class ControllabilityCurve(object):
                 'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload']),
                 'Fuel': (self.__data['Weights']['WF [N]'], xw),
                 'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
-                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG']),
+                'Floats': (self.__data['Structures']['Float_weight'], self.__data['C&S']['Floats'])
             }
 
 
@@ -70,7 +80,8 @@ class ControllabilityCurve(object):
                 'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
                 'Payload': (self.__data['Weights']['WPL [N]'], self.__data['C&S']['Payload']),
                 'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
-                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG']),
+                'Floats': (self.__data['Structures']['Float_weight'], self.__data['C&S']['Floats'])
             }
         
         elif PL == 0 and F == 1:
@@ -83,7 +94,8 @@ class ControllabilityCurve(object):
                 'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
                 'Fuel': (self.__data['Weights']['WF [N]'], xw),
                 'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
-                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG']),
+                'Floats': (self.__data['Structures']['Float_weight'], self.__data['C&S']['Floats'])
             }
         
         elif PL == 0 and F == 0:
@@ -95,7 +107,8 @@ class ControllabilityCurve(object):
                 'Horizontal Tail': (self.__data['Structures']['HTail_weight [N]'], self.__data['C&S']['H Wing']),
                 'Vertical Tail': (self.__data['Structures']['VTail_weight [N]'], self.__data['C&S']['V Wing']),
                 'Nose landing gear': (self.__data['Structures']['NLG_weight'], self.__data['C&S']['NLG']),
-                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG'])
+                'Main landing gear': (self.__data['Structures']['MLG_weight'], self.__data['C&S']['MLG']),
+                'Floats': (self.__data['Structures']['Float_weight'], self.__data['C&S']['Floats'])
             }
         
         else:
@@ -133,29 +146,76 @@ class ControllabilityCurve(object):
         # cgx_empty = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0) for i in range(10)]
         # cgx_fuel = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1) for i in range(10)]
         # cgx_payload = [cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0) for i in range(10)]
+
+
+        # cgx_min = [min(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
+        # cgx_max = [max(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
+
+
+        # plt.plot(cgx_min, cgy, 'k--', label='CG - Most Forward')
+        # plt.plot(cgx_max, cgy, 'k.-', label='CG - Most Aft')
+        # plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
+        # plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
+        # plt.grid(b=True, which='major')
+        # plt.legend(fontsize='large')
+
+        colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+            (255 / 255, 0, 0),
+            (107 / 255, 142 / 255, 35 / 255),
+            (30 / 255, 144 / 255, 255 / 255),
+            (0, 0, 139 / 255),
+            (255 / 255, 165 / 255, 0),
+            (34 / 255, 139 / 255, 34 / 255)
+        ]
+
+        line_types = ['-', '--']  # Choose one of these linetypes
+        marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+        # data = [[1, 2, 3], [1, 2, 3]]  # Replace with our data sets
+        plot_labels = ['Amphibious Control Curve', 'Aerial Control Curve']  # Set the desired label
+        axis_labels = [r'$\bar{x}_{cg} [-]$', r'$S_{h}/S [-]$']  # Set the axis labels
+        axis_ranges = [(0, 3), (0, 1)]  # Set the axis ranges
+        plot_title = 'Scissor Plot'
+
+        # Plot
+        if not self.amphib:
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[0]}{marker_types[1]}', c=colours[1],
+                     label=plot_labels[1])
+        elif self.amphib:
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[0]}{marker_types[1]}', c=colours[3],
+                     label=plot_labels[0])
+
+        plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+        plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.grid(True)
+        plt.legend()
+        plt.xlabel(axis_labels[0], fontsize=16)
+        plt.ylabel(axis_labels[1], fontsize=16)
+        plt.title(plot_title, fontsize=18)
+
+        return fig
+
+    def cgplot(self, fig = None):
+
+        if fig is None:
+            fig = plt.figure()
+
         cgx_full = [self.cgcalc(1, 1)[0] for i in range(50)]
         cgx_empty = [self.cgcalc(0, 0)[0] for i in range(50)]
         cgx_fuel = [self.cgcalc(0, 1)[0] for i in range(50)]
         cgx_payload = [self.cgcalc(1, 0)[0] for i in range(50)]
         cgy = [i for i in np.linspace(0, 1, 50)]
-
-        # cgx_min = [min(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
-        # cgx_max = [max(cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 1, 0), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 1), cg((self.__data['C&S']['Wing'][0] - 1)/chord, 0, 0)) for i in range(10)]
-
-        # Plot
-        plt.plot(xrange, self.__curve(xrange), 'b-', label='Control Curve')
-        # plt.plot(cgx_min, cgy, 'k--', label='CG - Most Forward')
-        # plt.plot(cgx_max, cgy, 'k.-', label='CG - Most Aft')
-        plt.plot(cgx_fuel, cgy, '.', label='CG - Only fuel')
-        plt.plot(cgx_payload, cgy, '.', label='CG - Only Payload')
-        plt.plot(cgx_full, cgy, 'v', label='CG - MTOW')
-        plt.plot(cgx_empty, cgy, 'v', label='CG - Empty')
-        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
+        fwd_cg = min(cgx_full,cgx_empty,cgx_fuel,cgx_payload)
+        aft_cg = max(cgx_full,cgx_empty,cgx_fuel,cgx_payload)
+        plt.plot(fwd_cg, cgy, '--', label='Forward CG')
+        # plt.plot(cgx_payload, cgy, 'x', label='CG - Only Payload')
+        # plt.plot(cgx_full, cgy, '--', label='CG - MTOW')
+        plt.plot(aft_cg, cgy, '--', label='Aft CG')
+        plt.xlabel(r'$\bar{x}_{cg} [-]$', fontsize=16)
         plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
-        plt.grid(True, which='both')
+        plt.grid(b=True, which='major')
         plt.legend(fontsize='large')
-
-        return fig
 
 
 class StabilityCurve(object):
@@ -195,7 +255,7 @@ class StabilityCurve(object):
             return lambda xcg: -(first_term(xcg) - second_term)/denominator(xcg)
 
         elif self.amphib:
-            numerator = lambda xcg: xcg + SM - xac - 1000/1.225*self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*1*(0.010775/self.__data['Aero']['CL_alpha_A-h']*(0.64)/chord)
+            numerator = lambda xcg: xcg + SM - xac + 1000/1.225*self.__data['Structures']['Wetted Area']/self.__data['FPP']['S [m^2]']*1*(0.010775/self.__data['Aero']['CL_alpha_A-h']*(0.64)/chord)
             denominator = lambda xcg: (1-(self.__data['Aero']['de/da'] + delta_deda))*(self.__data['Aero']['Vh/V']**2)*self.__data['Aero']['CL_alpha_h']/self.__data['Aero']['CL_alpha_A-h']*(-xcg-SM+(self.__data['C&S']['H Wing'][0]-1)/chord)
             return lambda xcg: numerator(xcg)/denominator(xcg)
 
@@ -211,37 +271,57 @@ class StabilityCurve(object):
         if fig is None:
             fig = plt.figure()
 
+        colours = [  # Use these colours to cycle through if you want to plot multiple lines in the same plot
+            (255 / 255, 0, 0),
+            (107 / 255, 142 / 255, 35 / 255),
+            (30 / 255, 144 / 255, 255 / 255),
+            (0, 0, 139 / 255),
+            (255 / 255, 165 / 255, 0),
+            (34 / 255, 139 / 255, 34 / 255)
+        ]
+        line_types = ['-', '--']  # Choose one of these linetypes
+        marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
+        # data = [[1, 2, 3], [1, 2, 3]]  # Replace with our data sets
+        plot_labels = ['Amphibious Stability Curve', 'Aerial Stability Curve']  # Set the desired label
+        axis_labels = [r'$\bar{x}_{cg} [-]$', r'$S_{h}/S [-]$']  # Set the axis labels
+        axis_ranges = [(0, 3), (0, 1)]  # Set the axis ranges
+        plot_title = 'Scissor Plot'
+
         xrange = np.linspace(0, 3, 100)
 
         if self.amphib:
-            plt.plot(xrange, self.__curve(xrange), 'g-', label='Amphibious Stability Curve')
-        
-        else:
-            plt.plot(xrange, self.__curve(xrange), 'r-', label='Stability Curve')
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[1]}{marker_types[0]}', c=colours[2], label=plot_labels[0])
 
-        plt.xlabel(r'$\bar{x}_{cg}$', fontsize=16)
-        
-        plt.ylabel(r'$S_{h}/S [-]$', fontsize=16)
-        plt.grid(True, which='both')
-        plt.ylim(0, 1.0)
+        else:
+            plt.plot(xrange, self.__curve(xrange), f'{line_types[1]}{marker_types[0]}', c=colours[0], label=plot_labels[1])
+
+        plt.xlim(axis_ranges[0][0], axis_ranges[0][1])
+        plt.ylim(axis_ranges[1][0], axis_ranges[1][1])
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.grid(True)
+        plt.legend()
+        plt.xlabel(axis_labels[0], fontsize=16)
+        plt.ylabel(axis_labels[1], fontsize=16)
+        plt.title(plot_title, fontsize=18)
 
         t = f'LEMAC @ {round((self.__xlemac - 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n' \
               f'Engine @ {round((self.__data["C&S"]["Engine"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage\n' \
               f'Payload @ {round((self.__data["C&S"]["Payload"][0]- 1)/self.__data["Structures"]["Max_fuselage_length"], 2)*100} % fuselage '
-
-        plt.title("Scissor Plot", fontsize=18)
-        plt.legend()
 
         return fig
 
 
 if __name__ == '__main__':
 
-    Ctr = ControllabilityCurve(False)
+    Ctr_amphib = ControllabilityCurve(False, amphib=True)
+    Ctr = ControllabilityCurve(False, amphib=False)
     Stab_amphib = StabilityCurve(False, amphib=True)
     Stab = StabilityCurve(False, amphib=False)
 
     fig = plt.figure()
     Stab_amphib.plot(fig)
     Stab.plot(fig)
+    Ctr_amphib.plot(fig)
     Ctr.plot(fig)
+    Ctr.cgplot(fig)

@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib
 import os
 import sys
+
 sys.path.insert(0, '\\'.join(os.getcwd().split('\\')[:-1]) + '\\tools')
 
 from GoogleSheetsImport import GoogleSheetsDataImport, SHEET_NAMES, SPREADSHEET_ID
-
+from adjustText import adjust_text
 
 class CgCalculation(object):
 
@@ -163,9 +164,8 @@ class CgCalculation(object):
         """
 
         CoB = data['Structures']['CoB']
-        fwd,aft = self.fwd_aft_cg()
-        fwd_weird_frame = fwd + 1
-        aft_weird_frame = aft + 1
+
+
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect(1.0)
@@ -173,21 +173,37 @@ class CgCalculation(object):
             plt.ylim(0, 15)
 
         coordinate_history = []
-        for name, (weight, (x, z)) in self.__components.items():
+        xs = []
+        zs = []
+        text = []
+        for name, location in self.__components.items():
+            weight = location[0]
+            if len(location[1]) == 2:
+                x = location[1][0]
+                z = location[1][1]
+            if len(location[1]) == 3:
+                x = location[1][0]
+                z = location[1][1]
+                y = location[1][2]
             i = 1
+            print(x,z)
             if (x, z) in coordinate_history:
                 i = 3
+            matplotlib.rcParams.update({'font.size': 8})
             plt.scatter(x, z, s=np.sqrt(weight), c='k')
-            plt.annotate(name, xy=(x+i*0.1, z+i*0.1))
+            #plt.annotate(name, xy=(x+i*0.1, z+i*0.1))
             coordinate_history.append((x,z))
+            xs.append(x)
+            zs.append(z)
+            text.append(name)
+        texts = []
+        for (a,b,c) in zip(xs,zs,text):
+            texts.append(plt.text(a,b,c))
+
         plt.scatter(self.__cg[0], self.__cg[1], c='r')
         plt.annotate('CG', xy=self.__cg)
         plt.scatter(CoB[0], CoB[1], c='b')
         plt.annotate('CoB', xy=CoB)
-        plt.scatter(fwd_weird_frame, 10)
-        plt.annotate('Forward CG',xy=[fwd_weird_frame,10])
-        plt.scatter(fwd_weird_frame, 10)
-        plt.annotate('Aft CG', xy=[aft_weird_frame, 10])
 
         # fuselage = self.__plot_cilinder(9, 2.5)
         # wing = self.__plot_cilinder(2.25, 0.5, offset=(3, 1.5))
@@ -197,8 +213,9 @@ class CgCalculation(object):
 
         plt.grid()
         plt.xlabel('X Position [m]')
-        plt.ylabel('Y Position [m]')
+        plt.ylabel('Z Position [m]')
         plt.title('CG Location')
+        adjust_text(texts)
         plt.show()
 
 
@@ -217,7 +234,8 @@ if __name__ == '__main__':
         'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
         'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     empty_components = {
@@ -227,7 +245,8 @@ if __name__ == '__main__':
         'Horizontal Tail': (data['Structures']['HTail_weight [N]'], data['C&S']['H Wing']),
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     full_PL_components = {
@@ -238,7 +257,8 @@ if __name__ == '__main__':
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Payload': (data['Weights']['WPL [N]'], data['C&S']['Payload']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     full_F_components = {
@@ -249,14 +269,16 @@ if __name__ == '__main__':
         'Vertical Tail': (data['Structures']['VTail_weight [N]'], data['C&S']['V Wing']),
         'Fuel': (data['Weights']['WF [N]'], data['C&S']['Wing']),
         'Nose landing gear': (data['Structures']['NLG_weight'], data['C&S']['NLG']),
-        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG'])
+        'Main landing gear': (data['Structures']['MLG_weight'], data['C&S']['MLG']),
+        'Floats': (data['Structures']['Float_weight'], data['C&S']['Floats'])
     }
 
     B1 = CgCalculation(full_components).calculate_cg()
     B2 = CgCalculation(empty_components).calculate_cg()
     B3 = CgCalculation(full_F_components).calculate_cg()
     B4 = CgCalculation(full_PL_components).calculate_cg()
-    # B.plot_locations()
+    plotting = CgCalculation(full_components)
+    plotting.plot_locations()
     # print("CG: ", B.calculate_cg())
     # B.wing_positioning_plot()
     print(B1,B2,B3,B4)
