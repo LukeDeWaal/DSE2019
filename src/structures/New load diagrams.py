@@ -11,12 +11,12 @@ def shear_load_calc(F_float, w_lift, b, z, F_prop):
 def moment_calc(F_float, w_lift, b, F_prop, M_prop, z):
     if 2.05 < z <= b/2:
 #        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - 1382576.583392286
-        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - 1245099.8793922865
-#        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z
+#         Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - 1245099.8793922865
+        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z -(-(((b/2)**2)*w_lift)/2 + (b/2)*w_lift*(b/2))
     if 0.75 <= z <= 2.05:
 #        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(z-2.05) + M_prop - 1382576.583392286
-        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(z-2.05) + M_prop - 1245099.8793922865
-#        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(z-2.05) + M_prop
+#         Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(z-2.05) + M_prop - 1245099.8793922865
+        Mx = -F_float*(z-(b/2))-((z**2)*w_lift)/2 + (b/2)*w_lift*z - F_prop*(z-2.05) + M_prop -(-(((b/2)**2)*w_lift)/2 + (b/2)*w_lift*(b/2))
     return Mx
 
 def torque_calc(w_torque, z, b, F_float, F_prop, chord, T_prop):
@@ -29,21 +29,25 @@ def torque_calc(w_torque, z, b, F_float, F_prop, chord, T_prop):
 def load_x_calc(w_drag, T_prop, b, z):
     if 2.05 < z <= b/2:
         Fx = w_drag*(b/2)-w_drag*z
-        My = w_drag*(b/2)*z - (w_drag/2)*z**2 - 153439.77212
+        My = w_drag*(b/2)*z - (w_drag/2)*z**2 - (w_drag*(b/2)*(b/2) - (w_drag/2)*(b/2)**2)
     if 0.75 <= z <= 2.05:
         Fx = w_drag*(b/2) - w_drag*z - T_prop
-        My = w_drag*(b/2)*z - (w_drag/2)*z**2 - T_prop*(z-2.05) - 153439.77212
+        My = w_drag*(b/2)*z - (w_drag/2)*z**2 - T_prop*(z-2.05) - (w_drag*(b/2)*(b/2) - (w_drag/2)*(b/2)**2)
     return Fx,My
 
 g = 9.80665
-chord = 2.33
+AR = 7.5
+wing_surface = 40.8
+b = np.sqrt(AR*wing_surface)
+print (b)
+chord = wing_surface/b
 F_float = 80 * g * 6.7
 #F_float = 0
 F_prop = 200 * g * 6.7
 #F_prop = 0
-b = 17.48
+#b = 17.48
 #w_lift = 3689.57447
-w_lift = 36819.57447-(5424/(b/2)*6.8)
+w_lift = 36819.57447-(5424/(b/2))
 M_prop = 2043
 #M_prop = 0
 T_prop = 15000
@@ -82,7 +86,7 @@ colours = [  # Use these colours to cycle through if you want to plot multiple l
 ]
 line_types = ['-', '--']  # Choose one of these linetypes
 marker_types = ['.', 'o', 'x']  # In case markers are desired, use one of these
-data = [z, Fy_list]  # Replace with our data sets
+data = [z, My_list]  # Replace with our data sets
 plot_label = 'Mx'  # Set the desired label
 axis_labels = ['z [m]', 'Mx [Nm]']  # Set the axis labels
 axis_ranges = [(0, b/2), (-1200000, 20000)]  # Set the axis ranges
@@ -99,3 +103,4 @@ plt.legend()
 plt.xlabel(axis_labels[0], fontsize=16)
 plt.ylabel(axis_labels[1], fontsize=16)
 plt.title(plot_title, fontsize=18)
+plt.show()
